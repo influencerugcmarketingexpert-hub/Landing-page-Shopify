@@ -181,13 +181,22 @@
       this.removeAttribute('hidden');
       this.classList.add('is-open');
       this.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('overflow-hidden');
-      const backdrop = document.querySelector('[data-drawer-backdrop]');
-      if (backdrop) {
-        backdrop.removeAttribute('hidden');
-        backdrop.classList.add('is-active');
-        backdrop.addEventListener('click', this._onBackdrop);
+      if (typeof theme.pushScrollLock === 'function') {
+        theme.pushScrollLock();
+      } else {
+        document.body.classList.add('overflow-hidden');
       }
+      if (typeof theme.pushBackdrop === 'function') {
+        theme.pushBackdrop();
+      } else {
+        const bd = document.querySelector('[data-drawer-backdrop]');
+        if (bd) {
+          bd.removeAttribute('hidden');
+          bd.classList.add('is-active');
+        }
+      }
+      const backdrop = document.querySelector('[data-drawer-backdrop]');
+      if (backdrop) backdrop.addEventListener('click', this._onBackdrop);
       document.addEventListener('keydown', this._onKeyDown);
       if (theme.trapFocus) theme.trapFocus(this);
       PubSub.publish(events.cartOpen, { element: this });
@@ -199,10 +208,16 @@
       this.classList.remove('is-open');
       this.setAttribute('aria-hidden', 'true');
       this.setAttribute('hidden', '');
-      document.body.classList.remove('overflow-hidden');
       const backdrop = document.querySelector('[data-drawer-backdrop]');
-      if (backdrop) {
-        backdrop.removeEventListener('click', this._onBackdrop);
+      if (backdrop) backdrop.removeEventListener('click', this._onBackdrop);
+      if (typeof theme.popScrollLock === 'function') {
+        theme.popScrollLock();
+      } else {
+        document.body.classList.remove('overflow-hidden');
+      }
+      if (typeof theme.popBackdrop === 'function') {
+        theme.popBackdrop();
+      } else if (backdrop) {
         backdrop.classList.remove('is-active');
         backdrop.setAttribute('hidden', '');
       }

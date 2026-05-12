@@ -114,13 +114,19 @@
       this.removeAttribute('hidden');
       this.classList.add('is-open');
       this.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('overflow-hidden');
-      const backdrop = document.querySelector('[data-drawer-backdrop]');
-      if (backdrop) {
-        backdrop.removeAttribute('hidden');
-        backdrop.classList.add('is-active');
-        backdrop.addEventListener('click', this._onBackdrop);
+      if (typeof theme.pushScrollLock === 'function') {
+        theme.pushScrollLock();
+      } else {
+        document.body.classList.add('overflow-hidden');
       }
+      if (typeof theme.pushBackdrop === 'function') {
+        theme.pushBackdrop();
+      } else {
+        const bd = document.querySelector('[data-drawer-backdrop]');
+        if (bd) { bd.removeAttribute('hidden'); bd.classList.add('is-active'); }
+      }
+      const backdrop = document.querySelector('[data-drawer-backdrop]');
+      if (backdrop) backdrop.addEventListener('click', this._onBackdrop);
       document.addEventListener('keydown', this._onGlobalKey);
       if (theme.trapFocus) theme.trapFocus(this, this.input);
       else if (this.input) window.requestAnimationFrame(() => this.input.focus());
@@ -133,10 +139,16 @@
       this.classList.remove('is-open');
       this.setAttribute('aria-hidden', 'true');
       this.setAttribute('hidden', '');
-      document.body.classList.remove('overflow-hidden');
       const backdrop = document.querySelector('[data-drawer-backdrop]');
-      if (backdrop) {
-        backdrop.removeEventListener('click', this._onBackdrop);
+      if (backdrop) backdrop.removeEventListener('click', this._onBackdrop);
+      if (typeof theme.popScrollLock === 'function') {
+        theme.popScrollLock();
+      } else {
+        document.body.classList.remove('overflow-hidden');
+      }
+      if (typeof theme.popBackdrop === 'function') {
+        theme.popBackdrop();
+      } else if (backdrop) {
         backdrop.classList.remove('is-active');
         backdrop.setAttribute('hidden', '');
       }
@@ -292,7 +304,19 @@
       group.removeAttribute('hidden');
       list.innerHTML = products.map(function (p) {
         const image = p.featured_image && (p.featured_image.url || p.featured_image);
-        const price = p.price ? formatMoney(Number(p.price).toFixed(0) * 100) : (p.compare_at_price_min ? formatMoney(p.compare_at_price_min * 100) : '');
+        // /search/suggest.json returns `price` as a string in major units
+        // ("595.00") and `price_min` is also major units. Convert to cents
+        // once - no double-round. Prefer price_min when available because
+        // variant-priced products expose it first.
+        let priceCents = null;
+        if (p.price_min != null && p.price_min !== '') {
+          priceCents = Math.round(Number(p.price_min) * 100);
+        } else if (p.price != null && p.price !== '') {
+          priceCents = Math.round(Number(p.price) * 100);
+        } else if (p.compare_at_price_min != null && p.compare_at_price_min !== '') {
+          priceCents = Math.round(Number(p.compare_at_price_min) * 100);
+        }
+        const price = priceCents != null && !Number.isNaN(priceCents) ? formatMoney(priceCents) : '';
         return (
           '<li class="predictive-search__result predictive-search__result--product" role="option" data-predictive-search-item>' +
             '<a href="' + escapeHtml(p.url) + '">' +

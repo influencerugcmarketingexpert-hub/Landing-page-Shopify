@@ -26,6 +26,29 @@
   var trapFocus = typeof theme.trapFocus === 'function' ? theme.trapFocus : function () {};
   var removeTrapFocus = typeof theme.removeTrapFocus === 'function' ? theme.removeTrapFocus : function () {};
 
+  // Ref-counted body scroll-lock and shared backdrop helpers. Fall back to
+  // direct DOM mutation when global.js hasn't loaded yet (defensive - the
+  // helpers replace the raw body.classList / backdrop touches that would
+  // otherwise race between the mobile menu and cart drawer).
+  function lockBody() {
+    if (typeof theme.pushScrollLock === 'function') theme.pushScrollLock();
+    else document.body.classList.add('overflow-hidden');
+  }
+  function unlockBody() {
+    if (typeof theme.popScrollLock === 'function') theme.popScrollLock();
+    else document.body.classList.remove('overflow-hidden');
+  }
+  function showBackdrop() {
+    if (typeof theme.pushBackdrop === 'function') { theme.pushBackdrop(); return; }
+    var bd = document.querySelector('[data-drawer-backdrop]');
+    if (bd) { bd.removeAttribute('hidden'); bd.classList.add('is-active'); }
+  }
+  function hideBackdrop() {
+    if (typeof theme.popBackdrop === 'function') { theme.popBackdrop(); return; }
+    var bd = document.querySelector('[data-drawer-backdrop]');
+    if (bd) { bd.classList.remove('is-active'); bd.setAttribute('hidden', ''); }
+  }
+
   var DESKTOP_BREAKPOINT = 1024;
 
   function isDesktop() {
@@ -49,12 +72,9 @@
       drawer.removeAttribute('hidden');
       drawer.classList.add('is-open');
       drawer.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('overflow-hidden');
-      if (backdrop) {
-        backdrop.removeAttribute('hidden');
-        backdrop.classList.add('is-active');
-        backdrop.addEventListener('click', onBackdrop);
-      }
+      lockBody();
+      showBackdrop();
+      if (backdrop) backdrop.addEventListener('click', onBackdrop);
       document.addEventListener('keydown', onKey);
       openers.forEach(function (el) { el.setAttribute('aria-expanded', 'true'); });
       trapFocus(drawer);
@@ -64,12 +84,9 @@
       drawer.classList.remove('is-open');
       drawer.setAttribute('aria-hidden', 'true');
       drawer.setAttribute('hidden', '');
-      document.body.classList.remove('overflow-hidden');
-      if (backdrop) {
-        backdrop.removeEventListener('click', onBackdrop);
-        backdrop.classList.remove('is-active');
-        backdrop.setAttribute('hidden', '');
-      }
+      if (backdrop) backdrop.removeEventListener('click', onBackdrop);
+      unlockBody();
+      hideBackdrop();
       document.removeEventListener('keydown', onKey);
       openers.forEach(function (el) { el.setAttribute('aria-expanded', 'false'); });
       removeTrapFocus(lastOpener);

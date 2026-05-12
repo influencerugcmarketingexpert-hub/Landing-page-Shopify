@@ -85,8 +85,20 @@
   <meta name="twitter:image" content="https:{{ og_image | image_url: width: 1200 }}">
 {%- endif -%}
 {%- if settings.social_twitter_link != blank -%}
-  {%- assign twitter_handle = settings.social_twitter_link | split: 'twitter.com/' | last | remove: '/' -%}
-  {%- if twitter_handle != blank -%}
+  {%- comment -%}
+    Accept both twitter.com and x.com URLs, plus bare @handle or handle.
+    Strip protocol, then keep only the last path segment, then strip any
+    leading '@' or query string. Emit twitter:site only when what remains
+    is a plausible handle (non-empty, no '.' - which would mean we caught
+    a hostname, not a handle).
+  {%- endcomment -%}
+  {%- assign twitter_handle = settings.social_twitter_link | default: '' | strip -%}
+  {%- assign twitter_handle = twitter_handle | split: '://' | last -%}
+  {%- assign twitter_handle = twitter_handle | split: '?' | first -%}
+  {%- assign twitter_handle = twitter_handle | split: '#' | first -%}
+  {%- assign twitter_handle = twitter_handle | split: '/' | last -%}
+  {%- assign twitter_handle = twitter_handle | remove: '@' | strip -%}
+  {%- if twitter_handle != blank and twitter_handle contains '.' == false -%}
     <meta name="twitter:site" content="@{{ twitter_handle }}">
   {%- endif -%}
 {%- endif -%}
@@ -107,9 +119,46 @@
   {%- endif -%}
 {%- endif -%}
 
-{%- comment -%} Alternate locales {%- endcomment -%}
+{%- comment -%}
+  Alternate locales.
+
+  Shopify Markets supports path-prefixed localization (e.g. /fr/products/..)
+  via `locale.root_url` and `request.locale.root_url`. Rebuilding the URL
+  from `request.origin | append: locale.root_url | append: path_without_prefix`
+  avoids the v1 bug where `replace_first: request.locale.iso_code, ...`
+  corrupted any handle that happened to contain the source ISO as a
+  substring (e.g. `/products/en-collar` on an en->fr swap).
+
+  The x-default hreflang points at the store's primary locale.
+{%- endcomment -%}
 {%- if shop.published_locales.size > 1 -%}
+  {%- assign current_root = request.locale.root_url | default: '/' -%}
+  {%- assign locale_path = request.path | default: '/' -%}
+  {%- if current_root != '/' -%}
+    {%- assign current_root_len = current_root | size -%}
+    {%- assign path_prefix = locale_path | slice: 0, current_root_len -%}
+    {%- if path_prefix == current_root -%}
+      {%- assign locale_path = locale_path | remove_first: current_root -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- if locale_path == '' or locale_path == blank -%}
+    {%- assign locale_path = '/' -%}
+  {%- endif -%}
+  {%- assign locale_path_first = locale_path | slice: 0, 1 -%}
+  {%- unless locale_path_first == '/' -%}
+    {%- assign locale_path = '/' | append: locale_path -%}
+  {%- endunless -%}
+
   {%- for locale in shop.published_locales -%}
-    <link rel="alternate" hreflang="{{ locale.iso_code }}" href="{{ canonical_url | replace_first: request.locale.iso_code, locale.iso_code }}">
+    {%- assign target_root = locale.root_url | default: '/' -%}
+    {%- if target_root == '/' -%}
+      {%- assign href = request.origin | append: locale_path -%}
+    {%- else -%}
+      {%- assign href = request.origin | append: target_root | append: locale_path -%}
+    {%- endif -%}
+    <link rel="alternate" hreflang="{{ locale.iso_code }}" href="{{ href }}">
+    {%- if locale.primary -%}
+      <link rel="alternate" hreflang="x-default" href="{{ href }}">
+    {%- endif -%}
   {%- endfor -%}
 {%- endif -%}

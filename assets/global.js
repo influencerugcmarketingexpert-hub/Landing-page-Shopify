@@ -180,7 +180,14 @@
 
   // ---------------------------------------------------------------------------
   // Focus trap
-  // Tracks one trap at a time.
+  //
+  // Stack-based: multiple concurrent traps (e.g. cart drawer + mobile drawer)
+  // layer on top of each other without stripping the previous one. Only one
+  // keydown listener is active at a time (the top of the stack); lower
+  // entries are "suspended" and resume automatically when the top is popped.
+  //
+  // Single-drawer callers see the same behavior as before: trapFocus(c) /
+  // removeTrapFocus(opener).
   // ---------------------------------------------------------------------------
   const focusableSelectors = [
     'a[href]',
@@ -197,7 +204,17 @@
     'summary',
   ].join(',');
 
-  let activeTrap = null;
+  const _focusTrapStack = [];
+
+  function _installTrap(entry) {
+    document.addEventListener('keydown', entry.keyHandler);
+    entry.active = true;
+  }
+
+  function _uninstallTrap(entry) {
+    document.removeEventListener('keydown', entry.keyHandler);
+    entry.active = false;
+  }
 
   function getFocusable(container) {
     const nodes = container.querySelectorAll(focusableSelectors);
@@ -213,10 +230,22 @@
 
   function trapFocus(container, elementToFocus) {
     if (!container) return;
-    removeTrapFocus();
-    const focusable = getFocusable(container);
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
+
+    // If the same container is already trapped at the top of the stack,
+    // this is a no-op re-entry (defensive against double-open calls).
+    const top = _focusTrapStack[_focusTrapStack.length - 1];
+    if (top && top.container === container) {
+      const target = elementToFocus || getFocusable(container)[0] || container;
+      if (target && typeof target.focus === 'function') {
+        window.requestAnimationFrame(function () { target.focus(); });
+      }
+      return;
+    }
+
+    // Suspend the previous top so only one keydown handler is active.
+    if (top && top.active) _uninstallTrap(top);
+
+    const first = getFocusable(container)[0];
     const target = elementToFocus || first || container;
 
     function keyHandler(event) {
@@ -240,20 +269,67 @@
       }
     }
 
-    activeTrap = { container, keyHandler };
-    document.addEventListener('keydown', keyHandler);
+    const entry = { container, keyHandler, active: false };
+    _focusTrapStack.push(entry);
+    _installTrap(entry);
+
     if (target && typeof target.focus === 'function') {
       window.requestAnimationFrame(function () { target.focus(); });
     }
   }
 
   function removeTrapFocus(elementToFocus) {
-    if (activeTrap) {
-      document.removeEventListener('keydown', activeTrap.keyHandler);
-      activeTrap = null;
-    }
+    // Pop the top entry if any.
+    const entry = _focusTrapStack.pop();
+    if (entry && entry.active) _uninstallTrap(entry);
+    // Resume the new top so the underlying drawer keeps its trap.
+    const next = _focusTrapStack[_focusTrapStack.length - 1];
+    if (next && !next.active) _installTrap(next);
     if (elementToFocus && typeof elementToFocus.focus === 'function') {
       elementToFocus.focus();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared drawer chrome
+  //
+  // Reference-counted helpers for the body scroll-lock class and the single
+  // [data-drawer-backdrop] element. Multiple drawers (cart, mobile nav,
+  // predictive search) can be open concurrently below 1024px; closing one
+  // must not release state the others still need.
+  //
+  // Callers should push on open and pop on close. Direct-touch fallbacks
+  // in the drawer modules keep the pre-helper behavior when this file has
+  // not loaded yet.
+  // ---------------------------------------------------------------------------
+  let _scrollLockDepth = 0;
+  let _backdropDepth = 0;
+
+  function pushScrollLock() {
+    _scrollLockDepth += 1;
+    if (_scrollLockDepth === 1) document.body.classList.add('overflow-hidden');
+  }
+
+  function popScrollLock() {
+    _scrollLockDepth = Math.max(0, _scrollLockDepth - 1);
+    if (_scrollLockDepth === 0) document.body.classList.remove('overflow-hidden');
+  }
+
+  function pushBackdrop() {
+    _backdropDepth += 1;
+    const bd = document.querySelector('[data-drawer-backdrop]');
+    if (bd && _backdropDepth === 1) {
+      bd.removeAttribute('hidden');
+      bd.classList.add('is-active');
+    }
+  }
+
+  function popBackdrop() {
+    _backdropDepth = Math.max(0, _backdropDepth - 1);
+    const bd = document.querySelector('[data-drawer-backdrop]');
+    if (bd && _backdropDepth === 0) {
+      bd.classList.remove('is-active');
+      bd.setAttribute('hidden', '');
     }
   }
 
@@ -423,7 +499,7 @@
       this.openedBy = trigger || document.activeElement;
       this.classList.add('is-open');
       this.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('overflow-hidden');
+      pushScrollLock();
       document.addEventListener('keydown', this._onKeyDown);
       trapFocus(this);
     }
@@ -433,7 +509,7 @@
       this.isOpen = false;
       this.classList.remove('is-open');
       this.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('overflow-hidden');
+      popScrollLock();
       document.removeEventListener('keydown', this._onKeyDown);
       removeTrapFocus(this.openedBy);
       this.openedBy = null;
@@ -703,6 +779,10 @@
     formatMoney,
     trapFocus,
     removeTrapFocus,
+    pushScrollLock,
+    popScrollLock,
+    pushBackdrop,
+    popBackdrop,
     initLazyImages,
   });
 }());

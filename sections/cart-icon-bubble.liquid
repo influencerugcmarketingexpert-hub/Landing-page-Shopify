@@ -10,15 +10,17 @@
   snippet here keeps markup in a single place while giving the API a
   section to return.
 
-  tag: null so Shopify doesn't wrap the bubble in its own element - the
-  header button already provides the parent.
+  tag: "div" is the explicit equivalent of Shopify's default section
+  wrapper. cart.js targets #CartCountBubble *inside* this wrapper when
+  applying the Section Rendering API response, so the outer <div> is
+  inert.
 {%- endcomment -%}
 {%- render 'cart-icon-bubble' -%}
 
 {% schema %}
 {
   "name": "Cart icon bubble",
-  "tag": null,
+  "tag": "div",
   "settings": []
 }
 {% endschema %}
