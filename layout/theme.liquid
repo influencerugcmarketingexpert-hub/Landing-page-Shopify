@@ -1,0 +1,119 @@
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="{{ settings.color_background | default: '#FFFFFF' }}">
+
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    <title>
+      {{ page_title }}
+      {%- if current_tags %} &ndash; {{ 'general.meta.tags' | t: tags: current_tags | join: ', ' }}{% endif -%}
+      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    </title>
+
+    {%- if page_description -%}
+      <meta name="description" content="{{ page_description | escape }}">
+    {%- endif -%}
+
+    {%- if settings.social_sharing_image -%}
+      <meta property="og:image" content="{{ settings.social_sharing_image | image_url: width: 1200 }}">
+      <meta property="og:image:width" content="1200">
+      <meta property="og:image:height" content="{{ 1200 | divided_by: settings.social_sharing_image.aspect_ratio | round }}">
+    {%- endif -%}
+    <meta property="og:site_name" content="{{ settings.organization_name | default: shop.name }}">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:title" content="{{ page_title | escape }}">
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="{{ page_description | default: shop.description | default: shop.name | escape }}">
+
+    <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+
+    {%- assign type_header_font = settings.type_header_font -%}
+    {%- assign type_body_font = settings.type_body_font -%}
+
+    {{ type_header_font | font_face: font_display: 'swap' }}
+    {{ type_body_font | font_face: font_display: 'swap' }}
+
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+
+    <style>
+      :root {
+        --color-espresso: {{ settings.color_espresso | default: '#2B1F17' }};
+        --color-cognac: {{ settings.color_cognac | default: '#9A5A3C' }};
+        --color-cream: {{ settings.color_cream | default: '#F5EFE6' }};
+        --color-ink: {{ settings.color_ink | default: '#0F0F0F' }};
+        --color-beige: {{ settings.color_beige | default: '#E8DFD2' }};
+
+        --color-background: {{ settings.color_background | default: '#FFFFFF' }};
+        --color-text: {{ settings.color_text | default: '#0F0F0F' }};
+        --color-accent: {{ settings.color_accent | default: '#9A5A3C' }};
+        --color-button: {{ settings.color_button | default: '#2B1F17' }};
+        --color-button-text: {{ settings.color_button_text | default: '#F5EFE6' }};
+
+        --color-badge-sale: {{ settings.sale_badge_color | default: '#9A5A3C' }};
+        --color-badge-new: {{ settings.new_badge_color | default: '#2B1F17' }};
+        --color-badge-sold-out: {{ settings.sold_out_badge_color | default: '#6E6E6E' }};
+
+        --font-heading: {{ type_header_font.family }}, {{ type_header_font.fallback_families }};
+        --font-heading-weight: {{ type_header_font.weight }};
+        --font-heading-style: {{ type_header_font.style }};
+        --font-body: {{ type_body_font.family }}, {{ type_body_font.fallback_families }};
+        --font-body-weight: {{ type_body_font.weight }};
+        --font-body-style: {{ type_body_font.style }};
+
+        --header-scale: {{ settings.header_scale | default: 100 | divided_by: 100.0 }};
+        --body-scale: {{ settings.body_scale | default: 100 | divided_by: 100.0 }};
+
+        --page-width: {{ settings.page_width | default: 1440 }}px;
+        --container-max: {{ settings.page_width | default: 1440 }}px;
+        --spacing-sections: {{ settings.spacing_sections | default: 72 }}px;
+
+        --button-radius: {{ settings.button_radius | default: 0 }}px;
+        --border-width: {{ settings.border_width | default: 1 }}px;
+        --card-radius: {{ settings.card_radius | default: 0 }}px;
+      }
+    </style>
+
+    <script>
+      document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+      window.routes = {
+        cart_add_url: '{{ routes.cart_add_url }}',
+        cart_change_url: '{{ routes.cart_change_url }}',
+        cart_update_url: '{{ routes.cart_update_url }}',
+        cart_url: '{{ routes.cart_url }}',
+        predictive_search_url: '{{ routes.predictive_search_url }}'
+      };
+      window.shopCurrency = '{{ cart.currency.iso_code }}';
+    </script>
+
+    {{ content_for_header }}
+  </head>
+
+  <body class="template-{{ template.name }} template--{{ template | replace: '.', '--' }}">
+    <a class="skip-to-content-link button" href="#MainContent">
+      {{ 'general.accessibility.skip_to_content' | t }}
+    </a>
+
+    {% section 'announcement-bar' %}
+    {% section 'header' %}
+
+    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% section 'footer' %}
+
+    <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
+  </body>
+</html>

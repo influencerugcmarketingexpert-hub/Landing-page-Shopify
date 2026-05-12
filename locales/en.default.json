@@ -1,0 +1,516 @@
+{
+  "general": {
+    "meta": {
+      "tags": "Tagged \"{{ tags }}\"",
+      "page": "Page {{ page }}"
+    },
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "close": "Close",
+      "loading": "Loading",
+      "menu": "Menu",
+      "of": "of",
+      "next_slide": "Next slide",
+      "previous_slide": "Previous slide",
+      "pagination": "Pagination",
+      "link_messages": {
+        "new_window": "Opens in a new window.",
+        "external": "Opens external website."
+      }
+    },
+    "search": {
+      "heading": "Search",
+      "label": "Search our site",
+      "placeholder": "Search for jackets, materials, stories",
+      "submit": "Search",
+      "reset": "Clear",
+      "results_count": {
+        "one": "{{ count }} result",
+        "other": "{{ count }} results"
+      },
+      "no_results": "No results for \"{{ terms }}\". Try different keywords.",
+      "view_all": "View all results",
+      "results_with_count": {
+        "one": "{{ count }} result",
+        "other": "{{ count }} results"
+      },
+      "products": "Products",
+      "collections": "Collections",
+      "pages": "Pages",
+      "articles": "Journal",
+      "suggestions": "Suggestions"
+    },
+    "cart": {
+      "title": "Your bag",
+      "empty": "Your bag is empty.",
+      "continue_shopping": "Continue shopping",
+      "view_cart": "View bag",
+      "checkout": "Checkout",
+      "item_count": {
+        "one": "{{ count }} item",
+        "other": "{{ count }} items"
+      },
+      "subtotal": "Subtotal",
+      "note": "Order note",
+      "note_placeholder": "How would you like it wrapped?",
+      "update": "Update",
+      "remove": "Remove",
+      "quantity": "Quantity",
+      "free_shipping_prompt": "Spend {{ remaining }} more for free shipping.",
+      "free_shipping_reached": "Congrats! You've unlocked free shipping.",
+      "taxes_and_shipping_at_checkout": "Taxes and shipping calculated at checkout.",
+      "shipping_estimate": "Shipping calculated at checkout.",
+      "open_drawer": "Open bag",
+      "close_drawer": "Close bag",
+      "added": "Added to your bag",
+      "error": "There was a problem adding this item. Please try again."
+    },
+    "newsletter": {
+      "heading": "Join the atelier",
+      "body": "First access to new drops, fitting guides, and dispatches from the workshop.",
+      "email_label": "Email",
+      "email_placeholder": "you@example.com",
+      "submit": "Subscribe",
+      "success": "Thank you. Welcome to Orlaven.",
+      "password_prompt": "Be the first to know when we open."
+    },
+    "social": {
+      "share": "Share",
+      "share_on_facebook": "Share on Facebook",
+      "share_on_twitter": "Share on X",
+      "share_on_pinterest": "Pin on Pinterest",
+      "alt_text": {
+        "share_on_facebook": "Share on Facebook",
+        "share_on_twitter": "Share on X",
+        "share_on_pinterest": "Pin on Pinterest"
+      }
+    },
+    "password": {
+      "opening_soon": "Opening soon",
+      "tagline": "Handcrafted. Since day one.",
+      "login_heading": "Enter using password",
+      "password_label": "Password",
+      "password_placeholder": "Password",
+      "submit": "Enter",
+      "signup_form_heading": "Be the first to know",
+      "all_rights_reserved": "All rights reserved.",
+      "powered_by": "Powered by Shopify",
+      "admin_link": "Are you the store owner?",
+      "admin_link_html": "<a href=\"/admin\">Log in here</a>"
+    },
+    "pagination": {
+      "label": "Pagination",
+      "page": "Page {{ page }}",
+      "next": "Next",
+      "previous": "Previous"
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "separator": "/",
+      "aria_label": "Breadcrumb"
+    },
+    "404": {
+      "title": "Page not found",
+      "subtext": "The page you're looking for is no longer here.",
+      "link": "Return to homepage"
+    },
+    "share": {
+      "copy_to_clipboard": "Copy link",
+      "share_url": "Share this link",
+      "success_message": "Link copied to clipboard",
+      "close": "Close"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to bag",
+      "adding": "Adding",
+      "added": "Added",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "pre_order": "Pre-order",
+      "on_sale": "Sale",
+      "new": "New",
+      "quantity": "Quantity",
+      "increase_quantity": "Increase quantity",
+      "decrease_quantity": "Decrease quantity",
+      "vendor": "Vendor",
+      "sku": "SKU",
+      "price": {
+        "regular_price": "Regular price",
+        "sale_price": "Sale price",
+        "from_price_html": "From {{ price }}",
+        "unit_price": "Unit price",
+        "unit_price_separator": "per"
+      },
+      "sale_badge_text_html": "Save {{ savings }}",
+      "inventory_low_stock": "Only {{ quantity }} left",
+      "inventory_in_stock": "In stock",
+      "inventory_out_of_stock": "Out of stock",
+      "size_chart": "Size guide",
+      "share": "Share",
+      "description": "Description",
+      "materials": "Materials",
+      "care": "Care",
+      "shipping_returns": "Shipping & returns",
+      "view_full_details": "View full details",
+      "media": {
+        "gallery_viewer": "Gallery viewer",
+        "open_media": "Open media {{ index }} in modal",
+        "play_model_viewer": "Play 3D viewer",
+        "play_video": "Play video"
+      },
+      "choose_options": "Choose options",
+      "pickup_availability": {
+        "view_store_info": "View store information",
+        "check_other_stores": "Check availability at other stores",
+        "pick_up_available": "Pickup available",
+        "pick_up_available_at_html": "Pickup available at <span class=\"color-foreground\">{{ location_name }}</span>",
+        "pick_up_unavailable_at_html": "Pickup currently unavailable at <span class=\"color-foreground\">{{ location_name }}</span>",
+        "unavailable": "Could not load pickup availability",
+        "refresh": "Refresh"
+      }
+    },
+    "facets": {
+      "apply": "Apply",
+      "clear": "Clear",
+      "clear_all": "Clear all",
+      "from": "From",
+      "filter_and_sort": "Filter and sort",
+      "filter_by_label": "Filter:",
+      "filter_button": "Filter",
+      "filters_selected": {
+        "one": "{{ count }} selected",
+        "other": "{{ count }} selected"
+      },
+      "max_price": "The highest price is {{ price }}",
+      "product_count": {
+        "one": "{{ product_count }} of {{ count }} product",
+        "other": "{{ product_count }} of {{ count }} products"
+      },
+      "product_count_simple": {
+        "one": "{{ count }} product",
+        "other": "{{ count }} products"
+      },
+      "reset": "Reset",
+      "sort_by_label": "Sort by:",
+      "to": "To",
+      "in_collection": "in {{ collection }}",
+      "price_range": "Price range"
+    },
+    "product_card": {
+      "quick_add": "Quick add",
+      "add_to_bag": "Add to bag",
+      "view_product": "View product",
+      "from_price_html": "From {{ price }}"
+    }
+  },
+  "sections": {
+    "header": {
+      "announcement": "Handcrafted. Since day one.",
+      "menu": "Menu",
+      "cart_count": {
+        "one": "{{ count }} item",
+        "other": "{{ count }} items"
+      },
+      "search": "Search",
+      "account": "Account",
+      "log_in": "Log in",
+      "log_out": "Log out",
+      "cart": "Bag"
+    },
+    "footer": {
+      "heading": "Orlaven",
+      "tagline": "Handcrafted. Since day one.",
+      "copyright_html": "&copy; {{ year }} Orlaven. All rights reserved.",
+      "payment": "Payment methods",
+      "currency_label": "Country/region",
+      "newsletter_heading": "Atelier letter",
+      "newsletter_body": "Receive lookbooks, fitting guides and workshop stories, once per month.",
+      "columns": {
+        "shop": "Shop",
+        "about": "Atelier",
+        "help": "Support"
+      }
+    },
+    "announcement_bar": {
+      "free_shipping_over_amount_html": "Free shipping on orders over {{ amount }}",
+      "next_slide": "Next announcement",
+      "previous_slide": "Previous announcement"
+    },
+    "hero": {
+      "announcement": "The new autumn collection",
+      "heading": "Crafted for a life in leather.",
+      "subheading": "A small atelier of leather artisans. Limited runs, honest materials, lifetime repairs.",
+      "primary_cta": "Shop the collection",
+      "secondary_cta": "Our craft"
+    },
+    "shop_by_category": {
+      "heading": "Shop by category",
+      "view_all": "View all"
+    },
+    "shop_by_style": {
+      "heading": "Shop by silhouette",
+      "view_all": "See every cut"
+    },
+    "featured_collection": {
+      "heading": "Featured",
+      "view_all": "View the full collection"
+    },
+    "custom_banner": {
+      "heading": "The atelier",
+      "body": "Each jacket is cut, stitched and finished by one maker, in our Italian workshop.",
+      "cta": "Meet the makers"
+    },
+    "lookbook": {
+      "heading": "Lookbook",
+      "caption": "Autumn / Winter"
+    },
+    "brand_story": {
+      "heading": "Our story",
+      "body": "We began Orlaven with one rule: build a jacket that outlives the person who bought it.",
+      "cta": "Read the story"
+    },
+    "material_guide": {
+      "heading": "Materials",
+      "body": "Full-grain hides, solid brass, cotton-silk linings. No cutting corners."
+    },
+    "reviews": {
+      "heading": "Worn and loved",
+      "view_all": "Read all reviews",
+      "empty": "Reviews appear here once customers leave feedback."
+    },
+    "press": {
+      "heading": "Press"
+    },
+    "blog_preview": {
+      "heading": "Journal",
+      "view_all": "Read all stories"
+    },
+    "instagram_feed": {
+      "heading": "@orlaven",
+      "view_all": "Follow on Instagram"
+    },
+    "newsletter": {
+      "heading": "Stay in touch",
+      "body": "Monthly stories from the workshop. No spam.",
+      "submit": "Subscribe"
+    },
+    "cart": {
+      "title": "Your bag",
+      "caption": "Taxes and shipping calculated at checkout.",
+      "remove_title": "Remove {{ title }}",
+      "note_label": "Order note",
+      "continue_shopping": "Continue shopping"
+    },
+    "collection_template": {
+      "title": "Collection",
+      "empty": "No products found.",
+      "use_fewer_filters_html": "Use fewer filters or <a class=\"underlined-link\" href=\"{{ link }}\">clear all</a>"
+    },
+    "search_template": {
+      "title": "Search",
+      "no_results_html": "No results for &ldquo;{{ terms }}&rdquo;. Check your spelling or use different words."
+    }
+  },
+  "customer": {
+    "account": {
+      "title": "Account",
+      "details": "Account details",
+      "view_addresses": "View addresses ({{ count }})",
+      "return": "Return to account details"
+    },
+    "activate_account": {
+      "title": "Activate account",
+      "subtext": "Create your password to activate your account.",
+      "password": "Password",
+      "password_confirm": "Confirm password",
+      "submit": "Activate account",
+      "cancel": "Decline invitation"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "default": "Default",
+      "add_new": "Add a new address",
+      "edit_address": "Edit address",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "company": "Company",
+      "address1": "Address 1",
+      "address2": "Address 2",
+      "city": "City",
+      "country": "Country/region",
+      "province": "Province",
+      "zip": "Postal/ZIP code",
+      "phone": "Phone",
+      "set_default": "Set as default address",
+      "add": "Add address",
+      "update": "Update address",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "delete_confirm": "Are you sure you wish to delete this address?"
+    },
+    "log_in": "Log in",
+    "log_out": "Log out",
+    "login_page": {
+      "cancel": "Cancel",
+      "create_account": "Create account",
+      "email": "Email",
+      "forgot_password": "Forgot your password?",
+      "guest_continue": "Continue",
+      "guest_title": "Continue as a guest",
+      "password": "Password",
+      "title": "Log in",
+      "sign_in": "Sign in",
+      "submit": "Log in"
+    },
+    "orders": {
+      "title": "Order history",
+      "order_number": "Order",
+      "order_number_link": "Order number {{ number }}",
+      "date": "Date",
+      "payment_status": "Payment status",
+      "fulfillment_status": "Fulfillment status",
+      "total": "Total",
+      "none": "You haven't placed any orders yet."
+    },
+    "order": {
+      "title": "Order {{ name }}",
+      "date_html": "Placed on {{ date }}",
+      "cancelled_html": "Order cancelled on {{ date }}",
+      "cancelled_reason": "Reason: {{ reason }}",
+      "billing_address": "Billing address",
+      "payment_status": "Payment status",
+      "shipping_address": "Shipping address",
+      "fulfillment_status": "Fulfillment status",
+      "discount": "Discount",
+      "shipping": "Shipping",
+      "tax": "Tax",
+      "product": "Product",
+      "sku": "SKU",
+      "price": "Price",
+      "quantity": "Quantity",
+      "total": "Total",
+      "fulfilled_at_html": "Fulfilled {{ date }}",
+      "track_shipment": "Track shipment",
+      "tracking_url": "Tracking link",
+      "tracking_company": "Carrier",
+      "tracking_number": "Tracking number",
+      "subtotal": "Subtotal",
+      "total_duties": "Duties",
+      "total_refunded": "Refunded"
+    },
+    "recover_password": {
+      "title": "Reset your password",
+      "subtext": "We'll send you an email to reset your password.",
+      "success": "We've sent you an email with a link to update your password.",
+      "submit": "Submit",
+      "cancel": "Cancel"
+    },
+    "register": {
+      "title": "Create account",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create"
+    },
+    "reset_password": {
+      "title": "Reset account password",
+      "subtext": "Enter a new password for {{ email }}",
+      "password": "Password",
+      "password_confirm": "Confirm password",
+      "submit": "Reset password"
+    }
+  },
+  "blogs": {
+    "article": {
+      "all_topics": "All topics",
+      "by_author": "by {{ author }}",
+      "cancel": "Cancel",
+      "comment_form_title": "Leave a comment",
+      "comments": {
+        "one": "{{ count }} comment",
+        "other": "{{ count }} comments"
+      },
+      "email": "Email",
+      "message": "Message",
+      "moderated": "Please note, comments must be approved before they are published",
+      "name": "Name",
+      "post": "Post comment",
+      "read_more_title": "Read more: {{ title }}",
+      "share": "Share this article",
+      "success": "Your comment was posted successfully. Thank you!",
+      "success_moderated": "Your comment was posted successfully. We will publish it in a little while, as our blog is moderated.",
+      "title": "Title",
+      "read_more": "Read more",
+      "back_to_blog": "Back to journal",
+      "posted_in_html": "Posted in {{ categories }}",
+      "tags": "Tags"
+    }
+  },
+  "gift_cards": {
+    "issued": {
+      "title": "Here's your {{ value }} gift card for {{ shop }}!",
+      "subtext": "Your gift card",
+      "disabled": "Disabled",
+      "expired": "Expired on {{ expiry }}",
+      "active": "Expires on {{ expiry }}",
+      "redeem_html": "Use this code at checkout to redeem your {{ value }} gift card",
+      "shop_link": "Start shopping",
+      "print": "Print this gift card",
+      "remaining_html": "{{ balance }} left",
+      "add_to_apple_wallet": "Add to Apple Wallet",
+      "qr_image_alt": "QR code - scan to redeem gift card",
+      "copy_code": "Copy code",
+      "copy_code_success": "Code copied successfully"
+    }
+  },
+  "shopify": {
+    "checkout": {
+      "general": {
+        "page_title": "Checkout"
+      }
+    },
+    "links": {
+      "cart": "Cart",
+      "catalog": "Catalog"
+    },
+    "sentence": {
+      "words_connector": ", ",
+      "two_words_connector": " and ",
+      "last_word_connector": ", and "
+    },
+    "errors": {
+      "form": "Please adjust the following:",
+      "general": "Something went wrong. Please try again later."
+    },
+    "labels": {
+      "submit": "Submit",
+      "close": "Close",
+      "quantity": "Quantity",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "message": "Message"
+    }
+  },
+  "contact": {
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone number",
+      "message": "Message",
+      "send": "Send",
+      "post_success": "Thanks for contacting us. We'll get back to you within two business days.",
+      "error_heading": "Please adjust the following:"
+    }
+  },
+  "localization": {
+    "country_label": "Country/region",
+    "language_label": "Language",
+    "update_language": "Update language",
+    "update_country": "Update country/region"
+  }
+}

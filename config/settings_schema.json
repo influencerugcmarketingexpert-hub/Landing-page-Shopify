@@ -1,0 +1,357 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Orlaven",
+    "theme_version": "1.0.0",
+    "theme_author": "Orlaven",
+    "theme_documentation_url": "https://github.com/orlaven/orlaven-theme#readme",
+    "theme_support_url": "https://github.com/orlaven/orlaven-theme/issues"
+  },
+  {
+    "name": "Logo",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo"
+      },
+      {
+        "type": "range",
+        "id": "logo_width",
+        "min": 60,
+        "max": 320,
+        "step": 10,
+        "unit": "px",
+        "label": "Logo width",
+        "default": 140
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon",
+        "info": "Recommended size: 32 x 32 px"
+      }
+    ]
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Brand palette"
+      },
+      {
+        "type": "color",
+        "id": "color_espresso",
+        "label": "Espresso",
+        "default": "#2B1F17"
+      },
+      {
+        "type": "color",
+        "id": "color_cognac",
+        "label": "Cognac",
+        "default": "#9A5A3C"
+      },
+      {
+        "type": "color",
+        "id": "color_cream",
+        "label": "Cream",
+        "default": "#F5EFE6"
+      },
+      {
+        "type": "color",
+        "id": "color_ink",
+        "label": "Ink",
+        "default": "#0F0F0F"
+      },
+      {
+        "type": "color",
+        "id": "color_beige",
+        "label": "Beige",
+        "default": "#E8DFD2"
+      },
+      {
+        "type": "header",
+        "content": "Page colors"
+      },
+      {
+        "type": "color",
+        "id": "color_background",
+        "label": "Page background",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "Body text",
+        "default": "#0F0F0F"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Accent",
+        "default": "#9A5A3C"
+      },
+      {
+        "type": "color",
+        "id": "color_button",
+        "label": "Primary button",
+        "default": "#2B1F17"
+      },
+      {
+        "type": "color",
+        "id": "color_button_text",
+        "label": "Primary button text",
+        "default": "#F5EFE6"
+      }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "type_header_font",
+        "label": "Heading font",
+        "default": "cormorant_garamond_n4"
+      },
+      {
+        "type": "range",
+        "id": "header_scale",
+        "min": 90,
+        "max": 140,
+        "step": 5,
+        "unit": "%",
+        "label": "Heading scale",
+        "default": 110
+      },
+      {
+        "type": "font_picker",
+        "id": "type_body_font",
+        "label": "Body font",
+        "default": "inter_n4"
+      },
+      {
+        "type": "range",
+        "id": "body_scale",
+        "min": 90,
+        "max": 130,
+        "step": 5,
+        "unit": "%",
+        "label": "Body scale",
+        "default": 100
+      }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      {
+        "type": "range",
+        "id": "page_width",
+        "min": 1200,
+        "max": 1600,
+        "step": 20,
+        "unit": "px",
+        "label": "Page width",
+        "default": 1440
+      },
+      {
+        "type": "range",
+        "id": "spacing_sections",
+        "min": 0,
+        "max": 140,
+        "step": 4,
+        "unit": "px",
+        "label": "Space between template sections",
+        "default": 72
+      }
+    ]
+  },
+  {
+    "name": "Buttons",
+    "settings": [
+      {
+        "type": "range",
+        "id": "button_radius",
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "px",
+        "label": "Button corner radius",
+        "default": 0
+      },
+      {
+        "type": "range",
+        "id": "border_width",
+        "min": 0,
+        "max": 4,
+        "step": 1,
+        "unit": "px",
+        "label": "Border width",
+        "default": 1
+      }
+    ]
+  },
+  {
+    "name": "Cards",
+    "settings": [
+      {
+        "type": "select",
+        "id": "card_style",
+        "label": "Product card style",
+        "options": [
+          { "value": "text", "label": "Text only" },
+          { "value": "standard", "label": "Standard" },
+          { "value": "card", "label": "Card" }
+        ],
+        "default": "standard"
+      },
+      {
+        "type": "range",
+        "id": "card_radius",
+        "min": 0,
+        "max": 40,
+        "step": 2,
+        "unit": "px",
+        "label": "Card corner radius",
+        "default": 0
+      }
+    ]
+  },
+  {
+    "name": "Social",
+    "settings": [
+      {
+        "type": "text",
+        "id": "social_instagram_link",
+        "label": "Instagram URL",
+        "default": "https://instagram.com/orlaven"
+      },
+      {
+        "type": "text",
+        "id": "social_facebook_link",
+        "label": "Facebook URL",
+        "default": "https://facebook.com/orlaven"
+      },
+      {
+        "type": "text",
+        "id": "social_pinterest_link",
+        "label": "Pinterest URL",
+        "default": "https://pinterest.com/orlaven"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok_link",
+        "label": "TikTok URL",
+        "default": "https://tiktok.com/@orlaven"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube_link",
+        "label": "YouTube URL",
+        "default": "https://youtube.com/@orlaven"
+      }
+    ]
+  },
+  {
+    "name": "Currency",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "currency_code_enabled",
+        "label": "Show currency codes",
+        "default": true
+      },
+      {
+        "type": "paragraph",
+        "content": "Currency selector appears in the header when more than one currency is active in Markets."
+      }
+    ]
+  },
+  {
+    "name": "Cart",
+    "settings": [
+      {
+        "type": "select",
+        "id": "cart_type",
+        "label": "Cart type",
+        "options": [
+          { "value": "drawer", "label": "Drawer" },
+          { "value": "page", "label": "Page" }
+        ],
+        "default": "drawer"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_cart_note",
+        "label": "Enable cart note",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_free_shipping_bar",
+        "label": "Show free-shipping progress bar",
+        "default": true
+      },
+      {
+        "type": "number",
+        "id": "free_shipping_threshold",
+        "label": "Free shipping threshold",
+        "default": 200,
+        "info": "Amount in your store's default currency."
+      }
+    ]
+  },
+  {
+    "name": "Search",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "predictive_search_enabled",
+        "label": "Enable predictive search",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Product badges",
+    "settings": [
+      {
+        "type": "color",
+        "id": "sale_badge_color",
+        "label": "Sale badge",
+        "default": "#9A5A3C"
+      },
+      {
+        "type": "color",
+        "id": "new_badge_color",
+        "label": "New badge",
+        "default": "#2B1F17"
+      },
+      {
+        "type": "color",
+        "id": "sold_out_badge_color",
+        "label": "Sold out badge",
+        "default": "#6E6E6E"
+      }
+    ]
+  },
+  {
+    "name": "SEO",
+    "settings": [
+      {
+        "type": "text",
+        "id": "organization_name",
+        "label": "Organization name",
+        "default": "Orlaven"
+      },
+      {
+        "type": "image_picker",
+        "id": "social_sharing_image",
+        "label": "Social sharing image",
+        "info": "Recommended size: 1200 x 630 px"
+      }
+    ]
+  }
+]
