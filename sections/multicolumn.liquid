@@ -1,0 +1,284 @@
+{%- comment -%}
+  Multicolumn
+  -----------
+  Generic fallback multi-column section for arbitrary content rows.
+  Each block can have an optional icon (from the shared icon set) or
+  an image, plus a heading, text and optional link.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign cols_desktop = section.settings.columns_desktop | default: 3
+  if cols_desktop < 2
+    assign cols_desktop = 2
+  endif
+  if cols_desktop > 4
+    assign cols_desktop = 4
+  endif
+  assign alignment = section.settings.text_alignment | default: 'center'
+  assign bg = section.settings.bg_color
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .multicolumn {
+    padding: var(--spacing-sections, 72px) 0;
+    {% if bg != blank %}background-color: {{ bg }};{% endif %}
+  }
+  #shopify-section-{{ section.id }} .multicolumn__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-8);
+    align-items: {% if alignment == 'left' %}flex-start{% elsif alignment == 'right' %}flex-end{% else %}center{% endif %};
+    text-align: {{ alignment }};
+  }
+  #shopify-section-{{ section.id }} .multicolumn__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .multicolumn__subheading {
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .multicolumn__grid {
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .multicolumn__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .multicolumn__grid {
+      grid-template-columns: repeat({{ cols_desktop }}, minmax(0, 1fr));
+    }
+  }
+  #shopify-section-{{ section.id }} .multicolumn__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: {% if alignment == 'left' %}flex-start{% elsif alignment == 'right' %}flex-end{% else %}center{% endif %};
+    text-align: {{ alignment }};
+  }
+  #shopify-section-{{ section.id }} .multicolumn__image {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background-color: var(--color-beige);
+    border-radius: var(--card-radius, 0);
+  }
+  #shopify-section-{{ section.id }} .multicolumn__image img,
+  #shopify-section-{{ section.id }} .multicolumn__image svg.placeholder {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ section.id }} .multicolumn__icon {
+    width: 40px; height: 40px;
+    color: var(--color-cognac);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #shopify-section-{{ section.id }} .multicolumn__icon svg { width: 100%; height: 100%; }
+  #shopify-section-{{ section.id }} .multicolumn__heading-block {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .multicolumn__text {
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: color-mix(in oklab, var(--color-text) 75%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .multicolumn__link {
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 2px;
+  }
+  #shopify-section-{{ section.id }} .multicolumn__link:hover { color: var(--color-cognac); }
+</style>
+
+<section class="multicolumn">
+  <div class="container">
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <header class="multicolumn__header">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="multicolumn__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="multicolumn__subheading">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- if block_count > 0 -%}
+      <ul class="multicolumn__grid" role="list">
+        {%- for block in section.blocks -%}
+          {%- assign icon_name = block.settings.icon -%}
+          <li class="multicolumn__item" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}
+              <div class="multicolumn__image">
+                {%- render 'responsive-image',
+                    image: block.settings.image,
+                    sizes: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
+                    widths: '400,600,800,1000,1200',
+                    alt: block.settings.heading | default: 'Column'
+                -%}
+              </div>
+            {%- elsif icon_name != blank and icon_name != 'none' -%}
+              <span class="multicolumn__icon" aria-hidden="true">
+                {%- case icon_name -%}
+                  {%- when 'truck' -%}{%- render 'icon-truck', size: 40 -%}
+                  {%- when 'returns' -%}{%- render 'icon-returns', size: 40 -%}
+                  {%- when 'shield' -%}{%- render 'icon-shield', size: 40 -%}
+                  {%- when 'craftsmanship' -%}{%- render 'icon-craftsmanship', size: 40 -%}
+                  {%- when 'star' -%}{%- render 'icon-star', size: 40 -%}
+                  {%- when 'heart' -%}{%- render 'icon-heart', size: 40 -%}
+                  {%- when 'checkmark' -%}{%- render 'icon-checkmark', size: 40 -%}
+                  {%- else -%}{%- render 'icon-star', size: 40 -%}
+                {%- endcase -%}
+              </span>
+            {%- endif -%}
+
+            {%- if block.settings.heading != blank -%}
+              <h3 class="multicolumn__heading-block">{{ block.settings.heading }}</h3>
+            {%- endif -%}
+            {%- if block.settings.text != blank -%}
+              <p class="multicolumn__text">{{ block.settings.text }}</p>
+            {%- endif -%}
+            {%- if block.settings.link != blank and block.settings.link_label != blank -%}
+              <a class="multicolumn__link" href="{{ block.settings.link }}">
+                {{ block.settings.link_label }}
+                {%- render 'icon-arrow-right', size: 14 -%}
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p style="text-align:center; color: color-mix(in oklab, var(--color-text) 70%, transparent);">
+        {{ 'sections.multicolumn.empty' | t | default: 'Add column blocks in the theme editor.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Multicolumn",
+  "tag": "section",
+  "class": "section-multicolumn",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Why Orlaven"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color"
+    }
+  ],
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Column",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon (used if no image is set)",
+          "options": [
+            { "value": "none",          "label": "None" },
+            { "value": "truck",         "label": "Truck" },
+            { "value": "returns",       "label": "Returns" },
+            { "value": "shield",        "label": "Shield" },
+            { "value": "craftsmanship", "label": "Craftsmanship" },
+            { "value": "star",          "label": "Star" },
+            { "value": "heart",         "label": "Heart" },
+            { "value": "checkmark",     "label": "Checkmark" }
+          ],
+          "default": "star"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Column title"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Short supporting copy sits here."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Multicolumn",
+      "category": "Custom",
+      "blocks": [
+        { "type": "column", "settings": { "icon": "truck",         "heading": "Free shipping",    "text": "Worldwide on orders over $200." } },
+        { "type": "column", "settings": { "icon": "shield",        "heading": "Lifetime repairs", "text": "Send it back, we fix it." } },
+        { "type": "column", "settings": { "icon": "craftsmanship", "heading": "Handcrafted",      "text": "One jacket, one maker." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

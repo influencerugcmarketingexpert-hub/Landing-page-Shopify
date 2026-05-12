@@ -1,0 +1,360 @@
+{%- comment -%}
+  Lookbook
+  --------
+  Full-bleed editorial image with overlay copy + CTA and up to 6
+  hotspot dots. Each hotspot has an x/y position and a product
+  picker; hovering/tapping a dot opens a small product preview
+  popover rendered alongside the dot.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign overlay = section.settings.overlay_opacity | default: 30
+  assign overlay_decimal = overlay | divided_by: 100.0
+  assign text_position = section.settings.text_position | default: 'bottom-left'
+  assign min_height = section.settings.min_height | default: 600
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .lookbook {
+    position: relative;
+    width: 100%;
+    min-height: {{ min_height }}px;
+    overflow: hidden;
+    background-color: var(--color-beige);
+    isolation: isolate;
+    color: var(--color-cream);
+  }
+  #shopify-section-{{ section.id }} .lookbook__media {
+    position: absolute; inset: 0;
+    z-index: 0;
+  }
+  #shopify-section-{{ section.id }} .lookbook__media img,
+  #shopify-section-{{ section.id }} .lookbook__media svg.placeholder {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ section.id }} .lookbook__overlay {
+    position: absolute; inset: 0;
+    z-index: 1;
+    background-color: rgba(15, 15, 15, {{ overlay_decimal }});
+    pointer-events: none;
+  }
+  #shopify-section-{{ section.id }} .lookbook__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: 100%;
+    min-height: {{ min_height }}px;
+    padding: var(--space-12) var(--space-6);
+  }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .lookbook__content { padding: var(--space-16) var(--space-12); }
+  }
+  #shopify-section-{{ section.id }} .lookbook__inner {
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .lookbook__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.875rem, 3vw + 1rem, 3rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .lookbook__subheading {
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    opacity: 0.92;
+  }
+
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="top-left"]     { align-items: flex-start; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="top-center"]   { align-items: flex-start; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="top-right"]    { align-items: flex-start; justify-content: flex-end; text-align: right; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="middle-left"]  { align-items: center; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="center"]       { align-items: center; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="middle-right"] { align-items: center; justify-content: flex-end; text-align: right; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="bottom-left"]  { align-items: flex-end; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="bottom-center"]{ align-items: flex-end; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .lookbook__content[data-pos="bottom-right"] { align-items: flex-end; justify-content: flex-end; text-align: right; }
+
+  /* Hotspots */
+  #shopify-section-{{ section.id }} .lookbook__hotspots {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+  #shopify-section-{{ section.id }} .lookbook__hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+  }
+  #shopify-section-{{ section.id }} .lookbook__dot {
+    position: relative;
+    width: 28px; height: 28px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    border: 2px solid var(--color-cream);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(245, 239, 230, 0.25);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .lookbook__dot::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(245, 239, 230, 0.6);
+    animation: lookbook-pulse 2.5s ease-out infinite;
+  }
+  @keyframes lookbook-pulse {
+    0% { transform: scale(0.6); opacity: 1; }
+    80%, 100% { transform: scale(1.6); opacity: 0; }
+  }
+  #shopify-section-{{ section.id }} .lookbook__hotspot:hover .lookbook__dot,
+  #shopify-section-{{ section.id }} .lookbook__hotspot:focus-within .lookbook__dot {
+    transform: scale(1.1);
+  }
+  #shopify-section-{{ section.id }} .lookbook__popover {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 220px;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    border-radius: var(--card-radius, 4px);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-3);
+    display: none;
+    text-align: left;
+    z-index: 4;
+  }
+  #shopify-section-{{ section.id }} .lookbook__hotspot:hover .lookbook__popover,
+  #shopify-section-{{ section.id }} .lookbook__hotspot:focus-within .lookbook__popover {
+    display: block;
+  }
+  #shopify-section-{{ section.id }} .lookbook__popover-img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    display: block;
+    margin-bottom: var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .lookbook__popover-title {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--text-sm);
+    margin: 0 0 var(--space-1) 0;
+    color: var(--color-text);
+  }
+  #shopify-section-{{ section.id }} .lookbook__popover-price {
+    font-size: var(--text-sm);
+    color: var(--color-text);
+  }
+</style>
+
+<section class="lookbook" aria-label="{{ section.settings.heading | default: 'Lookbook' | escape }}">
+  <div class="lookbook__media" aria-hidden="true">
+    {%- if section.settings.image != blank -%}
+      {%- render 'responsive-image',
+          image: section.settings.image,
+          sizes: '100vw',
+          widths: '600,900,1200,1600,2000,2400',
+          alt: section.settings.heading | default: 'Lookbook'
+      -%}
+    {%- else -%}
+      {%- render 'responsive-image', image: blank, alt: 'Lookbook' -%}
+    {%- endif -%}
+  </div>
+
+  <span class="lookbook__overlay" aria-hidden="true"></span>
+
+  <div class="lookbook__content" data-pos="{{ text_position }}">
+    <div class="lookbook__inner">
+      {%- if section.settings.eyebrow != blank -%}
+        <p style="margin:0; letter-spacing: var(--tracking-widest); text-transform: uppercase; font-size: var(--text-xs); opacity:0.85;">
+          {{ section.settings.eyebrow }}
+        </p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="lookbook__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="lookbook__subheading">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+      {%- if section.settings.cta_label != blank -%}
+        <a class="btn btn--primary"
+           href="{{ section.settings.cta_link | default: '#' }}"
+           style="align-self: flex-start;">
+          {{ section.settings.cta_label }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if block_count > 0 -%}
+    <div class="lookbook__hotspots" aria-label="{{ 'sections.lookbook.hotspots' | t | default: 'Shop the look' }}">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'hotspot' -%}
+          {%- assign hx = block.settings.x | default: 50 -%}
+          {%- assign hy = block.settings.y | default: 50 -%}
+          {%- assign hp = block.settings.product -%}
+          <div class="lookbook__hotspot"
+               style="left: {{ hx }}%; top: {{ hy }}%;"
+               {{ block.shopify_attributes }}>
+            <button type="button"
+                    class="lookbook__dot"
+                    aria-label="{% if hp != blank %}{{ hp.title | escape }}{% else %}{{ 'sections.lookbook.product' | t | default: 'Shop this look' }}{% endif %}">
+              {%- render 'icon-plus', size: 14 -%}
+            </button>
+            {%- if hp != blank -%}
+              <a class="lookbook__popover" href="{{ hp.url }}" aria-label="{{ hp.title | escape }}">
+                {%- if hp.featured_image != blank -%}
+                  <img class="lookbook__popover-img"
+                       src="{{ hp.featured_image | image_url: width: 240 }}"
+                       alt="{{ hp.title | escape }}"
+                       loading="lazy" decoding="async" width="240" height="300">
+                {%- endif -%}
+                <p class="lookbook__popover-title">{{ hp.title }}</p>
+                <p class="lookbook__popover-price">{{ hp.price | money }}</p>
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Lookbook",
+  "tag": "section",
+  "class": "section-lookbook",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Lookbook image"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Autumn / Winter"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The season in leather."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Photographed in the Piedmont, on hides cured in our workshop."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Explore the lookbook"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text position",
+      "options": [
+        { "value": "top-left",      "label": "Top left" },
+        { "value": "top-center",    "label": "Top center" },
+        { "value": "top-right",     "label": "Top right" },
+        { "value": "middle-left",   "label": "Middle left" },
+        { "value": "center",        "label": "Middle center" },
+        { "value": "middle-right",  "label": "Middle right" },
+        { "value": "bottom-left",   "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right",  "label": "Bottom right" }
+      ],
+      "default": "bottom-left"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Minimum height",
+      "min": 400,
+      "max": 1000,
+      "step": 40,
+      "unit": "px",
+      "default": 600
+    }
+  ],
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "hotspot",
+      "name": "Hotspot",
+      "settings": [
+        {
+          "type": "range",
+          "id": "x",
+          "label": "Horizontal position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "y",
+          "label": "Vertical position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Lookbook",
+      "category": "Banners",
+      "blocks": [
+        { "type": "hotspot", "settings": { "x": 35, "y": 40 } },
+        { "type": "hotspot", "settings": { "x": 65, "y": 60 } }
+      ]
+    }
+  ]
+}
+{% endschema %}

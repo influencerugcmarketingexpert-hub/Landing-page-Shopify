@@ -1,0 +1,181 @@
+{%- comment -%}
+  Trust strip
+  -----------
+  Up to 4 reassurance columns: shipping, returns, shield, craftsmanship,
+  star, heart. Intended to sit directly under the hero.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign bg = section.settings.bg_color | default: settings.color_beige
+  assign fg = section.settings.text_color | default: settings.color_ink
+  assign divider = section.settings.divider
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .trust-strip {
+    background-color: {{ bg }};
+    color: {{ fg }};
+    padding: var(--space-8) 0;
+  }
+  #shopify-section-{{ section.id }} .trust-strip__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .trust-strip__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .trust-strip__grid { grid-template-columns: repeat({{ block_count | at_least: 1 | at_most: 4 }}, minmax(0, 1fr)); }
+  }
+  #shopify-section-{{ section.id }} .trust-strip__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-3);
+  }
+  {% if divider %}
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .trust-strip__item + .trust-strip__item {
+      border-left: 1px solid color-mix(in oklab, {{ fg }} 15%, transparent);
+    }
+  }
+  {% endif %}
+  #shopify-section-{{ section.id }} .trust-strip__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    color: inherit;
+  }
+  #shopify-section-{{ section.id }} .trust-strip__icon svg { width: 100%; height: 100%; }
+  #shopify-section-{{ section.id }} .trust-strip__heading {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .trust-strip__subheading {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: color-mix(in oklab, {{ fg }} 75%, transparent);
+    margin: 0;
+  }
+</style>
+
+<section class="trust-strip" aria-label="{{ 'sections.trust_strip.aria_label' | t | default: 'Reassurances' }}">
+  <div class="container">
+    {%- if block_count > 0 -%}
+      <ul class="trust-strip__grid" role="list">
+        {%- for block in section.blocks -%}
+          {%- assign icon_name = block.settings.icon | default: 'shield' -%}
+          <li class="trust-strip__item" {{ block.shopify_attributes }}>
+            <span class="trust-strip__icon" aria-hidden="true">
+              {%- case icon_name -%}
+                {%- when 'truck' -%}{%- render 'icon-truck', size: 40 -%}
+                {%- when 'returns' -%}{%- render 'icon-returns', size: 40 -%}
+                {%- when 'shield' -%}{%- render 'icon-shield', size: 40 -%}
+                {%- when 'craftsmanship' -%}{%- render 'icon-craftsmanship', size: 40 -%}
+                {%- when 'star' -%}{%- render 'icon-star', size: 40 -%}
+                {%- when 'heart' -%}{%- render 'icon-heart', size: 40 -%}
+                {%- else -%}{%- render 'icon-shield', size: 40 -%}
+              {%- endcase -%}
+            </span>
+            {%- if block.settings.heading != blank -%}
+              <h3 class="trust-strip__heading">{{ block.settings.heading }}</h3>
+            {%- endif -%}
+            {%- if block.settings.subheading != blank -%}
+              <p class="trust-strip__subheading">{{ block.settings.subheading }}</p>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p class="trust-strip__subheading" style="text-align:center;">
+        {{ 'sections.trust_strip.empty' | t | default: 'Add reassurance columns in the theme editor.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Trust strip",
+  "tag": "section",
+  "class": "section-trust-strip",
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#E8DFD2"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#0F0F0F"
+    },
+    {
+      "type": "checkbox",
+      "id": "divider",
+      "label": "Show column dividers",
+      "default": true
+    }
+  ],
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Column",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "truck",         "label": "Truck" },
+            { "value": "returns",       "label": "Returns" },
+            { "value": "shield",        "label": "Shield" },
+            { "value": "craftsmanship", "label": "Craftsmanship" },
+            { "value": "star",          "label": "Star" },
+            { "value": "heart",         "label": "Heart" }
+          ],
+          "default": "shield"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Free shipping"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "On orders over $200"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust strip",
+      "category": "Custom",
+      "blocks": [
+        { "type": "column", "settings": { "icon": "truck",         "heading": "Free shipping",     "subheading": "On orders over $200" } },
+        { "type": "column", "settings": { "icon": "returns",       "heading": "30-day returns",    "subheading": "On all full-price items" } },
+        { "type": "column", "settings": { "icon": "shield",        "heading": "Lifetime repairs",  "subheading": "We fix what we make" } },
+        { "type": "column", "settings": { "icon": "craftsmanship", "heading": "Handcrafted",       "subheading": "One jacket, one maker" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

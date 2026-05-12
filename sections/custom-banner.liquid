@@ -1,0 +1,342 @@
+{%- comment -%}
+  Custom banner
+  -------------
+  Full-bleed CTA banner, primarily used for the Made-to-Measure service.
+  Supports a separate mobile image, dual CTAs, text position and an
+  optional bullet list of benefits (blocks type 'bullet' up to 5).
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign overlay = section.settings.overlay_opacity | default: 40
+  assign overlay_decimal = overlay | divided_by: 100.0
+  assign text_color = section.settings.text_color | default: '#F5EFE6'
+  assign text_position = section.settings.text_position | default: 'middle-left'
+  assign min_height = section.settings.min_height | default: 560
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .custom-banner {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: {{ min_height }}px;
+    overflow: hidden;
+    color: {{ text_color }};
+    background-color: var(--color-espresso);
+    isolation: isolate;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__media {
+    position: absolute; inset: 0;
+    z-index: 0;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__media img,
+  #shopify-section-{{ section.id }} .custom-banner__media svg.placeholder {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__media-desktop { display: none; height: 100%; }
+  #shopify-section-{{ section.id }} .custom-banner__media-mobile { display: block; height: 100%; }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .custom-banner__media-desktop { display: block; }
+    #shopify-section-{{ section.id }} .custom-banner__media-mobile { display: none; }
+  }
+  #shopify-section-{{ section.id }} .custom-banner__overlay {
+    position: absolute; inset: 0;
+    z-index: 1;
+    background-color: rgba(15, 15, 15, {{ overlay_decimal }});
+    pointer-events: none;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: 100%;
+    padding: var(--space-12) var(--space-6);
+  }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .custom-banner__content { padding: var(--space-16) var(--space-12); }
+  }
+  #shopify-section-{{ section.id }} .custom-banner__inner {
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  #shopify-section-{{ section.id }} .custom-banner__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.875rem, 3.5vw + 1rem, 3.25rem);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__subheading {
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    opacity: 0.92;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .custom-banner__bullet {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+  }
+  #shopify-section-{{ section.id }} .custom-banner__bullet-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px; height: 18px;
+    color: currentColor;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  /* Text position variants */
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="top-left"]     { align-items: flex-start; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="top-center"]   { align-items: flex-start; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="top-right"]    { align-items: flex-start; justify-content: flex-end; text-align: right; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="middle-left"]  { align-items: center; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="center"]       { align-items: center; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="middle-right"] { align-items: center; justify-content: flex-end; text-align: right; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="bottom-left"]  { align-items: flex-end; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="bottom-center"]{ align-items: flex-end; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="bottom-right"] { align-items: flex-end; justify-content: flex-end; text-align: right; }
+
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos$="center"] .custom-banner__inner,
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos="center"] .custom-banner__inner {
+    align-items: center;
+  }
+  #shopify-section-{{ section.id }} .custom-banner__content[data-pos$="right"] .custom-banner__inner {
+    align-items: flex-end;
+  }
+</style>
+
+<section class="custom-banner" aria-label="{{ section.settings.heading | default: 'Banner' | escape }}">
+  <div class="custom-banner__media" aria-hidden="true">
+    {%- if section.settings.background_image != blank -%}
+      <div class="custom-banner__media-desktop">
+        {%- render 'responsive-image',
+            image: section.settings.background_image,
+            sizes: '100vw',
+            widths: '600,900,1200,1600,2000,2400',
+            alt: section.settings.heading | default: 'Banner'
+        -%}
+      </div>
+    {%- endif -%}
+    {%- if section.settings.mobile_image != blank -%}
+      <div class="custom-banner__media-mobile">
+        {%- render 'responsive-image',
+            image: section.settings.mobile_image,
+            sizes: '100vw',
+            widths: '480,640,800,1000,1200',
+            alt: section.settings.heading | default: 'Banner'
+        -%}
+      </div>
+    {%- elsif section.settings.background_image != blank -%}
+      <div class="custom-banner__media-mobile">
+        {%- render 'responsive-image',
+            image: section.settings.background_image,
+            sizes: '100vw',
+            widths: '480,640,800,1000,1200',
+            alt: section.settings.heading | default: 'Banner'
+        -%}
+      </div>
+    {%- endif -%}
+    {%- if section.settings.background_image == blank and section.settings.mobile_image == blank -%}
+      {%- render 'responsive-image', image: blank, alt: 'Banner' -%}
+    {%- endif -%}
+  </div>
+
+  <span class="custom-banner__overlay" aria-hidden="true"></span>
+
+  <div class="custom-banner__content" data-pos="{{ text_position }}">
+    <div class="custom-banner__inner">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="custom-banner__eyebrow" style="letter-spacing: var(--tracking-widest); text-transform: uppercase; font-size: var(--text-xs); margin:0; opacity:0.85;">
+          {{ section.settings.eyebrow }}
+        </p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="custom-banner__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <div class="custom-banner__subheading rte">{{ section.settings.subheading }}</div>
+      {%- endif -%}
+
+      {%- if block_count > 0 -%}
+        <ul class="custom-banner__bullets" role="list">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'bullet' -%}
+              <li class="custom-banner__bullet" {{ block.shopify_attributes }}>
+                <span class="custom-banner__bullet-icon">
+                  {%- render 'icon-checkmark', size: 16 -%}
+                </span>
+                <span>{{ block.settings.text | default: 'Benefit' }}</span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if section.settings.primary_cta_label != blank or section.settings.secondary_cta_label != blank -%}
+        <div class="custom-banner__ctas">
+          {%- if section.settings.primary_cta_label != blank -%}
+            <a class="btn btn--primary"
+               href="{{ section.settings.primary_cta_link | default: '#' }}">
+              {{ section.settings.primary_cta_label }}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.secondary_cta_label != blank -%}
+            <a class="btn btn--ghost"
+               href="{{ section.settings.secondary_cta_link | default: '#' }}"
+               style="color: inherit; border-color: currentColor;">
+              {{ section.settings.secondary_cta_label }}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Custom banner",
+  "tag": "section",
+  "class": "section-custom-banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image (desktop)"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Background image (mobile)"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Made-to-measure"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "A jacket cut for you."
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Book a fitting with our master cutter. Your measurements, your leather, your lining.</p>"
+    },
+    {
+      "type": "text",
+      "id": "primary_cta_label",
+      "label": "Primary CTA label",
+      "default": "Book a fitting"
+    },
+    {
+      "type": "url",
+      "id": "primary_cta_link",
+      "label": "Primary CTA link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_cta_label",
+      "label": "Secondary CTA label",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "secondary_cta_link",
+      "label": "Secondary CTA link"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text position",
+      "options": [
+        { "value": "top-left",      "label": "Top left" },
+        { "value": "top-center",    "label": "Top center" },
+        { "value": "top-right",     "label": "Top right" },
+        { "value": "middle-left",   "label": "Middle left" },
+        { "value": "center",        "label": "Middle center" },
+        { "value": "middle-right",  "label": "Middle right" },
+        { "value": "bottom-left",   "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-right",  "label": "Bottom right" }
+      ],
+      "default": "middle-left"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#F5EFE6"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Minimum height",
+      "min": 320,
+      "max": 960,
+      "step": 40,
+      "unit": "px",
+      "default": 560
+    }
+  ],
+  "max_blocks": 5,
+  "blocks": [
+    {
+      "type": "bullet",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Benefit",
+          "default": "Measured and fit in one hour"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom banner",
+      "category": "Banners",
+      "blocks": [
+        { "type": "bullet", "settings": { "text": "Measured and fit in one hour" } },
+        { "type": "bullet", "settings": { "text": "Choose from 40+ leathers and linings" } },
+        { "type": "bullet", "settings": { "text": "Delivered in 6 to 8 weeks" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

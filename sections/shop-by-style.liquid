@@ -1,0 +1,238 @@
+{%- comment -%}
+  Shop by style
+  -------------
+  Editorial 5-column grid of style tiles. The first tile spans 2 rows
+  on desktop for visual emphasis. Headings become visible on hover.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .shop-by-style {
+    padding: var(--spacing-sections, 72px) 0;
+    background-color: var(--color-background);
+  }
+  #shopify-section-{{ section.id }} .shop-by-style__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-8);
+  }
+  #shopify-section-{{ section.id }} .shop-by-style__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .shop-by-style__subheading {
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: 0;
+  }
+
+  #shopify-section-{{ section.id }} .shop-by-style__grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .shop-by-style__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: 300px;
+    }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .shop-by-style__grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-auto-rows: 260px;
+    }
+    #shopify-section-{{ section.id }} .shop-by-style__grid > li:first-child {
+      grid-row: span 2;
+    }
+  }
+
+  #shopify-section-{{ section.id }} .style-tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    border-radius: var(--card-radius, 0);
+    isolation: isolate;
+    background-color: var(--color-beige);
+  }
+  #shopify-section-{{ section.id }} .style-tile__media {
+    position: absolute; inset: 0;
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .style-tile__media img,
+  #shopify-section-{{ section.id }} .style-tile__media svg.placeholder {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .style-tile:hover .style-tile__media img,
+  #shopify-section-{{ section.id }} .style-tile:focus-visible .style-tile__media img {
+    transform: scale(1.06);
+  }
+  #shopify-section-{{ section.id }} .style-tile__overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(15,15,15,0.55) 0%, rgba(15,15,15,0.1) 45%, rgba(15,15,15,0) 80%);
+    opacity: 0.6;
+    transition: opacity var(--duration-base) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .style-tile:hover .style-tile__overlay,
+  #shopify-section-{{ section.id }} .style-tile:focus-visible .style-tile__overlay {
+    opacity: 1;
+  }
+  #shopify-section-{{ section.id }} .style-tile__body {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: var(--space-6);
+    color: var(--color-cream);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  #shopify-section-{{ section.id }} .style-tile__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+  #shopify-section-{{ section.id }} .style-tile__heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-3xl);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .shop-by-style__grid > li:first-child .style-tile__heading {
+      font-size: var(--text-5xl);
+    }
+  }
+  #shopify-section-{{ section.id }} .style-tile:focus-visible {
+    outline: 2px solid var(--color-cognac);
+    outline-offset: 2px;
+  }
+</style>
+
+<section class="shop-by-style">
+  <div class="container">
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <header class="shop-by-style__header">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="shop-by-style__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="shop-by-style__subheading">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- if block_count > 0 -%}
+      <ul class="shop-by-style__grid" role="list">
+        {%- for block in section.blocks -%}
+          <li {{ block.shopify_attributes }}>
+            <a class="style-tile"
+               href="{{ block.settings.link | default: '#' }}"
+               aria-label="{{ block.settings.heading | default: 'Style' | escape }}">
+              <span class="style-tile__media">
+                {%- if block.settings.image != blank -%}
+                  {%- render 'responsive-image',
+                      image: block.settings.image,
+                      sizes: '(min-width: 1024px) 20vw, (min-width: 640px) 50vw, 100vw',
+                      widths: '400,600,800,1000,1200,1600',
+                      alt: block.settings.heading | default: 'Style'
+                  -%}
+                {%- else -%}
+                  {%- render 'responsive-image', image: blank, alt: block.settings.heading | default: 'Style' -%}
+                {%- endif -%}
+              </span>
+              <span class="style-tile__overlay" aria-hidden="true"></span>
+              <span class="style-tile__body">
+                {%- if block.settings.eyebrow != blank -%}
+                  <span class="style-tile__eyebrow">{{ block.settings.eyebrow }}</span>
+                {%- endif -%}
+                <span class="style-tile__heading">{{ block.settings.heading | default: 'Style' }}</span>
+              </span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p style="text-align:center; color: color-mix(in oklab, var(--color-text) 70%, transparent);">
+        {{ 'sections.shop_by_style.empty' | t | default: 'Add style tiles in the theme editor.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Shop by style",
+  "tag": "section",
+  "class": "section-shop-by-style",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop by silhouette"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "From a classic biker to a shearling flight."
+    }
+  ],
+  "max_blocks": 8,
+  "blocks": [
+    {
+      "type": "style",
+      "name": "Style tile",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Eyebrow",
+          "default": "Style"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Biker"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by style",
+      "category": "Collections",
+      "blocks": [
+        { "type": "style", "settings": { "heading": "Biker",        "eyebrow": "The classic" } },
+        { "type": "style", "settings": { "heading": "Bomber",       "eyebrow": "Everyday" } },
+        { "type": "style", "settings": { "heading": "Cafe Racer",   "eyebrow": "Minimal" } },
+        { "type": "style", "settings": { "heading": "Aviator",      "eyebrow": "Heritage" } },
+        { "type": "style", "settings": { "heading": "Shearling",    "eyebrow": "Winter" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

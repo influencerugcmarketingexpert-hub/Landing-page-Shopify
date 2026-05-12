@@ -1,0 +1,248 @@
+{%- comment -%}
+  Material guide
+  --------------
+  3-column grid (configurable 2-4) introducing the materials used in
+  production: full-grain leather, shearling, brass hardware, etc.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign cols_desktop = section.settings.columns_desktop | default: 3
+  if cols_desktop < 2
+    assign cols_desktop = 2
+  endif
+  if cols_desktop > 4
+    assign cols_desktop = 4
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .material-guide {
+    padding: var(--spacing-sections, 72px) 0;
+    background-color: var(--color-beige);
+    color: var(--color-ink);
+  }
+  #shopify-section-{{ section.id }} .material-guide__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-10);
+  }
+  #shopify-section-{{ section.id }} .material-guide__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .material-guide__subheading {
+    color: color-mix(in oklab, var(--color-ink) 70%, transparent);
+    max-width: 56ch;
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .material-guide__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .material-guide__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .material-guide__grid {
+      grid-template-columns: repeat({{ cols_desktop }}, minmax(0, 1fr));
+    }
+  }
+  #shopify-section-{{ section.id }} .material-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  #shopify-section-{{ section.id }} .material-card__media {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-cream);
+    aspect-ratio: 4 / 5;
+    border-radius: var(--card-radius, 0);
+  }
+  #shopify-section-{{ section.id }} .material-card__media img,
+  #shopify-section-{{ section.id }} .material-card__media svg.placeholder {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .material-card:hover .material-card__media img {
+    transform: scale(1.04);
+  }
+  #shopify-section-{{ section.id }} .material-card__heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .material-card__body {
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: color-mix(in oklab, var(--color-ink) 75%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .material-card__link {
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 2px;
+    align-self: flex-start;
+  }
+  #shopify-section-{{ section.id }} .material-card__link:hover { color: var(--color-cognac); }
+</style>
+
+<section class="material-guide">
+  <div class="container">
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <header class="material-guide__header">
+        {%- if section.settings.eyebrow != blank -%}
+          <p style="margin:0; letter-spacing: var(--tracking-widest); text-transform: uppercase; font-size: var(--text-xs); color: color-mix(in oklab, var(--color-ink) 60%, transparent);">
+            {{ section.settings.eyebrow }}
+          </p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="material-guide__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="material-guide__subheading">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- if block_count > 0 -%}
+      <ul class="material-guide__grid" role="list">
+        {%- for block in section.blocks -%}
+          <li {{ block.shopify_attributes }}>
+            <article class="material-card">
+              <div class="material-card__media">
+                {%- if block.settings.image != blank -%}
+                  {%- render 'responsive-image',
+                      image: block.settings.image,
+                      sizes: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
+                      widths: '400,600,800,1000,1200',
+                      alt: block.settings.heading | default: 'Material'
+                  -%}
+                {%- else -%}
+                  {%- render 'responsive-image', image: blank, alt: block.settings.heading | default: 'Material' -%}
+                {%- endif -%}
+              </div>
+              {%- if block.settings.heading != blank -%}
+                <h3 class="material-card__heading">{{ block.settings.heading }}</h3>
+              {%- endif -%}
+              {%- if block.settings.description != blank -%}
+                <p class="material-card__body">{{ block.settings.description }}</p>
+              {%- endif -%}
+              {%- if block.settings.link != blank and block.settings.link_label != blank -%}
+                <a class="material-card__link" href="{{ block.settings.link }}">
+                  {{ block.settings.link_label }}
+                  {%- render 'icon-arrow-right', size: 14 -%}
+                </a>
+              {%- endif -%}
+            </article>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p style="text-align:center; color: color-mix(in oklab, var(--color-ink) 70%, transparent);">
+        {{ 'sections.material_guide.empty' | t | default: 'Add material blocks in the theme editor.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Material guide",
+  "tag": "section",
+  "class": "section-material-guide",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Materials"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "No corners cut."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Full-grain hides, solid brass hardware, cotton-silk linings. We choose every component for feel and longevity."
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    }
+  ],
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "material",
+      "name": "Material",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Full-grain leather"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description",
+          "default": "Aniline-finished, vegetable-tanned hides that patina with wear."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label",
+          "default": "Learn more"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Material guide",
+      "category": "Custom",
+      "blocks": [
+        { "type": "material", "settings": { "heading": "Full-grain leather", "description": "Aniline-finished, vegetable-tanned hides that patina with wear." } },
+        { "type": "material", "settings": { "heading": "Shearling",          "description": "Merino shearling from Spanish mills, dense and warm." } },
+        { "type": "material", "settings": { "heading": "Brass hardware",     "description": "Solid brass zippers and buttons, no plating, no flaking." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

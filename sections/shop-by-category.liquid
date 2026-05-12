@@ -1,0 +1,285 @@
+{%- comment -%}
+  Shop by category
+  ----------------
+  Tile grid of up to 8 category cards. Each tile is a link with an
+  image, a color overlay and a heading anchored bottom-left.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign cols_desktop = section.settings.columns_desktop | default: 3
+  if cols_desktop < 2
+    assign cols_desktop = 2
+  endif
+  if cols_desktop > 4
+    assign cols_desktop = 4
+  endif
+  assign tile_ratio = section.settings.tile_ratio | default: 'portrait'
+  assign ratio_pad = '125%'
+  case tile_ratio
+    when 'landscape'
+      assign ratio_pad = '66.67%'
+    when 'square'
+      assign ratio_pad = '100%'
+    else
+      assign ratio_pad = '125%'
+  endcase
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .shop-by-category {
+    padding: var(--spacing-sections, 72px) 0;
+  }
+  #shopify-section-{{ section.id }} .shop-by-category__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-8);
+    text-align: center;
+  }
+  #shopify-section-{{ section.id }} .shop-by-category__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .shop-by-category__subheading {
+    font-size: var(--text-md);
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .shop-by-category__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .shop-by-category__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .shop-by-category__grid {
+      grid-template-columns: repeat({{ cols_desktop }}, minmax(0, 1fr));
+    }
+  }
+  #shopify-section-{{ section.id }} .category-tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--card-radius, 0);
+    isolation: isolate;
+  }
+  #shopify-section-{{ section.id }} .category-tile__media {
+    position: relative;
+    width: 100%;
+    padding-top: {{ ratio_pad }};
+    overflow: hidden;
+    background-color: var(--color-beige);
+  }
+  #shopify-section-{{ section.id }} .category-tile__media img,
+  #shopify-section-{{ section.id }} .category-tile__media svg.placeholder {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .category-tile:hover .category-tile__media img,
+  #shopify-section-{{ section.id }} .category-tile:focus-visible .category-tile__media img {
+    transform: scale(1.05);
+  }
+  #shopify-section-{{ section.id }} .category-tile__overlay {
+    position: absolute; inset: 0;
+    background-color: rgba(15, 15, 15, var(--tile-overlay, 0.25));
+    transition: background-color var(--duration-base) var(--ease-out);
+    pointer-events: none;
+  }
+  #shopify-section-{{ section.id }} .category-tile:hover .category-tile__overlay {
+    background-color: rgba(15, 15, 15, calc(var(--tile-overlay, 0.25) + 0.1));
+  }
+  #shopify-section-{{ section.id }} .category-tile__body {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: var(--space-6);
+    color: var(--color-cream);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3);
+    z-index: 2;
+  }
+  #shopify-section-{{ section.id }} .category-tile__heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-tight);
+    margin: 0;
+    letter-spacing: var(--tracking-snug);
+  }
+  #shopify-section-{{ section.id }} .category-tile__arrow {
+    display: inline-flex;
+    width: 36px; height: 36px;
+    border-radius: var(--radius-full);
+    background-color: rgba(245, 239, 230, 0.15);
+    align-items: center; justify-content: center;
+    transition: background-color var(--duration-base) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .category-tile:hover .category-tile__arrow {
+    background-color: rgba(245, 239, 230, 0.35);
+  }
+  #shopify-section-{{ section.id }} .category-tile:focus-visible {
+    outline: 2px solid var(--color-cognac);
+    outline-offset: 2px;
+  }
+</style>
+
+<section class="shop-by-category">
+  <div class="container">
+    {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+      <header class="shop-by-category__header">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="shop-by-category__heading">{{ section.settings.heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="shop-by-category__subheading">{{ section.settings.subheading }}</p>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {%- if block_count > 0 -%}
+      <ul class="shop-by-category__grid" role="list">
+        {%- for block in section.blocks -%}
+          {%- assign overlay = block.settings.overlay_opacity | default: 25 -%}
+          {%- assign overlay_decimal = overlay | divided_by: 100.0 -%}
+          {%- assign overlay_color = block.settings.overlay_color | default: '#0F0F0F' -%}
+          {%- assign tile_href = block.settings.link | default: '#' -%}
+          <li {{ block.shopify_attributes }}>
+            <a class="category-tile"
+               href="{{ tile_href }}"
+               style="--tile-overlay: {{ overlay_decimal }};"
+               aria-label="{{ block.settings.heading | default: 'Shop' | escape }}">
+              <span class="category-tile__media">
+                {%- if block.settings.image != blank -%}
+                  {%- render 'responsive-image',
+                      image: block.settings.image,
+                      sizes: '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw',
+                      widths: '400,600,800,1000,1200,1600',
+                      alt: block.settings.heading | default: 'Category'
+                  -%}
+                {%- else -%}
+                  {%- render 'responsive-image', image: blank, alt: block.settings.heading | default: 'Category' -%}
+                {%- endif -%}
+                <span class="category-tile__overlay" style="background-color: color-mix(in oklab, {{ overlay_color }} {{ overlay }}%, transparent);"></span>
+              </span>
+              <span class="category-tile__body">
+                <span class="category-tile__heading">{{ block.settings.heading | default: 'Category' }}</span>
+                <span class="category-tile__arrow" aria-hidden="true">
+                  {%- render 'icon-arrow-right', size: 16 -%}
+                </span>
+              </span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p class="shop-by-category__subheading" style="text-align:center;">
+        {{ 'sections.shop_by_category.empty' | t | default: 'Add category tiles in the theme editor.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Shop by category",
+  "tag": "section",
+  "class": "section-shop-by-category",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop by category"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Coats cut for every season."
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "tile_ratio",
+      "label": "Tile aspect ratio",
+      "options": [
+        { "value": "portrait",  "label": "Portrait (4/5)" },
+        { "value": "square",    "label": "Square" },
+        { "value": "landscape", "label": "Landscape (3/2)" }
+      ],
+      "default": "portrait"
+    }
+  ],
+  "max_blocks": 8,
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Category tile",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Biker"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "color",
+          "id": "overlay_color",
+          "label": "Overlay color",
+          "default": "#0F0F0F"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "Overlay opacity",
+          "min": 0,
+          "max": 80,
+          "step": 5,
+          "unit": "%",
+          "default": 25
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by category",
+      "category": "Collections",
+      "blocks": [
+        { "type": "category", "settings": { "heading": "Biker" } },
+        { "type": "category", "settings": { "heading": "Bomber" } },
+        { "type": "category", "settings": { "heading": "Cafe Racer" } },
+        { "type": "category", "settings": { "heading": "Aviator" } },
+        { "type": "category", "settings": { "heading": "Shearling" } },
+        { "type": "category", "settings": { "heading": "Trench" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

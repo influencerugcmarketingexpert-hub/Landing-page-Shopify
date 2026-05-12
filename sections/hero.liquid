@@ -1,0 +1,663 @@
+{%- comment -%}
+  Hero
+  ----
+  Full-bleed hero slider. Each slide can be an image or a video
+  (video_shopify or mp4 URL). Uses a <hero-slider> custom element
+  defined inline with a `customElements.get` guard so two hero
+  instances on one page do not clash.
+
+  Accessibility:
+    - Carousel region wrapper: role="region", aria-roledescription="carousel"
+    - Each slide: role="group", aria-roledescription="slide", aria-label="N of M"
+    - Prev/next buttons and dots have visible labels; dots use aria-current
+    - Arrow keys navigate slides when the carousel has focus
+    - Autoplay pauses on hover, focus, visibility change and prefers-reduced-motion
+
+  Performance:
+    - First slide image is loaded eager with fetchpriority="high"; rest lazy
+    - Videos use preload="metadata" and are muted+playsinline
+{%- endcomment -%}
+{%- liquid
+  assign slide_count = section.blocks.size
+  assign autoplay = section.settings.autoplay
+  assign autoplay_speed = section.settings.autoplay_speed | default: 6
+  if autoplay_speed < 2
+    assign autoplay_speed = 2
+  endif
+  assign full_height = section.settings.full_height
+  assign min_height = section.settings.min_height | default: 640
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .hero {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--color-beige);
+    color: var(--color-cream);
+    {% if full_height %}min-height: 100vh; min-height: 100dvh;{% else %}min-height: {{ min_height }}px;{% endif %}
+    isolation: isolate;
+  }
+  #shopify-section-{{ section.id }} .hero__viewport {
+    position: relative;
+    width: 100%;
+    {% if full_height %}min-height: 100vh; min-height: 100dvh;{% else %}min-height: {{ min_height }}px;{% endif %}
+  }
+  #shopify-section-{{ section.id }} .hero__slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--duration-slow) var(--ease-out);
+    pointer-events: none;
+    display: flex;
+  }
+  #shopify-section-{{ section.id }} .hero__slide[data-active="true"] {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+  }
+  #shopify-section-{{ section.id }} .hero__media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .hero__media img,
+  #shopify-section-{{ section.id }} .hero__media video,
+  #shopify-section-{{ section.id }} .hero__media svg.placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ section.id }} .hero__media-desktop { display: none; }
+  #shopify-section-{{ section.id }} .hero__media-mobile { display: block; }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .hero__media-desktop { display: block; }
+    #shopify-section-{{ section.id }} .hero__media-mobile { display: none; }
+  }
+  #shopify-section-{{ section.id }} .hero__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(15, 15, 15, var(--hero-overlay, 0.35));
+    pointer-events: none;
+  }
+  #shopify-section-{{ section.id }} .hero__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: 100%;
+    padding: var(--space-10) var(--space-6);
+  }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .hero__content { padding: var(--space-16) var(--space-12); }
+  }
+  #shopify-section-{{ section.id }} .hero__inner {
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    color: var(--hero-text, var(--color-cream));
+  }
+  #shopify-section-{{ section.id }} .hero__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 5vw + 1rem, 4.5rem);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .hero__subheading {
+    font-family: var(--font-body);
+    font-size: clamp(1rem, 0.5vw + 0.9rem, 1.25rem);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    max-width: 52ch;
+  }
+  #shopify-section-{{ section.id }} .hero__cta { display: inline-flex; }
+
+  /* Text positions */
+  #shopify-section-{{ section.id }} .hero__content[data-pos="top-left"]     { align-items: flex-start; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="top-center"]   { align-items: flex-start; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="top-right"]    { align-items: flex-start; justify-content: flex-end; text-align: right; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="middle-left"]  { align-items: center; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="center"]       { align-items: center; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="middle-right"] { align-items: center; justify-content: flex-end; text-align: right; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="bottom-left"]  { align-items: flex-end; justify-content: flex-start; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="bottom-center"]{ align-items: flex-end; justify-content: center; text-align: center; }
+  #shopify-section-{{ section.id }} .hero__content[data-pos="bottom-right"] { align-items: flex-end; justify-content: flex-end; text-align: right; }
+  #shopify-section-{{ section.id }} .hero__content[data-align="center"] .hero__inner { align-items: center; text-align: center; }
+  #shopify-section-{{ section.id }} .hero__content[data-align="right"]  .hero__inner { align-items: flex-end; text-align: right; }
+
+  /* Controls */
+  #shopify-section-{{ section.id }} .hero__controls {
+    position: absolute;
+    inset: 50% 0 auto 0;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 var(--space-4);
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+  #shopify-section-{{ section.id }} .hero__arrow {
+    pointer-events: auto;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(245, 239, 230, 0.6);
+    background-color: rgba(15, 15, 15, 0.35);
+    color: var(--color-cream);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+  }
+  #shopify-section-{{ section.id }} .hero__arrow:hover,
+  #shopify-section-{{ section.id }} .hero__arrow:focus-visible {
+    background-color: rgba(15, 15, 15, 0.6);
+    border-color: var(--color-cream);
+  }
+  #shopify-section-{{ section.id }} .hero__dots {
+    position: absolute;
+    left: 0; right: 0; bottom: var(--space-6);
+    z-index: 3;
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  #shopify-section-{{ section.id }} .hero__dot {
+    width: 28px;
+    height: 2px;
+    background-color: rgba(245, 239, 230, 0.4);
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .hero__dot[aria-current="true"] {
+    background-color: var(--color-cream);
+  }
+  #shopify-section-{{ section.id }} .hero__dot:focus-visible {
+    outline: 2px solid var(--color-cream);
+    outline-offset: 3px;
+  }
+
+  /* Empty placeholder */
+  #shopify-section-{{ section.id }} .hero--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-ink);
+    background-color: var(--color-beige);
+  }
+  #shopify-section-{{ section.id }} .hero--empty .hero__heading { color: var(--color-ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ section.id }} .hero__slide { transition: none; }
+  }
+</style>
+
+{%- if slide_count > 0 -%}
+  <hero-slider
+    class="hero"
+    role="region"
+    aria-roledescription="{{ 'sections.hero.carousel' | t | default: 'carousel' }}"
+    aria-label="{{ section.settings.section_label | default: 'Hero' }}"
+    data-autoplay="{{ autoplay }}"
+    data-autoplay-speed="{{ autoplay_speed }}"
+    data-slide-count="{{ slide_count }}"
+    tabindex="0"
+  >
+    <div class="hero__viewport" data-hero-viewport>
+      {%- for block in section.blocks -%}
+        {%- assign overlay = block.settings.overlay_opacity | default: 35 -%}
+        {%- assign overlay_decimal = overlay | divided_by: 100.0 -%}
+        {%- assign text_color = block.settings.text_color | default: '#F5EFE6' -%}
+        {%- assign position = block.settings.text_position | default: 'middle-left' -%}
+        {%- assign alignment = block.settings.text_alignment | default: 'left' -%}
+        {%- assign button_style = block.settings.button_style | default: 'primary' -%}
+        {%- assign is_first = forloop.first -%}
+        <article
+          class="hero__slide"
+          data-hero-slide
+          data-index="{{ forloop.index0 }}"
+          {% if is_first %}data-active="true"{% endif %}
+          role="group"
+          aria-roledescription="slide"
+          aria-label="{{ forloop.index }} {{ 'general.accessibility.of' | t | default: 'of' }} {{ slide_count }}"
+          style="--hero-overlay: {{ overlay_decimal }}; --hero-text: {{ text_color }};"
+          {{ block.shopify_attributes }}
+        >
+          <div class="hero__media" aria-hidden="true">
+            {%- if block.settings.video_url != blank -%}
+              <video
+                class="hero__video"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                {% if block.settings.desktop_image != blank %}poster="{{ block.settings.desktop_image | image_url: width: 1600 }}"{% endif %}
+              >
+                <source src="{{ block.settings.video_url }}" type="video/mp4">
+              </video>
+            {%- else -%}
+              {%- if block.settings.desktop_image != blank -%}
+                <div class="hero__media-desktop">
+                  {%- render 'responsive-image',
+                      image: block.settings.desktop_image,
+                      sizes: '100vw',
+                      loading: is_first | default: false,
+                      fetchpriority: is_first,
+                      widths: '600,900,1200,1600,2000,2400,3000',
+                      alt: block.settings.heading | default: 'Hero'
+                  -%}
+                </div>
+              {%- endif -%}
+              {%- if block.settings.mobile_image != blank -%}
+                <div class="hero__media-mobile">
+                  {%- render 'responsive-image',
+                      image: block.settings.mobile_image,
+                      sizes: '100vw',
+                      loading: is_first | default: false,
+                      fetchpriority: is_first,
+                      widths: '480,640,800,1000,1200',
+                      alt: block.settings.heading | default: 'Hero'
+                  -%}
+                </div>
+              {%- elsif block.settings.desktop_image != blank -%}
+                <div class="hero__media-mobile">
+                  {%- render 'responsive-image',
+                      image: block.settings.desktop_image,
+                      sizes: '100vw',
+                      loading: is_first | default: false,
+                      widths: '480,640,800,1000,1200',
+                      alt: block.settings.heading | default: 'Hero'
+                  -%}
+                </div>
+              {%- endif -%}
+              {%- if block.settings.desktop_image == blank and block.settings.mobile_image == blank -%}
+                {%- render 'responsive-image', image: blank, alt: 'Hero' -%}
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+          <span class="hero__overlay" aria-hidden="true"></span>
+          <div class="hero__content" data-pos="{{ position }}" data-align="{{ alignment }}">
+            <div class="hero__inner">
+              {%- if block.settings.heading != blank -%}
+                <h2 class="hero__heading">{{ block.settings.heading }}</h2>
+              {%- endif -%}
+              {%- if block.settings.subheading != blank -%}
+                <div class="hero__subheading rte">{{ block.settings.subheading }}</div>
+              {%- endif -%}
+              {%- if block.settings.button_label != blank and block.settings.button_link != blank -%}
+                <a
+                  class="btn btn--{{ button_style }} hero__cta"
+                  href="{{ block.settings.button_link }}"
+                >
+                  {{ block.settings.button_label }}
+                </a>
+              {%- elsif block.settings.button_label != blank -%}
+                <span class="btn btn--{{ button_style }} hero__cta" aria-disabled="true">
+                  {{ block.settings.button_label }}
+                </span>
+              {%- endif -%}
+            </div>
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+
+    {%- if slide_count > 1 and section.settings.show_arrows -%}
+      <div class="hero__controls" aria-label="{{ 'sections.hero.controls' | t | default: 'Hero controls' }}">
+        <button type="button" class="hero__arrow hero__arrow--prev" data-hero-prev
+                aria-label="{{ 'general.accessibility.previous_slide' | t }}">
+          {%- render 'icon-arrow-left', size: 18 -%}
+        </button>
+        <button type="button" class="hero__arrow hero__arrow--next" data-hero-next
+                aria-label="{{ 'general.accessibility.next_slide' | t }}">
+          {%- render 'icon-arrow-right', size: 18 -%}
+        </button>
+      </div>
+    {%- endif -%}
+
+    {%- if slide_count > 1 and section.settings.show_dots -%}
+      <ol class="hero__dots" role="tablist" aria-label="{{ 'sections.hero.select_slide' | t | default: 'Select slide' }}">
+        {%- for block in section.blocks -%}
+          <li role="presentation">
+            <button
+              type="button"
+              class="hero__dot"
+              data-hero-dot
+              data-index="{{ forloop.index0 }}"
+              role="tab"
+              aria-label="{{ 'sections.hero.go_to_slide' | t | default: 'Go to slide' }} {{ forloop.index }}"
+              {% if forloop.first %}aria-current="true"{% endif %}
+            ></button>
+          </li>
+        {%- endfor -%}
+      </ol>
+    {%- endif -%}
+  </hero-slider>
+
+  <script>
+    (function () {
+      if (customElements.get('hero-slider')) return;
+
+      var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      class HeroSlider extends HTMLElement {
+        connectedCallback() {
+          this.slides = Array.from(this.querySelectorAll('[data-hero-slide]'));
+          this.dots = Array.from(this.querySelectorAll('[data-hero-dot]'));
+          this.prev = this.querySelector('[data-hero-prev]');
+          this.next = this.querySelector('[data-hero-next]');
+          this.index = 0;
+          this.count = this.slides.length;
+          this.speedMs = (parseInt(this.getAttribute('data-autoplay-speed'), 10) || 6) * 1000;
+          this.autoplay = this.getAttribute('data-autoplay') === 'true' && this.count > 1 && !prefersReducedMotion;
+          if (!this.count) return;
+          this._bind();
+          if (this.autoplay) this._start();
+        }
+
+        disconnectedCallback() {
+          this._stop();
+          document.removeEventListener('visibilitychange', this._onVisibility);
+        }
+
+        _bind() {
+          var self = this;
+          if (this.prev) this.prev.addEventListener('click', function () { self._go(-1); self._restart(); });
+          if (this.next) this.next.addEventListener('click', function () { self._go(1); self._restart(); });
+          this.dots.forEach(function (dot) {
+            dot.addEventListener('click', function () {
+              var i = parseInt(dot.getAttribute('data-index'), 10) || 0;
+              self._show(i);
+              self._restart();
+            });
+          });
+          this.addEventListener('mouseenter', function () { self._stop(); });
+          this.addEventListener('mouseleave', function () { if (self.autoplay) self._start(); });
+          this.addEventListener('focusin', function () { self._stop(); });
+          this.addEventListener('focusout', function () { if (self.autoplay) self._start(); });
+          this.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowLeft') { e.preventDefault(); self._go(-1); self._restart(); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); self._go(1); self._restart(); }
+            if (e.key === 'Home') { e.preventDefault(); self._show(0); self._restart(); }
+            if (e.key === 'End') { e.preventDefault(); self._show(self.count - 1); self._restart(); }
+          });
+
+          // Pointer / touch swipe
+          var startX = null;
+          this.addEventListener('pointerdown', function (e) {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            startX = e.clientX;
+          });
+          this.addEventListener('pointerup', function (e) {
+            if (startX == null) return;
+            var dx = e.clientX - startX;
+            startX = null;
+            if (Math.abs(dx) < 40) return;
+            if (dx < 0) self._go(1); else self._go(-1);
+            self._restart();
+          });
+          this.addEventListener('pointercancel', function () { startX = null; });
+
+          // Pause when page is hidden
+          this._onVisibility = function () {
+            if (document.hidden) self._stop();
+            else if (self.autoplay) self._start();
+          };
+          document.addEventListener('visibilitychange', this._onVisibility);
+        }
+
+        _show(i) {
+          var n = this.count;
+          var ni = ((i % n) + n) % n;
+          this.slides.forEach(function (el, idx) {
+            if (idx === ni) {
+              el.setAttribute('data-active', 'true');
+              el.removeAttribute('aria-hidden');
+            } else {
+              el.removeAttribute('data-active');
+              el.setAttribute('aria-hidden', 'true');
+            }
+          });
+          this.dots.forEach(function (el, idx) {
+            if (idx === ni) el.setAttribute('aria-current', 'true');
+            else el.removeAttribute('aria-current');
+          });
+          this.index = ni;
+        }
+
+        _go(dir) {
+          this._show(this.index + dir);
+        }
+
+        _start() {
+          this._stop();
+          var self = this;
+          this._timer = setInterval(function () { self._go(1); }, this.speedMs);
+        }
+
+        _stop() {
+          if (this._timer) { clearInterval(this._timer); this._timer = null; }
+        }
+
+        _restart() {
+          if (this.autoplay) this._start();
+        }
+      }
+
+      customElements.define('hero-slider', HeroSlider);
+    }());
+  </script>
+{%- else -%}
+  <div class="hero hero--empty" aria-label="{{ 'sections.hero.empty' | t | default: 'Hero' }}">
+    <div class="hero__inner">
+      <h2 class="hero__heading">{{ 'sections.hero.heading' | t }}</h2>
+      <p class="hero__subheading">{{ 'sections.hero.subheading' | t }}</p>
+      <p class="hero__subheading"><em>{{ 'sections.hero.placeholder_hint' | t | default: 'Add slide blocks in the theme editor to populate this hero.' }}</em></p>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Hero",
+  "tag": "section",
+  "class": "section-hero",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate slides",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Rotation speed",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "unit": "s",
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show prev/next arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show slide dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "full_height",
+      "label": "Full viewport height",
+      "info": "Forces 100vh. Overrides min height.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "label": "Minimum height",
+      "min": 320,
+      "max": 960,
+      "step": 40,
+      "unit": "px",
+      "default": 640
+    },
+    {
+      "type": "text",
+      "id": "section_label",
+      "label": "Accessibility label",
+      "default": "Hero"
+    }
+  ],
+  "max_blocks": 5,
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "desktop_image",
+          "label": "Desktop image"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image"
+        },
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video URL (mp4)",
+          "info": "If set, replaces the image on this slide."
+        },
+        {
+          "type": "richtext",
+          "id": "heading",
+          "label": "Heading",
+          "default": "<p>Crafted for a life in leather.</p>"
+        },
+        {
+          "type": "richtext",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "<p>Limited runs, honest materials, lifetime repairs.</p>"
+        },
+        {
+          "type": "select",
+          "id": "text_position",
+          "label": "Text position",
+          "options": [
+            { "value": "top-left",      "label": "Top left" },
+            { "value": "top-center",    "label": "Top center" },
+            { "value": "top-right",     "label": "Top right" },
+            { "value": "middle-left",   "label": "Middle left" },
+            { "value": "center",        "label": "Middle center" },
+            { "value": "middle-right",  "label": "Middle right" },
+            { "value": "bottom-left",   "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "bottom-right",  "label": "Bottom right" }
+          ],
+          "default": "middle-left"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            { "value": "left",   "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right" }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "Shop the collection"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button style",
+          "options": [
+            { "value": "primary",   "label": "Primary" },
+            { "value": "secondary", "label": "Secondary (outline)" },
+            { "value": "ghost",     "label": "Ghost" }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "Image overlay opacity",
+          "min": 0,
+          "max": 90,
+          "step": 5,
+          "unit": "%",
+          "default": 35
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#F5EFE6"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero",
+      "category": "Banners",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "heading": "<p>Crafted for a life in leather.</p>",
+            "subheading": "<p>Small-batch jackets, made by hand in the Orlaven atelier.</p>",
+            "button_label": "Shop the collection",
+            "text_position": "middle-left"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "heading": "<p>Autumn / Winter arrivals.</p>",
+            "subheading": "<p>Shearling, suede and bridle leather, cut to last a decade.</p>",
+            "button_label": "See new arrivals",
+            "text_position": "bottom-left"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
