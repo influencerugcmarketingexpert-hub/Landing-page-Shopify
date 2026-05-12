@@ -1,0 +1,429 @@
+{%- comment -%}
+  Main cart
+  ---------
+  Dedicated cart page. Two-column on desktop (line items left, order
+  summary right). The whole inside is wrapped in [data-main-cart] so
+  assets/cart.js can re-render it via the Section Rendering API
+  (sections=cart-drawer,cart-icon-bubble,main-cart).
+
+  Line items use <quantity-input> from global.js and are scoped inside
+  a <cart-items> custom element for AJAX mutations.
+{%- endcomment -%}
+{%- liquid
+  assign show_note = section.settings.show_cart_note | default: settings.show_cart_note
+  assign upsell = section.settings.upsell_collection
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .main-cart {
+    padding: var(--space-8) 0 var(--space-12);
+  }
+  #shopify-section-{{ section.id }} .main-cart__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3vw + 1rem, 2.75rem);
+    line-height: var(--leading-tight);
+    margin: 0 0 var(--space-6);
+  }
+  #shopify-section-{{ section.id }} .main-cart__layout {
+    display: grid;
+    gap: var(--space-8);
+  }
+  @media (min-width: 960px) {
+    #shopify-section-{{ section.id }} .main-cart__layout {
+      grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    }
+  }
+
+  #shopify-section-{{ section.id }} .main-cart__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+  }
+  #shopify-section-{{ section.id }} .main-cart__item {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-5) 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+    align-items: start;
+  }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .main-cart__item {
+      grid-template-columns: 120px minmax(0, 1fr) auto auto;
+      gap: var(--space-6);
+      align-items: center;
+    }
+  }
+  #shopify-section-{{ section.id }} .main-cart__media {
+    display: block;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--color-beige);
+  }
+  #shopify-section-{{ section.id }} .main-cart__media img,
+  #shopify-section-{{ section.id }} .main-cart__media svg.placeholder {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  #shopify-section-{{ section.id }} .main-cart__body { min-width: 0; }
+  #shopify-section-{{ section.id }} .main-cart__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    margin: 0 0 4px;
+  }
+  #shopify-section-{{ section.id }} .main-cart__title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  #shopify-section-{{ section.id }} .main-cart__title a:hover { color: var(--color-cognac); }
+  #shopify-section-{{ section.id }} .main-cart__variant,
+  #shopify-section-{{ section.id }} .main-cart__property {
+    font-size: var(--text-sm);
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .main-cart__item-actions {
+    display: inline-flex;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  #shopify-section-{{ section.id }} .main-cart__remove {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    border-bottom: 1px solid currentColor;
+  }
+  #shopify-section-{{ section.id }} .main-cart__qty {
+    justify-self: start;
+  }
+  #shopify-section-{{ section.id }} .main-cart__line-price {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-size: var(--text-md);
+    white-space: nowrap;
+  }
+  #shopify-section-{{ section.id }} .main-cart__line-price s {
+    display: block;
+    color: color-mix(in oklab, var(--color-text) 55%, transparent);
+    font-size: var(--text-xs);
+  }
+
+  /* Summary */
+  #shopify-section-{{ section.id }} .main-cart__summary {
+    border: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    align-self: start;
+    position: sticky;
+    top: calc(var(--space-8));
+  }
+  @media (max-width: 959px) {
+    #shopify-section-{{ section.id }} .main-cart__summary {
+      position: static;
+    }
+  }
+  #shopify-section-{{ section.id }} .main-cart__summary-heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .main-cart__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+  #shopify-section-{{ section.id }} .main-cart__row--subtotal {
+    font-size: var(--text-lg);
+    padding-top: var(--space-3);
+    border-top: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+  }
+  #shopify-section-{{ section.id }} .main-cart__disclaimer {
+    font-size: var(--text-xs);
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .main-cart__checkout {
+    width: 100%;
+  }
+  #shopify-section-{{ section.id }} .main-cart__note label {
+    display: block;
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    margin-bottom: var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .main-cart__note textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: var(--space-3);
+    border: 1px solid color-mix(in oklab, var(--color-text) 25%, transparent);
+    background: transparent;
+    font: inherit;
+    resize: vertical;
+  }
+  #shopify-section-{{ section.id }} .main-cart__empty {
+    text-align: center;
+    padding: var(--space-12) var(--space-4);
+    border: 1px dashed color-mix(in oklab, var(--color-text) 20%, transparent);
+  }
+  #shopify-section-{{ section.id }} .main-cart__empty h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    margin: 0 0 var(--space-3);
+  }
+
+  /* Sticky mobile checkout */
+  #shopify-section-{{ section.id }} .main-cart__mobile-sticky {
+    position: sticky;
+    bottom: 0;
+    background: var(--color-background);
+    padding: var(--space-3) 0;
+    border-top: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+    z-index: var(--z-sticky);
+  }
+  @media (min-width: 960px) {
+    #shopify-section-{{ section.id }} .main-cart__mobile-sticky { display: none; }
+  }
+</style>
+
+<section class="main-cart" data-main-cart data-section-id="{{ section.id }}">
+  <div class="container">
+    <h1 class="main-cart__heading">
+      {{ 'general.cart.title' | t }}
+      {%- if cart.item_count > 0 -%}
+        <span class="main-cart__count"> ({{ cart.item_count }})</span>
+      {%- endif -%}
+    </h1>
+
+    {%- if cart.item_count == 0 -%}
+      <div class="main-cart__empty" role="status">
+        <h2>{{ 'general.cart.empty' | t }}</h2>
+        <p class="main-cart__disclaimer">{{ 'sections.cart.empty_body' | t | default: 'Looks like nothing has been added yet. Start with our latest arrivals.' }}</p>
+        <p style="margin-top: var(--space-4);">
+          <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary">
+            {{ 'general.cart.continue_shopping' | t }}
+          </a>
+        </p>
+      </div>
+    {%- else -%}
+      <cart-items class="main-cart__layout" data-cart-items>
+        <form action="{{ routes.cart_url }}" method="post" id="MainCartForm" class="main-cart__form" novalidate>
+          <ul class="main-cart__items" role="list" data-cart-line-items>
+            {%- for item in cart.items -%}
+              <li class="main-cart__item" data-cart-item data-line-index="{{ forloop.index }}" data-variant-id="{{ item.variant.id }}" data-key="{{ item.key }}">
+                <a href="{{ item.url }}" class="main-cart__media" tabindex="-1" aria-hidden="true">
+                  {%- if item.image != blank -%}
+                    <img src="{{ item.image | image_url: width: 240 }}"
+                         srcset="{{ item.image | image_url: width: 200 }} 1x, {{ item.image | image_url: width: 400 }} 2x"
+                         alt="{{ item.image.alt | default: item.product.title | escape }}"
+                         loading="lazy"
+                         width="120"
+                         height="{{ 120 | divided_by: item.image.aspect_ratio | round }}">
+                  {%- else -%}
+                    {%- render 'responsive-image', image: blank, alt: item.product.title -%}
+                  {%- endif -%}
+                </a>
+
+                <div class="main-cart__body">
+                  <h2 class="main-cart__title">
+                    <a href="{{ item.url }}">{{ item.product.title }}</a>
+                  </h2>
+                  {%- unless item.product.has_only_default_variant -%}
+                    <p class="main-cart__variant">{{ item.variant.title }}</p>
+                  {%- endunless -%}
+                  {%- if item.selling_plan_allocation -%}
+                    <p class="main-cart__variant">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+                  {%- endif -%}
+
+                  {%- if item.properties -%}
+                    {%- for prop in item.properties -%}
+                      {%- assign prop_first_char = prop.first | slice: 0 -%}
+                      {%- unless prop.last == blank or prop_first_char == '_' -%}
+                        <p class="main-cart__property"><span>{{ prop.first }}:</span> <span>{{ prop.last }}</span></p>
+                      {%- endunless -%}
+                    {%- endfor -%}
+                  {%- endif -%}
+
+                  <div class="main-cart__item-actions">
+                    <button type="button"
+                            class="main-cart__remove"
+                            data-cart-remove
+                            data-line="{{ forloop.index }}"
+                            aria-label="{{ 'sections.cart.remove_title' | t: title: item.product.title }}">
+                      {{ 'general.cart.remove' | t }}
+                    </button>
+                    {%- if item.url -%}
+                      <a class="main-cart__remove" href="{{ item.url }}">{{ 'products.product.view_full_details' | t }}</a>
+                    {%- endif -%}
+                  </div>
+                </div>
+
+                <quantity-input class="quantity-input main-cart__qty" data-quantity-input>
+                  <button type="button"
+                          name="minus"
+                          class="quantity-input__button"
+                          aria-label="{{ 'products.product.decrease_quantity' | t }}">
+                    {%- render 'icon-minus', size: 14 -%}
+                  </button>
+                  <input type="number"
+                         class="quantity-input__input"
+                         name="updates[{{ item.key }}]"
+                         value="{{ item.quantity }}"
+                         min="0"
+                         step="1"
+                         data-cart-line-quantity
+                         data-line="{{ forloop.index }}"
+                         aria-label="{{ 'general.cart.quantity' | t }}">
+                  <button type="button"
+                          name="plus"
+                          class="quantity-input__button"
+                          aria-label="{{ 'products.product.increase_quantity' | t }}">
+                    {%- render 'icon-plus', size: 14 -%}
+                  </button>
+                </quantity-input>
+
+                <p class="main-cart__line-price" data-line-price>
+                  {%- if item.original_line_price != item.final_line_price -%}
+                    <s>{{ item.original_line_price | money }}</s>
+                  {%- endif -%}
+                  <span>{{ item.final_line_price | money }}</span>
+                </p>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          {%- if show_note -%}
+            <div class="main-cart__note">
+              <label for="MainCartNote">{{ 'general.cart.note' | t }}</label>
+              <textarea id="MainCartNote"
+                        name="note"
+                        rows="3"
+                        data-cart-note
+                        placeholder="{{ 'general.cart.note_placeholder' | t }}">{{ cart.note }}</textarea>
+            </div>
+          {%- endif -%}
+        </form>
+
+        <aside class="main-cart__summary" aria-label="{{ 'sections.cart.caption' | t | default: 'Order summary' }}">
+          <h2 class="main-cart__summary-heading">{{ 'sections.cart.summary' | t | default: 'Summary' }}</h2>
+
+          {%- if settings.enable_free_shipping_bar -%}
+            {%- render 'free-shipping-bar' -%}
+          {%- endif -%}
+
+          <div class="main-cart__row">
+            <span>{{ 'general.cart.item_count' | t: count: cart.item_count }}</span>
+            <span data-cart-count>{{ cart.item_count }}</span>
+          </div>
+
+          {%- if cart.cart_level_discount_applications.size > 0 -%}
+            {%- for discount in cart.cart_level_discount_applications -%}
+              <div class="main-cart__row">
+                <span>{{ discount.title }}</span>
+                <span>&minus; {{ discount.total_allocated_amount | money }}</span>
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
+
+          <div class="main-cart__row main-cart__row--subtotal">
+            <span>{{ 'general.cart.subtotal' | t }}</span>
+            <span data-cart-subtotal>{{ cart.total_price | money_with_currency }}</span>
+          </div>
+
+          <p class="main-cart__disclaimer">
+            {{ 'general.cart.taxes_and_shipping_at_checkout' | t }}
+            {{ 'sections.cart.discount_note' | t | default: 'Discount codes apply at checkout.' }}
+          </p>
+
+          <form action="{{ routes.cart_url }}" method="post" class="main-cart__checkout-form" novalidate>
+            <button type="submit" name="checkout" class="btn btn--primary btn--full main-cart__checkout" data-cart-checkout>
+              {{ 'general.cart.checkout' | t }}
+            </button>
+          </form>
+
+          {%- if additional_checkout_buttons -%}
+            <div class="main-cart__additional-buttons">{{ content_for_additional_checkout_buttons }}</div>
+          {%- endif -%}
+        </aside>
+      </cart-items>
+
+      <div class="main-cart__mobile-sticky">
+        <form action="{{ routes.cart_url }}" method="post" novalidate>
+          <button type="submit" name="checkout" class="btn btn--primary btn--full">
+            {{ 'general.cart.checkout' | t }} &middot; {{ cart.total_price | money }}
+          </button>
+        </form>
+      </div>
+    {%- endif -%}
+
+    {%- if upsell != blank and upsell.products.size > 0 -%}
+      <section class="main-cart__upsell" aria-label="{{ 'sections.cart.upsell_heading' | t | default: 'You might also like' }}" style="margin-top: var(--space-12);">
+        <h2 class="main-cart__heading" style="font-size: clamp(1.5rem, 2vw + 1rem, 2rem);">
+          {{ section.settings.upsell_heading | default: 'You might also like' }}
+        </h2>
+        <ul class="product-grid" role="list" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); list-style: none; padding: 0; margin: 0;">
+          {%- for product in upsell.products limit: 4 -%}
+            <li>
+              {%- render 'product-card',
+                  product: product,
+                  image_ratio: 'portrait',
+                  show_secondary_image: true,
+                  sizes: '(min-width: 1024px) 25vw, 50vw'
+              -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+        <style>
+          @media (min-width: 768px) {
+            #shopify-section-{{ section.id }} .main-cart__upsell .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+          }
+        </style>
+      </section>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart page",
+  "tag": "section",
+  "class": "section-main-cart",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_cart_note",
+      "label": "Show order note field",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "upsell_heading",
+      "label": "Upsell heading",
+      "default": "Complete the look"
+    },
+    {
+      "type": "collection",
+      "id": "upsell_collection",
+      "label": "Upsell collection",
+      "info": "Up to 4 products shown at the bottom of the cart page."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart page",
+      "category": "Cart"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["cart"]
+  }
+}
+{% endschema %}

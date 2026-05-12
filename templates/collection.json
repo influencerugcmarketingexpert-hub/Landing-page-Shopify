@@ -1,0 +1,34 @@
+{
+  "sections": {
+    "banner": {
+      "type": "collection-hero",
+      "settings": {
+        "eyebrow": "Collection",
+        "heading": "",
+        "subheading": "",
+        "overlay_opacity": 30,
+        "text_position": "middle-left",
+        "min_height": 420,
+        "text_color": "#F5EFE6"
+      }
+    },
+    "main": {
+      "type": "main-collection",
+      "settings": {
+        "show_collection_image": false,
+        "show_collection_description": true,
+        "products_per_page": 24,
+        "columns_desktop": 4,
+        "columns_mobile": 2,
+        "image_ratio": "portrait",
+        "show_vendor": false,
+        "show_secondary_image": true,
+        "enable_filtering": true,
+        "filter_type": "sidebar",
+        "enable_sorting": true,
+        "enable_grid_list_toggle": true
+      }
+    }
+  },
+  "order": ["banner", "main"]
+}

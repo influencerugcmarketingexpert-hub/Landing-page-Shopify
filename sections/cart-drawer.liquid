@@ -1,0 +1,74 @@
+{%- comment -%}
+  Cart drawer (section wrapper)
+  -----------------------------
+  This SECTION wraps snippets/cart-drawer.liquid so the Shopify
+  Section Rendering API can refresh it after ajax cart mutations.
+  assets/cart.js calls /cart/change.js?sections=cart-drawer,cart-icon-bubble
+  and patches the returned innerHTMLs in place.
+
+  The section is rendered once from layout/theme.liquid via
+  `{% section 'cart-drawer' %}` so there is exactly one instance per page.
+
+  Merchants can edit the following settings without code:
+    - empty_state_text      (placeholder copy when bag is empty)
+    - button_label          (checkout button label)
+    - free_shipping_text    (line shown inside the progress strip)
+    - upsell_collection     (collection recommended inside drawer)
+{%- endcomment -%}
+
+{%- liquid
+  assign empty_state = section.settings.empty_state_text | default: 'Your bag is empty.'
+  assign button_label = section.settings.button_label | default: 'Checkout'
+  assign free_shipping_text = section.settings.free_shipping_text
+  assign upsell = section.settings.upsell_collection
+-%}
+
+<div
+  class="cart-drawer-section"
+  data-cart-section
+  data-section-id="{{ section.id }}"
+  data-section-type="cart-drawer"
+>
+  {%- render 'cart-drawer',
+      section: section,
+      section_id: section.id,
+      empty_state_text: empty_state,
+      button_label: button_label,
+      free_shipping_text: free_shipping_text,
+      upsell_collection: upsell
+  -%}
+</div>
+
+{% schema %}
+{
+  "name": "Cart drawer",
+  "tag": "section",
+  "class": "section-cart-drawer",
+  "settings": [
+    {
+      "type": "text",
+      "id": "empty_state_text",
+      "label": "Empty state message",
+      "default": "Your bag is empty."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Checkout button label",
+      "default": "Checkout"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_text",
+      "label": "Free shipping note",
+      "info": "Optional line shown under the progress bar."
+    },
+    {
+      "type": "collection",
+      "id": "upsell_collection",
+      "label": "Upsell collection",
+      "info": "First product from this collection is suggested when the bag has at least one item."
+    }
+  ]
+}
+{% endschema %}

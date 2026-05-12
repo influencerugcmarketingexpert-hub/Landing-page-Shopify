@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-blog",
+      "settings": {
+        "eyebrow": "Journal",
+        "posts_per_page": 9,
+        "layout": "grid",
+        "featured_article_hero": true,
+        "show_excerpt": true,
+        "show_author": true,
+        "show_date": true,
+        "show_tag": true
+      }
+    }
+  },
+  "order": ["main"]
+}

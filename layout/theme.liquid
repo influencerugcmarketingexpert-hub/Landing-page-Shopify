@@ -119,6 +119,16 @@
 
     {% section 'footer' %}
 
+    {%- comment -%}
+      Cart drawer renders as its own section so the Section Rendering API
+      can target it with sections=cart-drawer on /cart/change.js. Rendering
+      here (instead of inside header.liquid) keeps the drawer scoped to a
+      single section id per page.
+    {%- endcomment -%}
+    {%- if settings.cart_type == 'drawer' -%}
+      {% section 'cart-drawer' %}
+    {%- endif -%}
+
     <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>

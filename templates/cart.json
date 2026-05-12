@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-cart",
+      "settings": {
+        "show_cart_note": true,
+        "upsell_heading": "Complete the look",
+        "upsell_collection": "best-sellers"
+      }
+    }
+  },
+  "order": ["main"]
+}

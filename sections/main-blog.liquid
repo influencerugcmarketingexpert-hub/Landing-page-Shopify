@@ -1,0 +1,435 @@
+{%- comment -%}
+  Main blog
+  ---------
+  Blog listing template. A featured article hero for the first article
+  (toggleable), then a grid (or list) of remaining articles. Supports
+  tag filtering via the `?tag=` query and Shopify's built-in tag URLs.
+
+  `blog.articles` is paginated by posts_per_page. Each card shows
+  image, tag pill, title, excerpt (optional), author, date, read-time.
+{%- endcomment -%}
+{%- liquid
+  assign per_page = section.settings.posts_per_page | default: 9
+  if per_page < 6
+    assign per_page = 6
+  endif
+  if per_page > 24
+    assign per_page = 24
+  endif
+  assign layout = section.settings.layout | default: 'grid'
+  assign show_excerpt = section.settings.show_excerpt
+  assign show_author = section.settings.show_author
+  assign show_date = section.settings.show_date
+  assign show_tag = section.settings.show_tag
+  assign feature_hero = section.settings.featured_article_hero
+  assign current_tag = current_tags | first | default: ''
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .main-blog { padding: var(--space-8) 0 var(--space-12); }
+  #shopify-section-{{ section.id }} .main-blog__header {
+    max-width: 720px;
+    margin: 0 0 var(--space-8);
+  }
+  #shopify-section-{{ section.id }} .main-blog__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+    margin: 0 0 var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .main-blog__title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3vw + 1rem, 3rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .main-blog__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+  #shopify-section-{{ section.id }} .main-blog__tag {
+    padding: 6px 14px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    color: inherit;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  #shopify-section-{{ section.id }} .main-blog__tag[aria-current="true"],
+  #shopify-section-{{ section.id }} .main-blog__tag:hover {
+    background: var(--color-ink);
+    color: var(--color-cream);
+  }
+
+  /* Featured hero */
+  #shopify-section-{{ section.id }} .blog-hero {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0 0 var(--space-10);
+    text-decoration: none;
+    color: inherit;
+  }
+  @media (min-width: 960px) {
+    #shopify-section-{{ section.id }} .blog-hero {
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      gap: var(--space-8);
+      align-items: center;
+    }
+  }
+  #shopify-section-{{ section.id }} .blog-hero__media {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--color-beige);
+    position: relative;
+  }
+  #shopify-section-{{ section.id }} .blog-hero__media img,
+  #shopify-section-{{ section.id }} .blog-hero__media svg.placeholder {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .blog-hero:hover .blog-hero__media img { transform: scale(1.02); }
+  #shopify-section-{{ section.id }} .blog-hero__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-width: 48ch;
+  }
+  #shopify-section-{{ section.id }} .blog-hero__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .blog-hero__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 2.5vw + 1rem, 2.5rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .blog-hero__excerpt {
+    color: color-mix(in oklab, var(--color-text) 75%, transparent);
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+  }
+
+  /* Grid */
+  #shopify-section-{{ section.id }} .article-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .article-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .article-grid[data-layout="grid"] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  #shopify-section-{{ section.id }} .article-grid[data-layout="list"] {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  #shopify-section-{{ section.id }} .article-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    text-decoration: none;
+    color: inherit;
+    min-width: 0;
+  }
+  #shopify-section-{{ section.id }} .article-grid[data-layout="list"] .article-card {
+    display: grid;
+    grid-template-columns: minmax(160px, 260px) 1fr;
+    gap: var(--space-5);
+    align-items: start;
+  }
+  #shopify-section-{{ section.id }} .article-card__media {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-beige);
+    position: relative;
+  }
+  #shopify-section-{{ section.id }} .article-card__media img,
+  #shopify-section-{{ section.id }} .article-card__media svg.placeholder {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  #shopify-section-{{ section.id }} .article-card__tag {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    background: var(--color-cream);
+    color: var(--color-ink);
+    padding: 4px 10px;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    border-radius: var(--radius-full);
+  }
+  #shopify-section-{{ section.id }} .article-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .article-card__meta > span + span::before {
+    content: '·';
+    margin-right: var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .article-card__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .article-card__excerpt {
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  #shopify-section-{{ section.id }} .main-blog__empty {
+    padding: var(--space-12) var(--space-4);
+    text-align: center;
+    border: 1px dashed color-mix(in oklab, var(--color-text) 20%, transparent);
+  }
+  #shopify-section-{{ section.id }} .main-blog__pagination {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-8) 0 0;
+  }
+</style>
+
+{%- assign word_count_divisor = 200 -%}
+
+<section class="main-blog" data-section-id="{{ section.id }}">
+  <div class="container">
+    <header class="main-blog__header">
+      <p class="main-blog__eyebrow">{{ section.settings.eyebrow | default: 'Journal' }}</p>
+      <h1 class="main-blog__title">{{ blog.title | default: 'Journal' }}</h1>
+      {%- if blog.description != blank -%}
+        <div class="rte" style="max-width: 60ch; margin-top: var(--space-4);">{{ blog.description }}</div>
+      {%- endif -%}
+
+      {%- if blog.all_tags.size > 0 -%}
+        <nav class="main-blog__tags" aria-label="{{ 'blogs.article.all_topics' | t }}">
+          <a class="main-blog__tag"
+             href="{{ blog.url }}"
+             {% if current_tag == blank %}aria-current="true"{% endif %}>
+            {{ 'blogs.article.all_topics' | t }}
+          </a>
+          {%- for tag in blog.all_tags -%}
+            <a class="main-blog__tag"
+               href="{{ blog.url }}/tagged/{{ tag | handle }}"
+               {% if current_tag == tag %}aria-current="true"{% endif %}>
+              {{ tag }}
+            </a>
+          {%- endfor -%}
+        </nav>
+      {%- endif -%}
+    </header>
+
+    {%- if blog.articles_count > 0 -%}
+      {%- paginate blog.articles by per_page -%}
+        {%- liquid
+          assign featured_article = nil
+          assign rest_articles = paginate.items | default: blog.articles
+          if feature_hero and paginate.current_page == 1 and current_tag == blank
+            assign featured_article = blog.articles.first
+          endif
+        -%}
+
+        {%- if featured_article != nil -%}
+          {%- assign fwc = featured_article.content | strip_html | split: ' ' | size -%}
+          {%- assign fread = fwc | divided_by: word_count_divisor -%}
+          {%- assign frem = fwc | modulo: word_count_divisor -%}
+          {%- if frem > 0 -%}{%- assign fread = fread | plus: 1 -%}{%- endif -%}
+          {%- if fread < 1 -%}{%- assign fread = 1 -%}{%- endif -%}
+          <a class="blog-hero" href="{{ featured_article.url }}">
+            <div class="blog-hero__media">
+              {%- if featured_article.image != blank -%}
+                {%- render 'responsive-image',
+                    image: featured_article.image,
+                    sizes: '(min-width: 960px) 58vw, 100vw',
+                    loading: 'eager',
+                    fetchpriority: 'high',
+                    alt: featured_article.title
+                -%}
+              {%- else -%}
+                {%- render 'responsive-image', image: blank, alt: featured_article.title -%}
+              {%- endif -%}
+            </div>
+            <div class="blog-hero__body">
+              <p class="blog-hero__eyebrow">{{ 'sections.blog_preview.featured' | t | default: 'Featured' }}</p>
+              <h2 class="blog-hero__heading">{{ featured_article.title }}</h2>
+              <p class="article-card__meta">
+                {%- if show_date %}<span>{{ featured_article.published_at | date: '%b %d, %Y' }}</span>{% endif -%}
+                {%- if show_author and featured_article.author != blank %}<span>{{ featured_article.author }}</span>{% endif -%}
+                <span>{{ fread }} min read</span>
+              </p>
+              {%- if show_excerpt and featured_article.excerpt_or_content != blank -%}
+                <p class="blog-hero__excerpt">{{ featured_article.excerpt_or_content | strip_html | truncate: 220 }}</p>
+              {%- endif -%}
+            </div>
+          </a>
+        {%- endif -%}
+
+        <ul class="article-grid" role="list" data-layout="{{ layout }}">
+          {%- for article in blog.articles -%}
+            {%- if featured_article != nil and forloop.first -%}
+              {%- continue -%}
+            {%- endif -%}
+            {%- liquid
+              assign word_count = article.content | strip_html | split: ' ' | size
+              assign read_time = word_count | divided_by: word_count_divisor
+              assign remainder = word_count | modulo: word_count_divisor
+              if remainder > 0
+                assign read_time = read_time | plus: 1
+              endif
+              if read_time < 1
+                assign read_time = 1
+              endif
+              assign tag_label = ''
+              if article.tags.size > 0
+                assign tag_label = article.tags.first
+              endif
+            -%}
+            <li>
+              <a class="article-card" href="{{ article.url }}">
+                <div class="article-card__media">
+                  {%- if article.image != blank -%}
+                    {%- render 'responsive-image',
+                        image: article.image,
+                        sizes: '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw',
+                        alt: article.title
+                    -%}
+                  {%- else -%}
+                    {%- render 'responsive-image', image: blank, alt: article.title -%}
+                  {%- endif -%}
+                  {%- if show_tag and tag_label != blank -%}
+                    <span class="article-card__tag">{{ tag_label }}</span>
+                  {%- endif -%}
+                </div>
+                <p class="article-card__meta">
+                  {%- if show_date and article.published_at != blank %}<span>{{ article.published_at | date: '%b %d, %Y' }}</span>{% endif -%}
+                  {%- if show_author and article.author != blank %}<span>{{ article.author }}</span>{% endif -%}
+                  <span>{{ read_time }} min read</span>
+                </p>
+                <h3 class="article-card__title">{{ article.title }}</h3>
+                {%- if show_excerpt and article.excerpt_or_content != blank -%}
+                  <p class="article-card__excerpt">{{ article.excerpt_or_content | strip_html | truncate: 180 }}</p>
+                {%- endif -%}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {%- if paginate.pages > 1 -%}
+          <div class="main-blog__pagination">
+            {%- render 'pagination', paginate: paginate -%}
+          </div>
+        {%- endif -%}
+      {%- endpaginate -%}
+    {%- else -%}
+      <div class="main-blog__empty" role="status">
+        <p>{{ 'sections.blog_preview.no_articles' | t | default: 'No articles yet.' }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Blog posts",
+  "tag": "section",
+  "class": "section-main-blog",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Journal"
+    },
+    {
+      "type": "range",
+      "id": "posts_per_page",
+      "label": "Articles per page",
+      "min": 6,
+      "max": 24,
+      "step": 3,
+      "default": 9
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "list", "label": "List" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "checkbox",
+      "id": "featured_article_hero",
+      "label": "Show featured article hero",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Show excerpt",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tag",
+      "label": "Show tag pill",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog posts",
+      "category": "Blog"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["blog"]
+  }
+}
+{% endschema %}

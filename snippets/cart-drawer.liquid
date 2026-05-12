@@ -1,15 +1,32 @@
 {%- comment -%}
   Cart drawer
   -----------
-  Rendered by sections/header.liquid when settings.cart_type == 'drawer'.
+  Rendered by sections/cart-drawer.liquid (once per page from
+  layout/theme.liquid). Optionally rendered directly by sections/header.liquid
+  if a theme ever wants to skip the section wrapper.
+
   The <cart-drawer> and <cart-items> custom elements live in assets/cart.js.
 
   Re-renders after ajax cart mutations include:
-    - The whole <cart-drawer id="CartDrawer"> region
-    - The <span id="CartCountBubble"> bubble (via the Section Rendering API
-      if this snippet is consumed through a section; otherwise the shared
-      id is re-hydrated from cart.js fetching /cart.js)
+    - The whole <cart-drawer id="CartDrawer"> region, via the Section
+      Rendering API (sections=cart-drawer,cart-icon-bubble).
+    - The <span id="CartCountBubble"> bubble (standalone snippet).
+
+  Accepts (all optional; merchant-facing overrides come from the section
+  schema when rendered through sections/cart-drawer.liquid):
+    - section              the section drop (for shopify_attributes)
+    - section_id           the section id (exposed to cart.js via data attr)
+    - empty_state_text     copy shown in the empty bag state
+    - button_label         checkout button label
+    - free_shipping_text   optional caption under the free-shipping bar
+    - upsell_collection    optional collection drop for an in-drawer upsell
 {%- endcomment -%}
+{%- liquid
+  assign cd_section_id = section_id | default: ''
+  assign cd_empty_text = empty_state_text | default: 'general.cart.empty' | t
+  assign cd_button_label = button_label | default: 'general.cart.checkout' | t
+  assign cd_upsell = upsell_collection
+-%}
 <cart-drawer
   id="CartDrawer"
   class="cart-drawer drawer"
@@ -18,6 +35,7 @@
   aria-label="{{ 'general.cart.title' | t }}"
   aria-hidden="true"
   data-cart-drawer
+  {% if cd_section_id != blank %}data-section-id="{{ cd_section_id }}"{% endif %}
   hidden
 >
   <div class="cart-drawer__header drawer__header">
@@ -38,13 +56,16 @@
   {%- if settings.enable_free_shipping_bar -%}
     <div class="cart-drawer__shipping" data-cart-free-shipping>
       {%- render 'free-shipping-bar' -%}
+      {%- if free_shipping_text != blank -%}
+        <p class="cart-drawer__shipping-note">{{ free_shipping_text }}</p>
+      {%- endif -%}
     </div>
   {%- endif -%}
 
   <div class="cart-drawer__body drawer__body" data-cart-body>
     {%- if cart.item_count == 0 -%}
       <div class="cart-drawer__empty" data-cart-empty>
-        <p class="cart-drawer__empty-heading">{{ 'general.cart.empty' | t }}</p>
+        <p class="cart-drawer__empty-heading">{{ cd_empty_text }}</p>
         <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary btn--full" data-cart-close>
           {{ 'general.cart.continue_shopping' | t }}
         </a>
@@ -55,7 +76,7 @@
         {%- endif -%}
       </div>
     {%- else -%}
-      <cart-items data-cart-items>
+      <cart-items data-cart-items data-line-items-region>
         <form action="{{ routes.cart_url }}" method="post" id="CartDrawerForm" class="cart-drawer__form" novalidate>
           <ul class="cart-drawer__items" role="list" data-cart-line-items>
             {%- for item in cart.items -%}
@@ -153,8 +174,34 @@
             </div>
           {%- endif -%}
 
-          <div class="cart-drawer__upsell" data-cart-upsell hidden>
-            {%- comment -%} Populated by cart.js (future FEAT-008 upsell). {%- endcomment -%}
+          <div class="cart-drawer__upsell" data-cart-upsell{% if cd_upsell == blank or cart.item_count == 0 %} hidden{% endif %}>
+            {%- if cd_upsell != blank and cd_upsell.products.first != blank -%}
+              {%- assign upsell_product = cd_upsell.products.first -%}
+              {%- assign upsell_variant = upsell_product.selected_or_first_available_variant -%}
+              <div class="cart-drawer__upsell-inner">
+                <p class="cart-drawer__upsell-eyebrow">{{ 'sections.cart.upsell_heading' | t | default: 'Finish the look' }}</p>
+                <a href="{{ upsell_product.url }}" class="cart-drawer__upsell-media" tabindex="-1" aria-hidden="true">
+                  {%- if upsell_product.featured_image != blank -%}
+                    <img src="{{ upsell_product.featured_image | image_url: width: 160 }}"
+                         srcset="{{ upsell_product.featured_image | image_url: width: 120 }} 1x, {{ upsell_product.featured_image | image_url: width: 240 }} 2x"
+                         alt="{{ upsell_product.featured_image.alt | default: upsell_product.title | escape }}"
+                         width="60"
+                         height="{{ 60 | divided_by: upsell_product.featured_image.aspect_ratio | round }}"
+                         loading="lazy">
+                  {%- endif -%}
+                </a>
+                <div class="cart-drawer__upsell-body">
+                  <a href="{{ upsell_product.url }}" class="cart-drawer__upsell-title">{{ upsell_product.title }}</a>
+                  <p class="cart-drawer__upsell-price">{{ upsell_variant.price | money }}</p>
+                  <form action="{{ routes.cart_add_url }}" method="post" class="cart-drawer__upsell-form" data-cart-upsell-form novalidate>
+                    <input type="hidden" name="id" value="{{ upsell_variant.id }}">
+                    <button type="submit" class="btn btn--secondary btn--small" data-cart-upsell-submit>
+                      {{ 'general.cart.add' | t | default: 'Add' }}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            {%- endif -%}
           </div>
         </form>
       </cart-items>
@@ -173,7 +220,7 @@
                 name="checkout"
                 class="btn btn--primary btn--full"
                 data-cart-checkout>
-          {{ 'general.cart.checkout' | t }}
+          {{ cd_button_label }}
         </button>
       </form>
       <a href="{{ routes.cart_url }}" class="cart-drawer__view-link">

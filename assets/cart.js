@@ -33,9 +33,71 @@
   const routes = window.routes || {};
 
   const SECTION_IDS = {
-    cartDrawer: 'cart-drawer',        // used when cart-drawer is its own section (FEAT-008)
+    cartDrawer: 'cart-drawer',        // sections/cart-drawer.liquid (FEAT-008)
     cartIconBubble: 'cart-icon-bubble',
+    mainCart: 'main-cart',            // sections/main-cart.liquid (FEAT-008)
   };
+
+  // Build the `sections=` list sent to /cart/change.js and /cart/add.js.
+  // Explicit array form so the Section Rendering API targets are grep-able
+  // and easy to extend: sections: ['cart-icon-bubble','cart-drawer','main-cart']
+  function sectionsArray() {
+    const ids = [SECTION_IDS.cartIconBubble, SECTION_IDS.cartDrawer];
+    if (document.body.classList.contains('template-cart')) {
+      ids.push(SECTION_IDS.mainCart);
+    }
+    return ids;
+  }
+  function sectionsParam() {
+    return sectionsArray().join(',');
+  }
+
+  // Replace the innerHTML of any live element that matches the selector,
+  // using the same selector inside the parsed section HTML. Works for
+  // both `#id` and `[data-attr]` selectors.
+  function replaceRegion(sectionHtml, selector) {
+    if (!sectionHtml) return;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(sectionHtml, 'text/html');
+    const fresh = doc.querySelector(selector);
+    if (!fresh) return;
+    const live = document.querySelector(selector);
+    if (!live) return;
+    live.innerHTML = fresh.innerHTML;
+    // Copy attribute updates that may have changed (e.g. aria-hidden, data-count).
+    for (const attr of Array.from(fresh.attributes)) {
+      if (attr.name === 'id') continue;
+      live.setAttribute(attr.name, attr.value);
+    }
+  }
+
+  // Full-element swap for small standalone regions (like the bubble).
+  function replaceElement(sectionHtml, selector) {
+    if (!sectionHtml) return;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(sectionHtml, 'text/html');
+    const fresh = doc.querySelector(selector);
+    if (!fresh) return;
+    const live = document.querySelector(selector);
+    if (live) live.replaceWith(fresh);
+  }
+
+  // Apply a sections payload returned from /cart/change.js or /cart/add.js.
+  function applySections(sections) {
+    if (!sections) return;
+    Object.keys(sections).forEach(function (sectionId) {
+      const html = sections[sectionId];
+      if (!html) return;
+      if (sectionId === SECTION_IDS.cartIconBubble) {
+        replaceElement(html, '#CartCountBubble');
+      } else if (sectionId === SECTION_IDS.cartDrawer) {
+        // Re-render the whole drawer region to keep state in sync.
+        replaceRegion(html, '[data-cart-section]');
+      } else if (sectionId === SECTION_IDS.mainCart) {
+        replaceRegion(html, '[data-main-cart]');
+      }
+    });
+  }
 
   function fetchJson(url, config) {
     return fetch(url, config).then(function (response) {
@@ -153,14 +215,15 @@
     // Refresh the drawer content + cart-icon-bubble via Section Rendering.
     refresh() {
       const self = this;
-      const urls = [];
-      const sectionId = this.getAttribute('data-section-id');
-      if (sectionId) {
-        urls.push(routes.cart_url + '?section_id=' + encodeURIComponent(sectionId));
-      }
-      urls.push(routes.cart_url + '?section_id=' + encodeURIComponent(SECTION_IDS.cartIconBubble));
-
-      return fetch(routes.cart_url + '.js')
+      return fetch(routes.cart_url + '?sections=' + encodeURIComponent(sectionsParam()))
+        .then(function (r) { return r.json(); })
+        .then(function (payload) {
+          // Shopify returns { "sections": { id: html } } when GET /cart?sections=...
+          if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+            applySections(payload);
+          }
+          return fetch(routes.cart_url + '.js');
+        })
         .then(function (r) { return r.json(); })
         .then(function (cartState) {
           self._renderSubtotal(cartState);
@@ -284,17 +347,10 @@
       if (!line || isNaN(line)) return;
       this._toggleLoading(trigger, true);
 
-      const sectionIds = [SECTION_IDS.cartIconBubble];
-      const drawer = this.closest('cart-drawer');
-      if (drawer) {
-        const sectionId = drawer.getAttribute('data-section-id');
-        if (sectionId) sectionIds.push(sectionId);
-      }
-
       const payload = {
         line: line,
         quantity: quantity,
-        sections: sectionIds.join(','),
+        sections: sectionsParam(),
         sections_url: window.location.pathname,
       };
 
@@ -305,13 +361,10 @@
           return;
         }
         const cart = result.body;
-        // Update sections-rendered markup where applicable.
-        if (cart && cart.sections) {
-          Object.keys(cart.sections).forEach((sectionId) => {
-            this._replaceSectionHtml(sectionId, cart.sections[sectionId]);
-          });
-        }
-        // Refresh drawer counts + subtotal directly from the JSON cart.
+        if (cart && cart.sections) applySections(cart.sections);
+        // Re-fetch /cart.js so we have authoritative numbers for the
+        // bubble, subtotal and free-shipping progress post-mutation.
+        const drawer = document.querySelector('cart-drawer');
         if (drawer && typeof drawer.refresh === 'function') drawer.refresh();
         PubSub.publish(events.cartUpdate, { cart: cart });
       }).catch((err) => {
@@ -320,32 +373,8 @@
       });
     }
 
-    _replaceSectionHtml(sectionId, html) {
-      if (!html) return;
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      // Re-render the cart-icon-bubble (match by id).
-      const newBubble = doc.getElementById('CartCountBubble');
-      if (newBubble) {
-        const existingBubble = document.getElementById('CartCountBubble');
-        if (existingBubble) existingBubble.replaceWith(newBubble);
-      }
-
-      // If the section snapshot contains a cart-items region, swap lines.
-      const newLines = doc.querySelector('[data-cart-line-items]');
-      if (newLines) {
-        const current = this.querySelector('[data-cart-line-items]');
-        if (current) current.replaceWith(newLines);
-      }
-
-      // Swap footer if present.
-      const newFooter = doc.querySelector('[data-cart-footer]');
-      if (newFooter) {
-        const drawer = this.closest('cart-drawer');
-        const current = drawer && drawer.querySelector('[data-cart-footer]');
-        if (current) current.replaceWith(newFooter);
-      }
+    _replaceSectionHtml() {
+      // Retained for backwards compatibility - superseded by applySections().
     }
 
     _toggleLoading(trigger, loading) {
@@ -394,19 +423,16 @@
   // window.theme.cart.add({ id, quantity, properties })
   // ---------------------------------------------------------------------------
   function addItem(payload) {
-    const sectionIds = [SECTION_IDS.cartIconBubble];
-    const drawer = document.querySelector('cart-drawer');
-    if (drawer) {
-      const sectionId = drawer.getAttribute('data-section-id');
-      if (sectionId) sectionIds.push(sectionId);
-    }
-    const body = Object.assign({ sections: sectionIds.join(',') }, payload);
+    // sections: ['cart-icon-bubble','cart-drawer','main-cart' (cart template only)]
+    const body = Object.assign({ sections: sectionsParam() }, payload);
     return fetchJson(routes.cart_add_url, buildFormPayload(body)).then(function (result) {
       if (!result.ok) {
         PubSub.publish(events.cartError, { error: result.body });
         return Promise.reject(result.body);
       }
+      if (result.body && result.body.sections) applySections(result.body.sections);
       PubSub.publish(events.quickAdd, result.body);
+      const drawer = document.querySelector('cart-drawer');
       if (drawer && typeof drawer.refresh === 'function') drawer.refresh();
       return result.body;
     });

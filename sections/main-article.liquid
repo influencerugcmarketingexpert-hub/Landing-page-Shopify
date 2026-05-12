@@ -1,0 +1,525 @@
+{%- comment -%}
+  Main article
+  ------------
+  Article page. Large hero image, tag pills, title, author + date +
+  read-time meta row, rendered `article.content` in a readable column
+  (max-width ~720px), social share buttons, comments (when
+  blog.comments_enabled?) and related articles (most recent 3 from
+  the same blog excluding current).
+{%- endcomment -%}
+{%- liquid
+  assign word_count = article.content | strip_html | split: ' ' | size
+  assign read_time = word_count | divided_by: 200
+  assign remainder = word_count | modulo: 200
+  if remainder > 0
+    assign read_time = read_time | plus: 1
+  endif
+  if read_time < 1
+    assign read_time = 1
+  endif
+  assign show_hero = section.settings.show_hero_image
+  assign show_author = section.settings.show_author
+  assign show_date = section.settings.show_date
+  assign show_tags = section.settings.show_tags
+  assign show_share = section.settings.show_share
+  assign show_related = section.settings.show_related
+  assign related_count = section.settings.related_count | default: 3
+
+  assign url_encoded_url = canonical_url | url_encode
+  assign url_encoded_title = article.title | url_encode
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .main-article {
+    padding: var(--space-8) 0 var(--space-12);
+  }
+  #shopify-section-{{ section.id }} .article-hero {
+    width: 100%;
+    aspect-ratio: 21 / 10;
+    overflow: hidden;
+    background: var(--color-beige);
+    margin-bottom: var(--space-8);
+  }
+  #shopify-section-{{ section.id }} .article-hero img,
+  #shopify-section-{{ section.id }} .article-hero svg.placeholder {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  #shopify-section-{{ section.id }} .article-column {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  #shopify-section-{{ section.id }} .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .article-tag {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-cognac);
+    text-decoration: none;
+    border: 1px solid currentColor;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+  }
+  #shopify-section-{{ section.id }} .article-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3vw + 1rem, 3rem);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-snug);
+    margin: 0 0 var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+    font-size: var(--text-sm);
+    color: color-mix(in oklab, var(--color-text) 65%, transparent);
+    margin: 0 0 var(--space-8);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+  }
+  #shopify-section-{{ section.id }} .article-meta > span + span::before {
+    content: '·';
+    margin-right: var(--space-3);
+    color: color-mix(in oklab, var(--color-text) 30%, transparent);
+  }
+  #shopify-section-{{ section.id }} .article-content {
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: color-mix(in oklab, var(--color-text) 90%, transparent);
+  }
+  #shopify-section-{{ section.id }} .article-content h2,
+  #shopify-section-{{ section.id }} .article-content h3 {
+    font-family: var(--font-heading);
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-3);
+    line-height: var(--leading-tight);
+  }
+  #shopify-section-{{ section.id }} .article-content h2 { font-size: var(--text-2xl); }
+  #shopify-section-{{ section.id }} .article-content h3 { font-size: var(--text-xl); }
+  #shopify-section-{{ section.id }} .article-content p,
+  #shopify-section-{{ section.id }} .article-content ul,
+  #shopify-section-{{ section.id }} .article-content ol,
+  #shopify-section-{{ section.id }} .article-content blockquote {
+    margin: 0 0 var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .article-content img {
+    width: 100%;
+    height: auto;
+    margin: var(--space-6) 0;
+    border-radius: var(--card-radius, 0);
+  }
+  #shopify-section-{{ section.id }} .article-content blockquote {
+    border-left: 3px solid var(--color-cognac);
+    padding: var(--space-3) var(--space-5);
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    color: var(--color-text);
+    margin: var(--space-6) 0;
+  }
+  #shopify-section-{{ section.id }} .article-content a {
+    color: var(--color-cognac);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  #shopify-section-{{ section.id }} .article-share {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  #shopify-section-{{ section.id }} .article-share a {
+    color: inherit;
+    text-decoration: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #shopify-section-{{ section.id }} .article-share a:hover { background: var(--color-ink); color: var(--color-cream); }
+
+  /* Comments */
+  #shopify-section-{{ section.id }} .article-comments {
+    max-width: 720px;
+    margin: var(--space-10) auto 0;
+  }
+  #shopify-section-{{ section.id }} .article-comments h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    margin: 0 0 var(--space-5);
+  }
+  #shopify-section-{{ section.id }} .article-comments__list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  #shopify-section-{{ section.id }} .article-comments__item {
+    padding: var(--space-4);
+    border: 1px solid color-mix(in oklab, var(--color-text) 12%, transparent);
+  }
+  #shopify-section-{{ section.id }} .article-comments__meta {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+    margin: 0 0 var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .article-comments__form {
+    display: grid;
+    gap: var(--space-3);
+  }
+  #shopify-section-{{ section.id }} .article-comments__form label {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  #shopify-section-{{ section.id }} .article-comments__form input,
+  #shopify-section-{{ section.id }} .article-comments__form textarea {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid color-mix(in oklab, var(--color-text) 25%, transparent);
+    background: transparent;
+    font: inherit;
+  }
+  #shopify-section-{{ section.id }} .article-comments__fields {
+    display: grid;
+    gap: var(--space-3);
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .article-comments__fields {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  #shopify-section-{{ section.id }} .article-comments__moderated {
+    font-size: var(--text-xs);
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+  }
+  #shopify-section-{{ section.id }} .article-comments__success,
+  #shopify-section-{{ section.id }} .article-comments__error {
+    padding: var(--space-3);
+    background: var(--color-beige);
+    margin-bottom: var(--space-4);
+  }
+
+  /* Related */
+  #shopify-section-{{ section.id }} .article-related {
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+    border-top: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+  }
+  #shopify-section-{{ section.id }} .article-related h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    margin: 0 0 var(--space-6);
+    text-align: center;
+  }
+  #shopify-section-{{ section.id }} .article-related__grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .article-related__grid {
+      grid-template-columns: repeat({{ related_count | at_most: 3 }}, minmax(0, 1fr));
+    }
+  }
+  #shopify-section-{{ section.id }} .related-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: inherit;
+  }
+  #shopify-section-{{ section.id }} .related-card__media {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-beige);
+    margin-bottom: var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .related-card__media img,
+  #shopify-section-{{ section.id }} .related-card__media svg.placeholder {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  #shopify-section-{{ section.id }} .related-card__title {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    margin: 0;
+  }
+
+  #shopify-section-{{ section.id }} .back-to-blog {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: inherit;
+    text-decoration: none;
+    margin-bottom: var(--space-5);
+    border-bottom: 1px solid transparent;
+  }
+  #shopify-section-{{ section.id }} .back-to-blog:hover { border-bottom-color: currentColor; }
+</style>
+
+<article class="main-article" data-section-id="{{ section.id }}">
+  {%- if show_hero and article.image != blank -%}
+    <div class="article-hero">
+      {%- render 'responsive-image',
+          image: article.image,
+          sizes: '100vw',
+          loading: 'eager',
+          fetchpriority: 'high',
+          widths: '600,900,1200,1600,2000,2400',
+          alt: article.title
+      -%}
+    </div>
+  {%- endif -%}
+
+  <div class="container">
+    <div class="article-column">
+      <a href="{{ blog.url }}" class="back-to-blog">
+        {%- render 'icon-arrow-left', size: 12 -%}
+        {{ 'blogs.article.back_to_blog' | t }}
+      </a>
+
+      {%- if show_tags and article.tags.size > 0 -%}
+        <div class="article-tags">
+          {%- for tag in article.tags -%}
+            <a class="article-tag" href="{{ blog.url }}/tagged/{{ tag | handle }}">{{ tag }}</a>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+      <h1 class="article-title">{{ article.title }}</h1>
+
+      <p class="article-meta">
+        {%- if show_author and article.author != blank -%}
+          <span>{{ 'blogs.article.by_author' | t: author: article.author }}</span>
+        {%- endif -%}
+        {%- if show_date and article.published_at != blank -%}
+          <span>{{ article.published_at | date: '%b %d, %Y' }}</span>
+        {%- endif -%}
+        <span>{{ read_time }} min read</span>
+      </p>
+
+      <div class="article-content rte">
+        {{ article.content }}
+      </div>
+
+      {%- if show_share -%}
+        <div class="article-share">
+          <span>{{ 'blogs.article.share' | t }}</span>
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_encoded_url }}"
+             target="_blank"
+             rel="noopener"
+             aria-label="{{ 'general.social.share_on_facebook' | t }}">
+            {%- render 'icon-facebook', size: 14 -%}
+          </a>
+          <a href="https://twitter.com/intent/tweet?url={{ url_encoded_url }}&text={{ url_encoded_title }}"
+             target="_blank"
+             rel="noopener"
+             aria-label="{{ 'general.social.share_on_twitter' | t }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+              <path d="M17.7 3H20.9L14.1 10.8L22 21H15.7L10.8 14.6L5.1 21H1.9L9.2 12.6L1.6 3H8.1L12.5 8.9L17.7 3ZM16.6 19.1H18.4L7.5 4.8H5.5L16.6 19.1Z"/>
+            </svg>
+          </a>
+          <a href="https://pinterest.com/pin/create/button/?url={{ url_encoded_url }}&description={{ url_encoded_title }}"
+             target="_blank"
+             rel="noopener"
+             aria-label="{{ 'general.social.share_on_pinterest' | t }}">
+            {%- render 'icon-pinterest', size: 14 -%}
+          </a>
+        </div>
+      {%- endif -%}
+
+      {%- if blog.comments_enabled? -%}
+        <section class="article-comments" id="Comments">
+          <h2>
+            {%- if article.comments_count > 0 -%}
+              {{ 'blogs.article.comments' | t: count: article.comments_count }}
+            {%- else -%}
+              {{ 'blogs.article.comment_form_title' | t }}
+            {%- endif -%}
+          </h2>
+
+          {%- if article.comments_count > 0 -%}
+            <ul class="article-comments__list" role="list">
+              {%- paginate article.comments by 10 -%}
+                {%- for comment in article.comments -%}
+                  <li class="article-comments__item" id="comment-{{ comment.id }}">
+                    <p class="article-comments__meta">
+                      <strong>{{ comment.author }}</strong> &middot; {{ comment.created_at | date: '%b %d, %Y' }}
+                    </p>
+                    <div class="rte">{{ comment.content }}</div>
+                  </li>
+                {%- endfor -%}
+                {%- if paginate.pages > 1 -%}
+                  {%- render 'pagination', paginate: paginate, anchor: '#Comments' -%}
+                {%- endif -%}
+              {%- endpaginate -%}
+            </ul>
+          {%- endif -%}
+
+          {%- form 'new_comment', article, class: 'article-comments__form' -%}
+            {%- if form.errors -%}
+              <div class="article-comments__error" role="alert">
+                {{ form.errors | default_errors }}
+              </div>
+            {%- endif -%}
+            {%- if form.posted_successfully? -%}
+              <div class="article-comments__success" role="status">
+                {%- if blog.moderated? -%}
+                  {{ 'blogs.article.success_moderated' | t }}
+                {%- else -%}
+                  {{ 'blogs.article.success' | t }}
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
+            <div class="article-comments__fields">
+              <label>
+                <span>{{ 'blogs.article.name' | t }}</span>
+                <input type="text" name="comment[author]" required value="{{ form.author }}">
+              </label>
+              <label>
+                <span>{{ 'blogs.article.email' | t }}</span>
+                <input type="email" name="comment[email]" required value="{{ form.email }}">
+              </label>
+            </div>
+            <label>
+              <span>{{ 'blogs.article.message' | t }}</span>
+              <textarea name="comment[body]" rows="5" required>{{ form.body }}</textarea>
+            </label>
+            {%- if blog.moderated? -%}
+              <p class="article-comments__moderated">{{ 'blogs.article.moderated' | t }}</p>
+            {%- endif -%}
+            <button type="submit" class="btn btn--primary">{{ 'blogs.article.post' | t }}</button>
+          {%- endform -%}
+        </section>
+      {%- endif -%}
+
+      {%- if show_related and blog.articles_count > 1 -%}
+        <section class="article-related">
+          <h2>{{ 'blogs.article.related' | t | default: 'More reading' }}</h2>
+          <ul class="article-related__grid" role="list">
+            {%- assign related_rendered = 0 -%}
+            {%- for related in blog.articles -%}
+              {%- if related.id == article.id -%}
+                {%- continue -%}
+              {%- endif -%}
+              {%- if related_rendered >= related_count -%}
+                {%- break -%}
+              {%- endif -%}
+              <li>
+                <a class="related-card" href="{{ related.url }}">
+                  <div class="related-card__media">
+                    {%- if related.image != blank -%}
+                      {%- render 'responsive-image',
+                          image: related.image,
+                          sizes: '33vw',
+                          alt: related.title
+                      -%}
+                    {%- else -%}
+                      {%- render 'responsive-image', image: blank, alt: related.title -%}
+                    {%- endif -%}
+                  </div>
+                  <h3 class="related-card__title">{{ related.title }}</h3>
+                  <p class="article-card__meta">
+                    <span>{{ related.published_at | date: '%b %d, %Y' }}</span>
+                  </p>
+                </a>
+              </li>
+              {%- assign related_rendered = related_rendered | plus: 1 -%}
+            {%- endfor -%}
+          </ul>
+        </section>
+      {%- endif -%}
+    </div>
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Article",
+  "tag": "section",
+  "class": "section-main-article",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_hero_image",
+      "label": "Show hero image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Show tags",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "Show social share buttons",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_related",
+      "label": "Show related articles",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "related_count",
+      "label": "Related articles count",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    }
+  ],
+  "presets": [
+    {
+      "name": "Article",
+      "category": "Blog"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["article"]
+  }
+}
+{% endschema %}

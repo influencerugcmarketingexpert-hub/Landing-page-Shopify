@@ -365,10 +365,11 @@
   </div>
   <div class="drawer-backdrop" data-drawer-backdrop hidden></div>
 
-  {%- comment -%} Cart drawer + predictive search slots {%- endcomment -%}
-  {%- if settings.cart_type == 'drawer' -%}
-    {%- render 'cart-drawer' -%}
-  {%- endif -%}
+  {%- comment -%}
+    Cart drawer is rendered as its own section from layout/theme.liquid
+    (sections/cart-drawer.liquid) so the Section Rendering API can target it.
+    Predictive search stays here because it lives inside the header scope.
+  {%- endcomment -%}
   {%- if enable_search and search_type == 'drawer' and settings.predictive_search_enabled -%}
     {%- render 'predictive-search' -%}
   {%- endif -%}
