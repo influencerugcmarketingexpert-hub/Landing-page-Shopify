@@ -1,0 +1,672 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "autoplay": true,
+        "autoplay_speed": 7,
+        "show_arrows": true,
+        "show_dots": true,
+        "full_height": false,
+        "min_height": 720,
+        "section_label": "Orlaven homepage hero"
+      },
+      "blocks": {
+        "slide_1": {
+          "type": "slide",
+          "settings": {
+            "heading": "<p>Heirloom leather. Modern shoulders.</p>",
+            "subheading": "<p>Handcrafted jackets built to outlive trends.</p>",
+            "text_position": "middle-left",
+            "text_alignment": "left",
+            "button_label": "Shop the collection",
+            "button_link": "/collections/all",
+            "button_style": "primary",
+            "overlay_opacity": 40,
+            "text_color": "#F5EFE6"
+          }
+        },
+        "slide_2": {
+          "type": "slide",
+          "settings": {
+            "heading": "<p>The 2024 Moto Capsule</p>",
+            "subheading": "<p>Race-worn proportions, cut in oiled bridle leather.</p>",
+            "text_position": "middle-left",
+            "text_alignment": "left",
+            "button_label": "Explore the capsule",
+            "button_link": "/collections/moto",
+            "button_style": "primary",
+            "overlay_opacity": 40,
+            "text_color": "#F5EFE6"
+          }
+        }
+      },
+      "block_order": ["slide_1", "slide_2"]
+    },
+    "trust_strip": {
+      "type": "trust-strip",
+      "settings": {
+        "bg_color": "#E8DFD2",
+        "text_color": "#0F0F0F",
+        "divider": true
+      },
+      "blocks": {
+        "col_1": {
+          "type": "column",
+          "settings": {
+            "icon": "truck",
+            "heading": "Free global shipping",
+            "subheading": "On orders over $200"
+          }
+        },
+        "col_2": {
+          "type": "column",
+          "settings": {
+            "icon": "returns",
+            "heading": "30-day returns",
+            "subheading": "Easy, no questions"
+          }
+        },
+        "col_3": {
+          "type": "column",
+          "settings": {
+            "icon": "shield",
+            "heading": "Lifetime leather repair",
+            "subheading": "Kept in service, always"
+          }
+        },
+        "col_4": {
+          "type": "column",
+          "settings": {
+            "icon": "craftsmanship",
+            "heading": "Six-generation craftsmanship",
+            "subheading": "One artisan per jacket"
+          }
+        }
+      },
+      "block_order": ["col_1", "col_2", "col_3", "col_4"]
+    },
+    "shop_by_category": {
+      "type": "shop-by-category",
+      "settings": {
+        "heading": "Shop by category",
+        "subheading": "Coats, jackets and accessories, cut for every season.",
+        "columns_desktop": 3,
+        "tile_ratio": "portrait"
+      },
+      "blocks": {
+        "cat_jackets": {
+          "type": "category",
+          "settings": {
+            "heading": "Jackets",
+            "link": "/collections/jackets",
+            "overlay_color": "#0F0F0F",
+            "overlay_opacity": 25
+          }
+        },
+        "cat_outerwear": {
+          "type": "category",
+          "settings": {
+            "heading": "Outerwear",
+            "link": "/collections/outerwear",
+            "overlay_color": "#0F0F0F",
+            "overlay_opacity": 25
+          }
+        },
+        "cat_biker": {
+          "type": "category",
+          "settings": {
+            "heading": "Biker",
+            "link": "/collections/biker",
+            "overlay_color": "#0F0F0F",
+            "overlay_opacity": 25
+          }
+        },
+        "cat_bomber": {
+          "type": "category",
+          "settings": {
+            "heading": "Bomber",
+            "link": "/collections/bomber",
+            "overlay_color": "#0F0F0F",
+            "overlay_opacity": 25
+          }
+        },
+        "cat_shearling": {
+          "type": "category",
+          "settings": {
+            "heading": "Shearling",
+            "link": "/collections/shearling",
+            "overlay_color": "#0F0F0F",
+            "overlay_opacity": 25
+          }
+        },
+        "cat_accessories": {
+          "type": "category",
+          "settings": {
+            "heading": "Accessories",
+            "link": "/collections/accessories",
+            "overlay_color": "#0F0F0F",
+            "overlay_opacity": 25
+          }
+        }
+      },
+      "block_order": [
+        "cat_jackets",
+        "cat_outerwear",
+        "cat_biker",
+        "cat_bomber",
+        "cat_shearling",
+        "cat_accessories"
+      ]
+    },
+    "new_arrivals": {
+      "type": "featured-collection",
+      "settings": {
+        "heading": "New arrivals",
+        "subheading": "Fresh from the atelier this week.",
+        "collection": "new-arrivals",
+        "products_to_show": 8,
+        "columns_desktop": 4,
+        "columns_mobile": 2,
+        "enable_carousel": true,
+        "show_secondary_image": true,
+        "image_ratio": "portrait",
+        "show_view_all": true,
+        "view_all_text": "View all"
+      }
+    },
+    "shop_by_style": {
+      "type": "shop-by-style",
+      "settings": {
+        "heading": "Shop by silhouette",
+        "subheading": "From a classic biker to a shearling flight."
+      },
+      "blocks": {
+        "style_biker": {
+          "type": "style",
+          "settings": {
+            "eyebrow": "The classic",
+            "heading": "Biker",
+            "link": "/collections/biker"
+          }
+        },
+        "style_bomber": {
+          "type": "style",
+          "settings": {
+            "eyebrow": "Everyday",
+            "heading": "Bomber",
+            "link": "/collections/bomber"
+          }
+        },
+        "style_cafe_racer": {
+          "type": "style",
+          "settings": {
+            "eyebrow": "Minimal",
+            "heading": "Cafe Racer",
+            "link": "/collections/cafe-racer"
+          }
+        },
+        "style_aviator": {
+          "type": "style",
+          "settings": {
+            "eyebrow": "Heritage",
+            "heading": "Aviator",
+            "link": "/collections/aviator"
+          }
+        },
+        "style_shearling": {
+          "type": "style",
+          "settings": {
+            "eyebrow": "Winter",
+            "heading": "Shearling",
+            "link": "/collections/shearling"
+          }
+        }
+      },
+      "block_order": [
+        "style_biker",
+        "style_bomber",
+        "style_cafe_racer",
+        "style_aviator",
+        "style_shearling"
+      ]
+    },
+    "custom_banner": {
+      "type": "custom-banner",
+      "settings": {
+        "eyebrow": "Made-to-measure",
+        "heading": "Made to measure.",
+        "subheading": "<p>Your shoulders. Your sleeve. Your lapel. Cut precisely for you.</p>",
+        "primary_cta_label": "Start the fitting",
+        "primary_cta_link": "/pages/made-to-measure",
+        "secondary_cta_label": "See the process",
+        "secondary_cta_link": "/pages/atelier",
+        "text_position": "middle-left",
+        "text_color": "#F5EFE6",
+        "overlay_opacity": 40,
+        "min_height": 560
+      },
+      "blocks": {
+        "bullet_1": {
+          "type": "bullet",
+          "settings": {
+            "text": "30-day fit guarantee"
+          }
+        },
+        "bullet_2": {
+          "type": "bullet",
+          "settings": {
+            "text": "Free consultation call"
+          }
+        },
+        "bullet_3": {
+          "type": "bullet",
+          "settings": {
+            "text": "Hand-cut in our atelier"
+          }
+        }
+      },
+      "block_order": ["bullet_1", "bullet_2", "bullet_3"]
+    },
+    "best_sellers": {
+      "type": "featured-collection",
+      "settings": {
+        "heading": "Best sellers",
+        "subheading": "Loved by our community season after season.",
+        "collection": "best-sellers",
+        "products_to_show": 8,
+        "columns_desktop": 4,
+        "columns_mobile": 2,
+        "enable_carousel": true,
+        "show_secondary_image": true,
+        "image_ratio": "portrait",
+        "show_view_all": true,
+        "view_all_text": "View all"
+      }
+    },
+    "lookbook": {
+      "type": "lookbook",
+      "settings": {
+        "eyebrow": "Autumn / Winter 2024",
+        "heading": "The Winter Journal",
+        "subheading": "Photographed in the Piedmont, on hides cured in our workshop.",
+        "cta_label": "Enter the journal",
+        "cta_link": "/pages/lookbook",
+        "text_position": "bottom-left",
+        "overlay_opacity": 30,
+        "min_height": 600
+      }
+    },
+    "brand_story": {
+      "type": "brand-story",
+      "settings": {
+        "eyebrow": "The workshop",
+        "heading": "The Orlaven atelier",
+        "subheading": "<p>We began Orlaven with one rule: build a jacket that outlives the person who bought it. Every hide is chosen by hand, cut by hand and sewn by hand.</p>",
+        "quote": "Every Orlaven jacket is cut, stitched, and finished by one artisan from start to finish.",
+        "author": "Leandro Orlaven, founder",
+        "layout": "video-left",
+        "cta_label": "Read our story",
+        "cta_link": "/pages/about"
+      }
+    },
+    "material_guide": {
+      "type": "material-guide",
+      "settings": {
+        "eyebrow": "Materials",
+        "heading": "No corners cut.",
+        "subheading": "Full-grain hides, solid brass hardware, cotton-silk linings. We choose every component for feel and longevity.",
+        "columns_desktop": 3
+      },
+      "blocks": {
+        "mat_bridle": {
+          "type": "material",
+          "settings": {
+            "heading": "Full-grain bridle leather",
+            "description": "Aniline-finished, vegetable-tanned bridle hides that patina beautifully with wear. Sourced from a single Tuscan tannery for consistent grain.",
+            "link_label": "Learn more",
+            "link": "/pages/materials"
+          }
+        },
+        "mat_shearling": {
+          "type": "material",
+          "settings": {
+            "heading": "Merino shearling",
+            "description": "Dense Spanish merino shearling, cured for warmth and combed for softness. Natural insulation without synthetic fillers.",
+            "link_label": "Learn more",
+            "link": "/pages/materials"
+          }
+        },
+        "mat_lambskin": {
+          "type": "material",
+          "settings": {
+            "heading": "Italian lambskin",
+            "description": "Butter-soft lambskin from Tuscan tanneries, chosen for its drape, fine grain and supple hand feel.",
+            "link_label": "Learn more",
+            "link": "/pages/materials"
+          }
+        }
+      },
+      "block_order": ["mat_bridle", "mat_shearling", "mat_lambskin"]
+    },
+    "reviews_ugc": {
+      "type": "reviews-ugc",
+      "settings": {
+        "show_aggregate": true,
+        "average_rating": 4.9,
+        "review_count": 2847,
+        "heading": "Loved by 2,800+ wearers",
+        "subheading": "Honest reviews from real customers.",
+        "cta_label": "Read all reviews",
+        "cta_link": "/pages/reviews",
+        "judgeme_shop_domain": "",
+        "loox_shop_id": ""
+      },
+      "blocks": {
+        "ugc_1": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@elena_m",
+            "review_text": "The biker fits like a second skin. The grain only gets better the longer I wear it."
+          }
+        },
+        "ugc_2": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@liam.ford",
+            "review_text": "The bomber has been my uniform all winter. Every seam, every detail holds up."
+          }
+        },
+        "ugc_3": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@marco.rossi",
+            "review_text": "Ordered the shearling after reading the journal. It actually beat the expectation."
+          }
+        },
+        "ugc_4": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@sofia.p",
+            "review_text": "The weight, the stitching, the lining. This is an heirloom piece."
+          }
+        },
+        "ugc_5": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@therealjd",
+            "review_text": "Five years in and the leather looks better than the day it arrived."
+          }
+        },
+        "ugc_6": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@katrin.f",
+            "review_text": "Free alterations were a game changer. The fit is perfect now."
+          }
+        },
+        "ugc_7": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@noah.west",
+            "review_text": "Bought the cafe racer for my thirtieth. I plan to wear it to my sixtieth."
+          }
+        },
+        "ugc_8": {
+          "type": "ugc_tile",
+          "settings": {
+            "customer_name": "@amelia_k",
+            "review_text": "Their team walked me through sizing for twenty minutes. Worth every second."
+          }
+        }
+      },
+      "block_order": [
+        "ugc_1",
+        "ugc_2",
+        "ugc_3",
+        "ugc_4",
+        "ugc_5",
+        "ugc_6",
+        "ugc_7",
+        "ugc_8"
+      ]
+    },
+    "press_strip": {
+      "type": "press-strip",
+      "settings": {
+        "heading": "As seen in",
+        "bg_color": "#FAF7F2",
+        "text_color": "#0F0F0F",
+        "enable_marquee": true
+      },
+      "blocks": {
+        "logo_gq": {
+          "type": "logo",
+          "settings": {
+            "name": "GQ",
+            "alt": "GQ"
+          }
+        },
+        "logo_esquire": {
+          "type": "logo",
+          "settings": {
+            "name": "Esquire",
+            "alt": "Esquire"
+          }
+        },
+        "logo_vogue": {
+          "type": "logo",
+          "settings": {
+            "name": "Vogue",
+            "alt": "Vogue"
+          }
+        },
+        "logo_highsnobiety": {
+          "type": "logo",
+          "settings": {
+            "name": "Highsnobiety",
+            "alt": "Highsnobiety"
+          }
+        },
+        "logo_hypebeast": {
+          "type": "logo",
+          "settings": {
+            "name": "Hypebeast",
+            "alt": "Hypebeast"
+          }
+        },
+        "logo_robb_report": {
+          "type": "logo",
+          "settings": {
+            "name": "Robb Report",
+            "alt": "Robb Report"
+          }
+        },
+        "logo_monocle": {
+          "type": "logo",
+          "settings": {
+            "name": "Monocle",
+            "alt": "Monocle"
+          }
+        }
+      },
+      "block_order": [
+        "logo_gq",
+        "logo_esquire",
+        "logo_vogue",
+        "logo_highsnobiety",
+        "logo_hypebeast",
+        "logo_robb_report",
+        "logo_monocle"
+      ]
+    },
+    "blog_preview": {
+      "type": "blog-preview",
+      "settings": {
+        "eyebrow": "Journal",
+        "heading": "From the journal",
+        "subheading": "Craft notes, material studies, and stories from the atelier.",
+        "blog": "news",
+        "posts_to_show": 3,
+        "show_excerpt": true,
+        "show_date": true,
+        "show_author": true,
+        "cta_label": "Read the journal",
+        "cta_link": "/blogs/news"
+      }
+    },
+    "instagram_feed": {
+      "type": "instagram-feed",
+      "settings": {
+        "heading": "@orlaven",
+        "subheading": "Follow along from the workshop.",
+        "handle": "orlaven",
+        "columns_desktop": 4,
+        "columns_mobile": 2,
+        "enable_instafeed_mount": true
+      },
+      "blocks": {
+        "post_1": {
+          "type": "post",
+          "settings": {
+            "caption": "Fresh off the cutting table: the AW24 biker.",
+            "link": "/pages/instagram"
+          }
+        },
+        "post_2": {
+          "type": "post",
+          "settings": {
+            "caption": "Six generations of pattern-making.",
+            "link": "/pages/instagram"
+          }
+        },
+        "post_3": {
+          "type": "post",
+          "settings": {
+            "caption": "Inside the Piedmont workshop.",
+            "link": "/pages/instagram"
+          }
+        },
+        "post_4": {
+          "type": "post",
+          "settings": {
+            "caption": "Shearling, ready for lining.",
+            "link": "/pages/instagram"
+          }
+        },
+        "post_5": {
+          "type": "post",
+          "settings": {
+            "caption": "Solid brass. Never plated.",
+            "link": "/pages/instagram"
+          }
+        },
+        "post_6": {
+          "type": "post",
+          "settings": {
+            "caption": "Twelve kilos of hide, one finished jacket.",
+            "link": "/pages/instagram"
+          }
+        },
+        "post_7": {
+          "type": "post",
+          "settings": {
+            "caption": "Hand-stitched collar, in detail.",
+            "link": "/pages/instagram"
+          }
+        },
+        "post_8": {
+          "type": "post",
+          "settings": {
+            "caption": "On the road with the Aviator.",
+            "link": "/pages/instagram"
+          }
+        }
+      },
+      "block_order": [
+        "post_1",
+        "post_2",
+        "post_3",
+        "post_4",
+        "post_5",
+        "post_6",
+        "post_7",
+        "post_8"
+      ]
+    },
+    "marquee_text": {
+      "type": "marquee-text",
+      "settings": {
+        "speed": "medium",
+        "bg_color": "#0F0F0F",
+        "text_color": "#F5EFE6"
+      },
+      "blocks": {
+        "item_1": {
+          "type": "item",
+          "settings": {
+            "text": "Handcrafted. Since day one.",
+            "icon": "craftsmanship"
+          }
+        },
+        "item_2": {
+          "type": "item",
+          "settings": {
+            "text": "Full-grain leather. No exceptions.",
+            "icon": "star"
+          }
+        },
+        "item_3": {
+          "type": "item",
+          "settings": {
+            "text": "Made to be worn for a decade.",
+            "icon": "shield"
+          }
+        },
+        "item_4": {
+          "type": "item",
+          "settings": {
+            "text": "Shipped worldwide.",
+            "icon": "truck"
+          }
+        },
+        "item_5": {
+          "type": "item",
+          "settings": {
+            "text": "Lifetime repairs.",
+            "icon": "returns"
+          }
+        }
+      },
+      "block_order": ["item_1", "item_2", "item_3", "item_4", "item_5"]
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Join the Orlaven atelier",
+        "subheading": "<p>Early access to capsule drops and the craftsmanship journal. No spam, ever.</p>",
+        "overlay_opacity": 40,
+        "button_text": "Subscribe",
+        "success_text": "Welcome. Check your inbox for a warm hello."
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "trust_strip",
+    "shop_by_category",
+    "new_arrivals",
+    "shop_by_style",
+    "custom_banner",
+    "best_sellers",
+    "lookbook",
+    "brand_story",
+    "material_guide",
+    "reviews_ugc",
+    "press_strip",
+    "blog_preview",
+    "instagram_feed",
+    "marquee_text",
+    "newsletter"
+  ]
+}
