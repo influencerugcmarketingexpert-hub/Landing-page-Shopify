@@ -1,22 +1,17 @@
 {%- liquid
   assign t = target | default: product
-  if t.object_type == nil
-    assign on_sale = false
-    assign price = t.price | default: 0
-    echo price | money
-  else
-    if t.object_type == 'line_item'
-      echo t.final_line_price | money
-    else
-      assign on_sale = false
-      if t.compare_at_price > t.price
-        assign on_sale = true
-      endif
-      if on_sale
-        echo '<span class="price"><span class="price__sale">' | append: t.price | money | append: '</span> <span class="price__compare">' | append: t.compare_at_price | money | append: '</span></span>'
-      else
-        echo '<span class="price">' | append: t.price | money | append: '</span>'
-      endif
-    endif
-  endif
 -%}
+{%- if t == blank -%}
+  <span class="price">{{ 0 | money }}</span>
+{%- elsif t.object_type == 'line_item' -%}
+  <span class="price">{{ t.final_line_price | money }}</span>
+{%- else -%}
+  {%- if t.compare_at_price > t.price -%}
+    <span class="price">
+      <span class="price__sale">{{ t.price | money }}</span>
+      <span class="price__compare">{{ t.compare_at_price | money }}</span>
+    </span>
+  {%- else -%}
+    <span class="price">{{ t.price | money }}</span>
+  {%- endif -%}
+{%- endif -%}

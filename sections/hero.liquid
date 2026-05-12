@@ -37,7 +37,9 @@
           <div class="hero-slider__slide" {{ block.shopify_attributes }}>
             <div class="hero__media">
               {%- if block.settings.image != blank -%}
-                {{ block.settings.image | image_url: width: 2400 | image_tag: class: 'hero__img', loading: forloop.first | default: 'lazy', widths: '640,960,1280,1600,2000,2400', sizes: '100vw', alt: block.settings.heading }}
+                {%- assign hero_loading = 'lazy' -%}
+                {%- if forloop.first -%}{%- assign hero_loading = 'eager' -%}{%- endif -%}
+                {{ block.settings.image | image_url: width: 2400 | image_tag: class: 'hero__img', loading: hero_loading, widths: '640,960,1280,1600,2000,2400', sizes: '100vw', alt: block.settings.heading }}
               {%- endif -%}
               <div class="hero__scrim" style="opacity: {{ block.settings.scrim | divided_by: 100.0 }};"></div>
             </div>

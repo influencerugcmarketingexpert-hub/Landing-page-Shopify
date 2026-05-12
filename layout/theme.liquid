@@ -54,7 +54,7 @@
     <script src="{{ 'theme.js' | asset_url }}" defer></script>
   </head>
   <body class="template-{{ template | replace: '.', '-' | handle }}">
-    <a class="skip-to-content" href="#MainContent">{{ 'accessibility.skip_to_content' | t }}</a>
+    <a class="skip-to-content" href="#MainContent">{{ 'general.accessibility.skip_to_content' | t }}</a>
 
     {% sections 'header-group' %}
 
@@ -67,7 +67,7 @@
     <div id="CartDrawerRoot" aria-hidden="true"></div>
 
     <ul hidden>
-      <li id="a11y-new-window-message">{{ 'accessibility.link_messages.new_window' | t }}</li>
+      <li id="a11y-new-window-message">{{ 'general.accessibility.link_messages.new_window' | t }}</li>
     </ul>
   </body>
 </html>

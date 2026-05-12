@@ -46,7 +46,9 @@
     <div class="header__center">
       <a href="{{ routes.root_url }}" class="header__logo" aria-label="{{ shop.name }} home">
         {%- if settings.logo != blank -%}
-          {{ settings.logo | image_url: width: settings.logo_width | times: 2 | image_tag: class: 'header__logo-img', loading: 'eager', style: 'width:' | append: settings.logo_width | append: 'px' }}
+          {%- assign logo_w = settings.logo_width | times: 2 -%}
+          {%- assign logo_style = 'width:' | append: settings.logo_width | append: 'px' -%}
+          {{ settings.logo | image_url: width: logo_w | image_tag: class: 'header__logo-img', loading: 'eager', style: logo_style }}
         {%- else -%}
           <span class="header__logo-text" style="font-family:var(--font-heading);font-size:1.75rem;letter-spacing:.08em;">{{ shop.name }}</span>
         {%- endif -%}

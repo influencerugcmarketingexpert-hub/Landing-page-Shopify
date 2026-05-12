@@ -22,7 +22,10 @@
             {%- elsif media.media_type == 'external_video' -%}
               {{ media | external_video_tag: class: 'pdp__media' }}
             {%- else -%}
-              {{ media | image_url: width: 1600 | image_tag: loading: forloop.first | default: 'lazy', widths: '480,720,960,1200,1600', sizes: '(max-width:900px) 100vw, 50vw', alt: media.alt | default: product.title, class: 'pdp__media' }}
+              {%- assign pdp_loading = 'lazy' -%}
+              {%- if forloop.first -%}{%- assign pdp_loading = 'eager' -%}{%- endif -%}
+              {%- assign pdp_alt = media.alt | default: product.title -%}
+              {{ media | image_url: width: 1600 | image_tag: loading: pdp_loading, widths: '480,720,960,1200,1600', sizes: '(max-width:900px) 100vw, 50vw', alt: pdp_alt, class: 'pdp__media' }}
             {%- endif -%}
           </figure>
         {%- endfor -%}
@@ -53,7 +56,8 @@
             <div class="pdp__price" {{ block.shopify_attributes }}>
               {% render 'price', target: current_variant %}
               {%- if current_variant.unit_price_measurement -%}
-                <small class="pdp__unit">{{ 'products.product.price_per_unit' | t: price: current_variant.unit_price | money, unit: current_variant.unit_price_measurement.reference_unit }}</small>
+                {%- assign unit_price_formatted = current_variant.unit_price | money -%}
+                <small class="pdp__unit">{{ 'products.product.price_per_unit' | t: price: unit_price_formatted, unit: current_variant.unit_price_measurement.reference_unit }}</small>
               {%- endif -%}
             </div>
           {%- when 'variant-picker' -%}

@@ -26,21 +26,5 @@
     "social_youtube": "",
     "social_pinterest": "",
     "show_currency_codes": true
-  },
-  "presets": {
-    "Orlaven Heritage": {
-      "color_bg": "#FAF7F2",
-      "color_accent": "#8B5E3C",
-      "type_heading": "playfair_display_n4",
-      "type_body": "inter_n4"
-    },
-    "Orlaven Noir": {
-      "color_bg": "#141110",
-      "color_surface": "#1E1A17",
-      "color_ink": "#F2ECE3",
-      "color_muted": "#B6AA9A",
-      "color_accent": "#C79B6D",
-      "color_border": "#2A2522"
-    }
   }
 }
