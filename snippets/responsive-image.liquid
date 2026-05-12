@@ -16,6 +16,7 @@
   assign a = alt | default: image.alt | default: ''
   assign c = class | default: ''
   assign ar = aspect_ratio | default: ''
+  assign img_style = 'aspect-ratio:' | append: ar | append: ';'
 -%}
 {%- if image != blank -%}
   {{ image | image_url: width: 1600 | image_tag:
@@ -24,6 +25,6 @@
     sizes: s,
     alt: a,
     class: c,
-    style: 'aspect-ratio:' | append: ar | append: ';'
+    style: img_style
   }}
 {%- endif -%}
