@@ -1,0 +1,72 @@
+{%- comment -%}
+  Responsive image snippet.
+
+  Accepts:
+    image         (ImageDrop or image_url, required for real output)
+    class         (string) - class names for the <img>
+    sizes         (string) - the `sizes` attribute, default '100vw'
+    loading       (string) - 'lazy' (default) or 'eager'
+    fetchpriority (string) - optional, 'high' | 'low' | 'auto'
+    decoding      (string) - 'async' (default) | 'sync' | 'auto'
+    widths        (string) - comma list, default '300,500,700,900,1100,1300,1500,1800,2000'
+    alt           (string) - override alt text
+    wrapper_class (string) - optional wrapper class, if set wraps in <div>
+
+  Falls back to a placeholder SVG when image is blank.
+
+  Usage:
+    {%- render 'responsive-image',
+        image: product.featured_image,
+        sizes: '(min-width: 1024px) 33vw, 100vw',
+        class: 'card__media-primary'
+    -%}
+{%- endcomment -%}
+
+{%- assign _widths = widths | default: '300,500,700,900,1100,1300,1500,1800,2000' -%}
+{%- assign _sizes = sizes | default: '100vw' -%}
+{%- assign _loading = loading | default: 'lazy' -%}
+{%- assign _decoding = decoding | default: 'async' -%}
+{%- assign _class = class | default: '' -%}
+{%- assign _alt = alt | default: image.alt | default: '' -%}
+
+{%- if wrapper_class != blank -%}<div class="{{ wrapper_class }}">{%- endif -%}
+
+{%- if image != blank -%}
+  {%- assign _width_list = _widths | split: ',' -%}
+  {%- capture _srcset -%}
+    {%- for w in _width_list -%}
+      {%- assign _w = w | strip | plus: 0 -%}
+      {%- if image.width >= _w -%}
+        {{ image | image_url: width: _w }} {{ _w }}w{%- unless forloop.last -%},{%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- assign _primary_width = image.width | at_most: 1500 -%}
+  <img
+    src="{{ image | image_url: width: _primary_width }}"
+    srcset="{{ _srcset | strip_newlines | replace: '  ', ' ' }}"
+    sizes="{{ _sizes }}"
+    alt="{{ _alt | escape }}"
+    width="{{ image.width }}"
+    height="{{ image.height }}"
+    loading="{{ _loading }}"
+    decoding="{{ _decoding }}"
+    {%- if fetchpriority %} fetchpriority="{{ fetchpriority }}"{%- endif %}
+    {%- if _class != blank %} class="{{ _class }}"{%- endif -%}
+  >
+{%- else -%}
+  <svg
+    class="placeholder{% if _class != blank %} {{ _class }}{% endif %}"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 4 5"
+    preserveAspectRatio="xMidYMid slice"
+    role="img"
+    aria-label="{{ _alt | default: 'Placeholder image' | escape }}"
+  >
+    <rect width="4" height="5" fill="currentColor" opacity="0.08"/>
+    <path d="M0.6 3.4 L1.4 2.5 L2.1 3.2 L2.9 2.3 L3.6 3.1 L3.6 4.3 L0.6 4.3 Z" fill="currentColor" opacity="0.18"/>
+    <circle cx="2.9" cy="1.5" r="0.35" fill="currentColor" opacity="0.22"/>
+  </svg>
+{%- endif -%}
+
+{%- if wrapper_class != blank -%}</div>{%- endif -%}

@@ -1,0 +1,63 @@
+{%- comment -%}
+  Pagination snippet.
+
+  Accepts:
+    paginate   - Shopify paginate drop (required)
+    anchor     - optional hash fragment (e.g. '#ProductGrid')
+
+  Usage:
+    {%- paginate collection.products by 24 -%}
+      ...
+      {%- render 'pagination', paginate: paginate -%}
+    {%- endpaginate -%}
+{%- endcomment -%}
+
+{%- if paginate.pages > 1 -%}
+  <nav class="pagination" role="navigation" aria-label="{{ 'general.pagination.label' | t | default: 'Pagination' }}">
+    {%- if paginate.previous -%}
+      <a
+        class="pagination__item pagination__prev"
+        href="{{ paginate.previous.url }}{{ anchor }}"
+        aria-label="{{ 'general.pagination.previous' | t | default: 'Previous page' }}"
+        rel="prev"
+      >
+        {%- render 'icon-arrow-left' -%}
+        <span class="visually-hidden">{{ 'general.pagination.previous' | t | default: 'Previous' }}</span>
+      </a>
+    {%- else -%}
+      <span class="pagination__item pagination__prev pagination__ellipsis" aria-hidden="true">
+        {%- render 'icon-arrow-left' -%}
+      </span>
+    {%- endif -%}
+
+    {%- for part in paginate.parts -%}
+      {%- if part.is_link -%}
+        <a class="pagination__item" href="{{ part.url }}{{ anchor }}" aria-label="{{ 'general.pagination.page' | t: page: part.title | default: part.title }}">
+          {{ part.title }}
+        </a>
+      {%- else -%}
+        {%- if part.title == paginate.current_page -%}
+          <span class="pagination__item pagination__item--current" aria-current="page">{{ part.title }}</span>
+        {%- else -%}
+          <span class="pagination__item pagination__ellipsis" aria-hidden="true">{{ part.title }}</span>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if paginate.next -%}
+      <a
+        class="pagination__item pagination__next"
+        href="{{ paginate.next.url }}{{ anchor }}"
+        aria-label="{{ 'general.pagination.next' | t | default: 'Next page' }}"
+        rel="next"
+      >
+        <span class="visually-hidden">{{ 'general.pagination.next' | t | default: 'Next' }}</span>
+        {%- render 'icon-arrow-right' -%}
+      </a>
+    {%- else -%}
+      <span class="pagination__item pagination__next pagination__ellipsis" aria-hidden="true">
+        {%- render 'icon-arrow-right' -%}
+      </span>
+    {%- endif -%}
+  </nav>
+{%- endif -%}

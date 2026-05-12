@@ -1,0 +1,72 @@
+{%- comment -%}
+  Price snippet.
+
+  Accepts:
+    product       (optional) Product drop
+    variant       (optional) Variant drop
+    use_variant   (bool) - if true, prefer `variant`, else prefer product.selected_or_first_available_variant
+    show_badges   (bool) - render Sale / Sold out badges next to the price
+    show_compare_at (bool, default true) - show compare_at_price strikethrough
+    placeholder   (bool) - render dash if no price
+    class         (string) - extra class names
+
+  Usage:
+    {%- render 'price', product: product, show_badges: true -%}
+{%- endcomment -%}
+
+{%- if use_variant and variant != blank -%}
+  {%- assign target = variant -%}
+{%- elsif variant != blank -%}
+  {%- assign target = variant -%}
+{%- elsif product != blank -%}
+  {%- assign target = product.selected_or_first_available_variant | default: product -%}
+{%- endif -%}
+
+{%- assign money_price = target.price -%}
+{%- assign compare_at = target.compare_at_price -%}
+{%- assign available = true -%}
+{%- if target.available == false -%}{%- assign available = false -%}{%- endif -%}
+
+{%- assign on_sale = false -%}
+{%- if compare_at and compare_at > money_price -%}
+  {%- assign on_sale = true -%}
+{%- endif -%}
+
+{%- assign price_class = 'price' -%}
+{%- if on_sale -%}{%- assign price_class = price_class | append: ' price--on-sale' -%}{%- endif -%}
+{%- unless available -%}{%- assign price_class = price_class | append: ' price--sold-out' -%}{%- endunless -%}
+{%- if class != blank -%}{%- assign price_class = price_class | append: ' ' | append: class -%}{%- endif -%}
+
+<span class="{{ price_class }}">
+  {%- if money_price == nil -%}
+    {%- if placeholder -%}<span class="price__current">&mdash;</span>{%- endif -%}
+  {%- else -%}
+    {%- if product and product.price_varies and use_variant != true -%}
+      <span class="price__current">{{ 'products.product.from_price_html' | t: price: money_price | money }}</span>
+    {%- else -%}
+      <span class="price__current{% if on_sale %} price--sale{% endif %}">
+        {{ money_price | money }}
+      </span>
+    {%- endif -%}
+    {%- if on_sale and show_compare_at != false -%}
+      <s class="price__compare price--compare" aria-label="{{ 'products.product.regular_price' | t }}">
+        {{ compare_at | money }}
+      </s>
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if show_badges -%}
+    <span class="price__badges">
+      {%- if on_sale -%}
+        <span class="badge badge--sale">
+          {%- assign saved = compare_at | minus: money_price | times: 100 | divided_by: compare_at -%}
+          {{ 'products.product.on_sale' | t | default: 'Sale' }}
+          {%- if saved > 0 %} &middot; {{ saved }}%{%- endif -%}
+        </span>
+      {%- endif -%}
+      {%- unless available -%}
+        <span class="badge badge--sold-out">{{ 'products.product.sold_out' | t | default: 'Sold out' }}</span>
+      {%- endunless -%}
+    </span>
+  {%- endif -%}
+</span>

@@ -1,0 +1,129 @@
+{%- comment -%}
+  Product card snippet.
+
+  Accepts:
+    product               Product drop (required)
+    show_vendor           bool, default false
+    image_ratio           string, 'portrait' (default, 4/5) | 'square' | 'landscape'
+    show_secondary_image  bool, default true - swap to image[1] on hover
+    show_quick_add        bool, default false - render quick-add button
+    show_badges           bool, default true
+    sizes                 string - `sizes` attribute for the image
+    class                 string - extra class
+
+  Usage:
+    {%- render 'product-card', product: product, show_quick_add: true -%}
+{%- endcomment -%}
+
+{%- if product != blank -%}
+  {%- assign _ratio = image_ratio | default: 'portrait' -%}
+  {%- assign _ratio_class = 'card__media--portrait' -%}
+  {%- if _ratio == 'square' -%}{%- assign _ratio_class = 'card__media--square' -%}{%- endif -%}
+  {%- if _ratio == 'landscape' -%}{%- assign _ratio_class = 'card__media--landscape' -%}{%- endif -%}
+
+  {%- assign _sizes = sizes | default: '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw' -%}
+  {%- assign _show_secondary = show_secondary_image | default: true -%}
+  {%- assign _show_badges = show_badges | default: true -%}
+
+  {%- assign primary_image = product.featured_image -%}
+  {%- assign secondary_image = product.images[1] -%}
+  {%- assign variant = product.selected_or_first_available_variant -%}
+
+  {%- assign compare_at = variant.compare_at_price -%}
+  {%- assign on_sale = false -%}
+  {%- if compare_at and compare_at > variant.price -%}{%- assign on_sale = true -%}{%- endif -%}
+
+  {%- assign is_new = false -%}
+  {%- if product.tags contains 'new' or product.tags contains 'New' -%}
+    {%- assign is_new = true -%}
+  {%- endif -%}
+
+  <article class="product-card card{% if class != blank %} {{ class }}{% endif %}" data-product-id="{{ product.id }}">
+    <a
+      class="product-card__link"
+      href="{{ product.url | within: collection }}"
+      aria-label="{{ product.title | escape }} &ndash; {{ variant.price | money }}"
+    >
+      <div class="card__media {{ _ratio_class }}{% if secondary_image and _show_secondary %} card__media--has-secondary{% endif %}">
+        {%- if _show_badges -%}
+          <div class="badge-group">
+            {%- if on_sale -%}
+              <span class="badge badge--sale">{{ 'products.product.on_sale' | t | default: 'Sale' }}</span>
+            {%- endif -%}
+            {%- if is_new -%}
+              <span class="badge badge--new">{{ 'products.product.new' | t | default: 'New' }}</span>
+            {%- endif -%}
+            {%- unless product.available -%}
+              <span class="badge badge--sold-out">{{ 'products.product.sold_out' | t | default: 'Sold out' }}</span>
+            {%- endunless -%}
+          </div>
+        {%- endif -%}
+
+        {%- if primary_image -%}
+          {%- render 'responsive-image',
+              image: primary_image,
+              sizes: _sizes,
+              class: 'card__media-primary',
+              alt: product.title
+          -%}
+        {%- else -%}
+          {%- render 'responsive-image', image: blank, class: 'card__media-primary', alt: product.title -%}
+        {%- endif -%}
+
+        {%- if secondary_image and _show_secondary -%}
+          {%- render 'responsive-image',
+              image: secondary_image,
+              sizes: _sizes,
+              class: 'card__media-secondary',
+              alt: product.title
+          -%}
+        {%- endif -%}
+      </div>
+    </a>
+
+    <div class="card__body product-card__body">
+      {%- if show_vendor and product.vendor != blank -%}
+        <p class="card__subtitle product-card__vendor">{{ product.vendor }}</p>
+      {%- endif -%}
+
+      <h3 class="card__title product-card__title">
+        <a href="{{ product.url | within: collection }}">{{ product.title | escape }}</a>
+      </h3>
+
+      <div class="product-card__price">
+        {%- render 'price', product: product, show_compare_at: true -%}
+      </div>
+
+      {%- assign color_option = product.options_by_name['Color'] | default: product.options_by_name['color'] -%}
+      {%- if color_option and color_option.values.size > 0 -%}
+        <ul class="product-card__swatches" aria-label="{{ 'products.product.color_options' | t | default: 'Available colors' }}">
+          {%- for value in color_option.values limit: 5 -%}
+            {%- assign swatch_color = value | handleize -%}
+            <li class="product-card__swatch" style="color: {{ value | downcase | replace: ' ', '' }};" title="{{ value | escape }}" data-swatch="{{ swatch_color }}">
+              <span class="visually-hidden">{{ value | escape }}</span>
+            </li>
+          {%- endfor -%}
+          {%- if color_option.values.size > 5 -%}
+            <li class="product-card__swatch product-card__swatch--more" aria-hidden="true">
+              +{{ color_option.values.size | minus: 5 }}
+            </li>
+          {%- endif -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if show_quick_add and product.available -%}
+        <form class="product-card__quick-add" method="post" action="{{ routes.cart_add_url }}" data-quick-add>
+          <input type="hidden" name="id" value="{{ variant.id }}">
+          <button
+            type="submit"
+            class="btn btn--secondary btn--small btn--full"
+            data-quick-add-button
+            aria-label="{{ 'products.product.add_to_cart' | t | default: 'Add to bag' }} &ndash; {{ product.title | escape }}"
+          >
+            {{ 'products.product.add_to_cart' | t | default: 'Add to bag' }}
+          </button>
+        </form>
+      {%- endif -%}
+    </div>
+  </article>
+{%- endif -%}
