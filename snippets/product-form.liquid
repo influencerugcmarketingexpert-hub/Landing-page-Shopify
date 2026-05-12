@@ -1,0 +1,173 @@
+{%- comment -%}
+  Product form.
+
+  Wraps the variant picker, quantity input, add-to-cart button and optional
+  dynamic checkout button in a <product-form> custom element (assets/product.js).
+  Submits are intercepted and routed to window.theme.cart.add (from cart.js).
+
+  Accepts:
+    product                      Product drop (required)
+    section_id                   string (required)
+    show_quantity                bool default true
+    show_dynamic_checkout        bool default true
+    add_to_cart_label            string override
+    atc_button_class             string override
+
+  Usage:
+    {%- render 'product-form',
+        product: product,
+        section_id: section.id,
+        show_dynamic_checkout: block.settings.show_dynamic_checkout
+    -%}
+{%- endcomment -%}
+
+{%- liquid
+  assign _section_id = section_id | default: product.id
+  assign _show_qty = show_quantity
+  if _show_qty == nil
+    assign _show_qty = true
+  endif
+  assign _show_payment = show_dynamic_checkout
+  if _show_payment == nil
+    assign _show_payment = true
+  endif
+  assign _current_variant = product.selected_or_first_available_variant
+  assign _atc_label = add_to_cart_label | default: 'products.product.add_to_cart' | t
+  if _current_variant.available == false
+    assign _atc_label = 'products.product.sold_out' | t
+  endif
+  assign _form_id = 'ProductForm-' | append: _section_id
+-%}
+
+<style>
+  #shopify-section-{{ _section_id }} .product-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  #shopify-section-{{ _section_id }} .product-form__qty-row {
+    display: flex;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+  #shopify-section-{{ _section_id }} .product-form__qty-row quantity-input {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid color-mix(in oklab, var(--color-text) 25%, transparent);
+  }
+  #shopify-section-{{ _section_id }} .product-form__qty-row quantity-input button {
+    width: 44px;
+    height: 44px;
+    background: var(--color-background);
+    border: 0;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+  #shopify-section-{{ _section_id }} .product-form__qty-row quantity-input input {
+    width: 56px;
+    height: 44px;
+    border: 0;
+    border-left: 1px solid color-mix(in oklab, var(--color-text) 25%, transparent);
+    border-right: 1px solid color-mix(in oklab, var(--color-text) 25%, transparent);
+    text-align: center;
+    font-size: var(--text-base);
+    -moz-appearance: textfield;
+  }
+  #shopify-section-{{ _section_id }} .product-form__qty-row quantity-input input::-webkit-outer-spin-button,
+  #shopify-section-{{ _section_id }} .product-form__qty-row quantity-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  #shopify-section-{{ _section_id }} .product-form__buttons {
+    display: grid;
+    gap: var(--space-2);
+  }
+  #shopify-section-{{ _section_id }} .product-form__submit {
+    min-height: 52px;
+    font-size: var(--text-base);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+  #shopify-section-{{ _section_id }} .product-form__submit[aria-busy="true"] {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  #shopify-section-{{ _section_id }} .product-form__error {
+    padding: var(--space-3) var(--space-4);
+    background: color-mix(in oklab, var(--color-badge-sale) 15%, transparent);
+    border: 1px solid var(--color-badge-sale);
+    color: var(--color-badge-sale);
+    font-size: var(--text-sm);
+  }
+  #shopify-section-{{ _section_id }} .product-form__payment-button {
+    margin-top: var(--space-2);
+  }
+</style>
+
+<product-form
+  class="product-form"
+  data-section-id="{{ _section_id }}"
+  data-product-id="{{ product.id }}"
+>
+  {%- form 'product',
+      product,
+      id: _form_id,
+      class: 'product-form__form',
+      novalidate: 'novalidate'
+  -%}
+    <input type="hidden" name="id" value="{{ _current_variant.id }}">
+
+    {%- render 'product-variant-picker',
+        product: product,
+        section_id: _section_id
+    -%}
+
+    {%- if _show_qty -%}
+      <div class="product-form__qty-row">
+        <label class="visually-hidden" for="Quantity-{{ _section_id }}">
+          {{ 'products.product.quantity' | t }}
+        </label>
+        <quantity-input class="quantity-input">
+          <button type="button" name="minus" data-qty-decrease aria-label="{{ 'products.product.decrease_quantity' | t }}">
+            {%- render 'icon-minus', size: 14 -%}
+          </button>
+          <input
+            type="number"
+            id="Quantity-{{ _section_id }}"
+            name="quantity"
+            value="1"
+            min="1"
+            step="1"
+            inputmode="numeric"
+          >
+          <button type="button" name="plus" data-qty-increase aria-label="{{ 'products.product.increase_quantity' | t }}">
+            {%- render 'icon-plus', size: 14 -%}
+          </button>
+        </quantity-input>
+      </div>
+    {%- endif -%}
+
+    <div class="product-form__buttons">
+      <button
+        type="submit"
+        name="add"
+        class="btn btn--primary product-form__submit"
+        data-atc-button
+        data-text-default="{{ 'products.product.add_to_cart' | t }}"
+        data-text-unavailable="{{ 'products.product.sold_out' | t }}"
+        {% if _current_variant.available == false %}disabled{% endif %}
+      >
+        <span data-atc-label>{{ _atc_label }}</span>
+      </button>
+
+      {%- if _show_payment -%}
+        <div class="product-form__payment-button">
+          {{ form | payment_button }}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="product-form__error" data-product-form-error role="alert" aria-live="polite" hidden></div>
+  {%- endform -%}
+</product-form>

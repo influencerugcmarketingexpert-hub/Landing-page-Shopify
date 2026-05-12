@@ -1,0 +1,162 @@
+{%- comment -%}
+  Product recommendations
+  -----------------------
+  Separate section so merchants can reorder or hide related products in the
+  product.json template.
+
+  The section renders once server-side with `recommendations.performed == false`
+  to get a loading skeleton, then the <product-recommendations> custom
+  element hydrates by fetching
+    /recommendations/products?section_id=<this id>&product_id=<id>&limit=<n>
+  and swapping the contents.
+
+  This section also doubles as the endpoint Shopify calls for the client
+  fetch. When Shopify requests this section via the Section Rendering API
+  with a `recommendations` drop that has `performed == true`, we render the
+  actual list of cards.
+{%- endcomment -%}
+
+{%- liquid
+  assign heading = section.settings.heading | default: 'You might also like'
+  assign subheading = section.settings.subheading
+  assign limit = section.settings.products_to_show | default: 4
+  assign show_secondary = section.settings.show_secondary_image
+  assign cols_desktop = section.settings.columns_desktop | default: 4
+  assign cols_mobile = section.settings.columns_mobile | default: 2
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .product-recommendations-section {
+    padding: var(--spacing-sections, 72px) 0;
+  }
+  #shopify-section-{{ section.id }} .product-recommendations-section__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-6);
+  }
+  #shopify-section-{{ section.id }} .product-recommendations-section__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .product-recommendations-section__sub {
+    font-size: var(--text-md);
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: var(--space-2) 0 0;
+  }
+  #shopify-section-{{ section.id }} .product-recommendations__grid {
+    display: grid;
+    grid-template-columns: repeat({{ cols_mobile }}, minmax(0, 1fr));
+    gap: var(--space-5);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .product-recommendations__grid {
+      grid-template-columns: repeat({{ cols_desktop }}, minmax(0, 1fr));
+    }
+  }
+  #shopify-section-{{ section.id }} .product-recommendations__empty {
+    padding: var(--space-8);
+    text-align: center;
+    color: color-mix(in oklab, var(--color-text) 65%, transparent);
+    border: 1px dashed color-mix(in oklab, var(--color-text) 20%, transparent);
+  }
+  #shopify-section-{{ section.id }} .product-recommendations[data-empty] .product-recommendations__grid { display: none; }
+</style>
+
+<section class="product-recommendations-section">
+  <div class="container">
+    <header class="product-recommendations-section__header">
+      <div>
+        {%- if heading != blank -%}
+          <h2 class="product-recommendations-section__heading">{{ heading }}</h2>
+        {%- endif -%}
+        {%- if subheading != blank -%}
+          <p class="product-recommendations-section__sub">{{ subheading }}</p>
+        {%- endif -%}
+      </div>
+    </header>
+
+    {%- if product != blank -%}
+      {%- render 'product-recommendations',
+          product: product,
+          section_id: section.id,
+          products_to_show: limit,
+          show_secondary_image: show_secondary
+      -%}
+    {%- else -%}
+      <p class="product-recommendations__empty" role="status">
+        {{ 'sections.featured_collection.empty_no_collection' | t | default: 'Recommendations appear on product pages.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product recommendations",
+  "tag": "section",
+  "class": "section-product-recommendations",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "You might also like"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Columns (mobile)",
+      "min": 1,
+      "max": 2,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product recommendations",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

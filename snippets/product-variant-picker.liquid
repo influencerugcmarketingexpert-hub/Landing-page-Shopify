@@ -1,0 +1,300 @@
+{%- comment -%}
+  Product variant picker.
+
+  Renders a <variant-radios> (defined in assets/product.js) whose interior
+  auto-detects each option name and picks the appropriate control:
+
+    - 'Color' / 'Colour' -> colored swatches driven by
+        variant.metafields.custom.swatch_color OR an in-JS CSS-named-color map
+        OR a CSS named color fallback.
+    - 'Size'             -> pill buttons
+    - Other options (Material, Fit, etc.) -> native <select> rendered in a
+        <variant-selects> sibling so the picker can still submit.
+
+  Accepts:
+    product           Product drop (required)
+    section_id        string (required)
+    update_url        bool default true - update ?variant= via history
+
+  Usage:
+    {%- render 'product-variant-picker', product: product, section_id: section.id -%}
+{%- endcomment -%}
+
+{%- liquid
+  assign _section_id = section_id | default: product.id
+  assign _current_variant = product.selected_or_first_available_variant
+  assign _variants_for_color = product.variants
+-%}
+
+<style>
+  #shopify-section-{{ _section_id }} .variant-picker { display: flex; flex-direction: column; gap: var(--space-5); }
+  #shopify-section-{{ _section_id }} .variant-picker__group { display: flex; flex-direction: column; gap: var(--space-2); border: 0; padding: 0; margin: 0; }
+  #shopify-section-{{ _section_id }} .variant-picker__legend {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__selected {
+    font-size: var(--text-sm);
+    color: color-mix(in oklab, var(--color-text) 65%, transparent);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px;
+    height: 1px;
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 var(--space-4);
+    border: 1px solid color-mix(in oklab, var(--color-text) 20%, transparent);
+    background: var(--color-background);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: var(--transition-base);
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__pill[aria-checked="true"] {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-cream);
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__pill[aria-disabled="true"] {
+    opacity: 0.4;
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__pill:focus-visible {
+    outline: 2px solid var(--color-cognac);
+    outline-offset: 2px;
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__swatch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    border: 1px solid color-mix(in oklab, var(--color-text) 25%, transparent);
+    padding: 3px;
+    background: transparent;
+    cursor: pointer;
+    transition: var(--transition-base);
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__swatch-dot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--swatch-color, currentColor);
+    box-shadow: inset 0 0 0 1px rgba(15, 15, 15, 0.1);
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__swatch[aria-checked="true"] {
+    border-color: var(--color-ink);
+    box-shadow: 0 0 0 1px var(--color-ink);
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__swatch[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__select {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid color-mix(in oklab, var(--color-text) 25%, transparent);
+    background: var(--color-background);
+    color: var(--color-text);
+    font-size: var(--text-base);
+  }
+  #shopify-section-{{ _section_id }} .variant-picker__size-chart {
+    font-size: var(--text-sm);
+    text-decoration: underline;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+    color: inherit;
+  }
+</style>
+
+<variant-radios
+  class="variant-picker"
+  data-section-id="{{ _section_id }}"
+  data-product-id="{{ product.id }}"
+  data-update-url="true"
+>
+  {%- for option in product.options_with_values -%}
+    {%- assign option_index0 = forloop.index0 -%}
+    {%- assign option_key = option.name | downcase | strip -%}
+    {%- assign is_color = false -%}
+    {%- assign is_size = false -%}
+    {%- if option_key == 'color' or option_key == 'colour' -%}{%- assign is_color = true -%}{%- endif -%}
+    {%- if option_key == 'size' -%}{%- assign is_size = true -%}{%- endif -%}
+
+    <fieldset
+      class="variant-picker__group"
+      data-option-index="{{ option_index0 }}"
+      data-option-name="{{ option.name }}"
+    >
+      <legend class="variant-picker__legend">
+        <span class="variant-picker__name">{{ option.name }}</span>
+        <span class="variant-picker__selected" data-selected-value="{{ option.name }}">
+          {{ option.selected_value }}
+        </span>
+      </legend>
+
+      {%- if is_color -%}
+        <ul class="variant-picker__values" role="list">
+          {%- for value in option.values -%}
+            {%- liquid
+              assign swatch_color = blank
+              for v in _variants_for_color
+                if v.option1 == value or v.option2 == value or v.option3 == value
+                  assign mf = v.metafields.custom.swatch_color
+                  if mf != blank
+                    assign swatch_color = mf
+                    break
+                  endif
+                endif
+              endfor
+              if swatch_color == blank
+                assign swatch_color = value | downcase | replace: ' ', ''
+              endif
+              assign is_checked = false
+              if value == option.selected_value
+                assign is_checked = true
+              endif
+              assign input_id = 'opt-' | append: _section_id | append: '-' | append: option_index0 | append: '-' | append: forloop.index
+            -%}
+            <li>
+              <input
+                class="variant-picker__input"
+                type="radio"
+                id="{{ input_id }}"
+                name="{{ option.name }}"
+                value="{{ value | escape }}"
+                {% if is_checked %}checked{% endif %}
+                tabindex="-1"
+              >
+              <button
+                type="button"
+                class="variant-picker__swatch"
+                data-variant-option-button
+                data-option-name="{{ option.name }}"
+                data-option-value="{{ value | escape }}"
+                role="radio"
+                aria-checked="{% if is_checked %}true{% else %}false{% endif %}"
+                aria-label="{{ option.name }}: {{ value | escape }}"
+                title="{{ value | escape }}"
+                style="--swatch-color: {{ swatch_color }};"
+              >
+                <span class="variant-picker__swatch-dot" aria-hidden="true"></span>
+              </button>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+      {%- elsif is_size -%}
+        <ul class="variant-picker__values" role="list">
+          {%- for value in option.values -%}
+            {%- liquid
+              assign is_checked = false
+              if value == option.selected_value
+                assign is_checked = true
+              endif
+              assign input_id = 'opt-' | append: _section_id | append: '-' | append: option_index0 | append: '-' | append: forloop.index
+            -%}
+            <li>
+              <input
+                class="variant-picker__input"
+                type="radio"
+                id="{{ input_id }}"
+                name="{{ option.name }}"
+                value="{{ value | escape }}"
+                {% if is_checked %}checked{% endif %}
+                tabindex="-1"
+              >
+              <button
+                type="button"
+                class="variant-picker__pill"
+                data-variant-option-button
+                data-option-name="{{ option.name }}"
+                data-option-value="{{ value | escape }}"
+                role="radio"
+                aria-checked="{% if is_checked %}true{% else %}false{% endif %}"
+              >
+                {{ value | escape }}
+              </button>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+      {%- else -%}
+        {%- comment -%} Generic select fallback wrapped in variant-selects so change events still bubble. {%- endcomment -%}
+        <variant-selects data-section-id="{{ _section_id }}">
+          <select
+            class="variant-picker__select"
+            name="{{ option.name }}"
+            data-option-index="{{ option_index0 }}"
+            aria-label="{{ option.name }}"
+          >
+            {%- for value in option.values -%}
+              <option value="{{ value | escape }}" {% if value == option.selected_value %}selected{% endif %}>
+                {{ value | escape }}
+              </option>
+            {%- endfor -%}
+          </select>
+          {%- comment -%}
+            Keep a hidden radio so the parent <variant-radios> can still
+            gather selected values consistently across all options.
+          {%- endcomment -%}
+          {%- for value in option.values -%}
+            <input
+              class="variant-picker__input"
+              type="radio"
+              name="{{ option.name }}"
+              value="{{ value | escape }}"
+              {% if value == option.selected_value %}checked{% endif %}
+              hidden
+              tabindex="-1"
+            >
+          {%- endfor -%}
+        </variant-selects>
+      {%- endif -%}
+    </fieldset>
+  {%- endfor -%}
+
+  {%- comment -%}
+    Fallback <noscript> select so the form still submits when JS is disabled.
+    Shopify will read the selected option values from the form.
+  {%- endcomment -%}
+  <noscript>
+    <select name="id" class="variant-picker__select">
+      {%- for variant in product.variants -%}
+        <option value="{{ variant.id }}" {% if variant == _current_variant %}selected{% endif %}>
+          {{ variant.title }} - {{ variant.price | money }}
+        </option>
+      {%- endfor -%}
+    </select>
+  </noscript>
+</variant-radios>

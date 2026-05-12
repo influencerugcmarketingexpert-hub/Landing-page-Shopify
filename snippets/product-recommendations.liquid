@@ -1,0 +1,89 @@
+{%- comment -%}
+  Product recommendations snippet.
+
+  Wraps a <product-recommendations> custom element that fetches
+  /recommendations/products?section_id=... and swaps its innerHTML with
+  the rendered response.
+
+  On the initial render (when called with `recommendations.products_count > 0`)
+  it renders a grid of product cards; otherwise it renders a loading skeleton
+  + empty-state fallback that the client hydrates when reached.
+
+  Accepts:
+    product         Product drop (required - the source product)
+    section_id      string (required) - must match the surrounding section id
+    products_to_show number default 4
+    show_secondary_image bool default true
+    heading         string override - only used when rendering inside the
+                    section (the snippet itself does not render a heading)
+
+  Usage:
+    {%- render 'product-recommendations',
+        product: product,
+        section_id: section.id,
+        products_to_show: section.settings.products_to_show
+    -%}
+{%- endcomment -%}
+
+{%- liquid
+  assign _section_id = section_id | default: product.id
+  assign _limit = products_to_show | default: 4
+  if _limit < 2
+    assign _limit = 2
+  endif
+  if _limit > 10
+    assign _limit = 10
+  endif
+  assign _show_secondary = show_secondary_image
+  if _show_secondary == nil
+    assign _show_secondary = true
+  endif
+  assign _recommendations = recommendations
+-%}
+
+<product-recommendations
+  class="product-recommendations"
+  data-section-id="{{ _section_id }}"
+  data-product-id="{{ product.id }}"
+  data-limit="{{ _limit }}"
+  data-intent="related"
+>
+  {%- if _recommendations.performed and _recommendations.products_count > 0 -%}
+    <ul class="product-recommendations__grid" role="list">
+      {%- for recommended in _recommendations.products limit: _limit -%}
+        <li>
+          {%- render 'product-card',
+              product: recommended,
+              image_ratio: 'portrait',
+              show_secondary_image: _show_secondary,
+              sizes: '(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw'
+          -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- elsif _recommendations.performed and _recommendations.products_count == 0 -%}
+    <p class="product-recommendations__empty" role="status">
+      {{ 'sections.featured_collection.empty_collection' | t | default: 'No recommendations available yet.' }}
+    </p>
+  {%- else -%}
+    {%- comment -%}
+      Loading skeleton. Client fetches via the <product-recommendations>
+      custom element when the section scrolls into view.
+    {%- endcomment -%}
+    <ul class="product-recommendations__grid product-recommendations__grid--skeleton" role="list" aria-hidden="true">
+      {%- for i in (1.._limit) -%}
+        <li>
+          <article class="product-card card product-card--skeleton">
+            <div class="card__media card__media--portrait">
+              <div class="skeleton-image" style="aspect-ratio: 4/5; background: var(--color-beige);"></div>
+            </div>
+            <div class="card__body product-card__body">
+              <div class="skeleton-line" style="height: 14px; width: 70%; background: var(--color-beige); margin-bottom: 6px;"></div>
+              <div class="skeleton-line" style="height: 12px; width: 30%; background: var(--color-beige);"></div>
+            </div>
+          </article>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</product-recommendations>

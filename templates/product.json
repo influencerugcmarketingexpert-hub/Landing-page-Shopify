@@ -1,0 +1,129 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "settings": {
+        "enable_sticky_buy_bar": true,
+        "enable_related_products": true,
+        "enable_recently_viewed": true,
+        "gallery_layout": "thumbnails-left",
+        "media_size": "medium"
+      },
+      "blocks": {
+        "vendor": {
+          "type": "vendor",
+          "settings": {}
+        },
+        "title": {
+          "type": "title",
+          "settings": {}
+        },
+        "rating": {
+          "type": "rating",
+          "settings": {
+            "judgeme_mount": false
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {}
+        },
+        "quantity_selector": {
+          "type": "quantity_selector",
+          "settings": {}
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": true
+          }
+        },
+        "description": {
+          "type": "description",
+          "settings": {}
+        },
+        "tab_description": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "Description",
+            "content": "<p>Cut, stitched and finished by one maker in the Orlaven atelier. Full-grain leather, solid brass hardware, cotton-silk lining. Every jacket is serialized and backed by our lifetime repair promise.</p>",
+            "icon": "craftsmanship"
+          }
+        },
+        "tab_size_fit": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "Size & Fit",
+            "content": "<p>Our jackets are cut to a trim, modern fit. Size up if between sizes, or shop our Made-to-Measure service.</p>",
+            "icon": "default"
+          }
+        },
+        "tab_shipping": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "Shipping & Returns",
+            "content": "<p>Complimentary shipping on orders over $200. Easy 30-day returns on unworn pieces. Made-to-Measure is final sale.</p>",
+            "icon": "truck"
+          }
+        },
+        "tab_care": {
+          "type": "collapsible_tab",
+          "settings": {
+            "heading": "Care",
+            "content": "<p>Hang in a dry, ventilated place. Treat once a season with our leather balm. Our atelier offers lifetime repairs - contact us before any intervention.</p>",
+            "icon": "heart"
+          }
+        },
+        "share": {
+          "type": "share",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "vendor",
+        "title",
+        "rating",
+        "price",
+        "variant_picker",
+        "quantity_selector",
+        "buy_buttons",
+        "description",
+        "tab_description",
+        "tab_size_fit",
+        "tab_shipping",
+        "tab_care",
+        "share"
+      ]
+    },
+    "product_recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "heading": "You might also like",
+        "subheading": "",
+        "products_to_show": 4,
+        "columns_desktop": 4,
+        "columns_mobile": 2,
+        "show_secondary_image": true
+      }
+    },
+    "recently_viewed": {
+      "type": "recently-viewed-products",
+      "settings": {
+        "heading": "Recently viewed",
+        "subheading": "",
+        "limit": 8,
+        "columns_desktop": 4,
+        "columns_mobile": 2
+      }
+    }
+  },
+  "order": [
+    "main",
+    "product_recommendations",
+    "recently_viewed"
+  ]
+}

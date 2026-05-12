@@ -1,0 +1,428 @@
+{%- comment -%}
+  Product media gallery.
+
+  Renders a <media-gallery> (defined in assets/product.js) that shows:
+    - Thumbnail strip (left on desktop, below on mobile, or stacked)
+    - Main media stage (image, video, external_video or model_3d)
+    - Per-slide zoom trigger that opens a <modal-dialog> lightbox
+
+  Accepts:
+    product           Product drop (required)
+    section_id        string (required) - used for lightbox id + focus targets
+    layout            string - 'thumbnails-left' | 'thumbnails-below' | 'stacked'
+    media_size        string - 'small' | 'medium' | 'large'
+    featured_media    (optional) - override the initially-active media
+    enable_zoom       bool default true
+
+  Usage:
+    {%- render 'product-media-gallery',
+        product: product,
+        section_id: section.id,
+        layout: section.settings.gallery_layout,
+        media_size: section.settings.media_size
+    -%}
+{%- endcomment -%}
+
+{%- liquid
+  assign _layout = layout | default: 'thumbnails-left'
+  assign _media_size = media_size | default: 'medium'
+  assign _enable_zoom = enable_zoom
+  if _enable_zoom == nil
+    assign _enable_zoom = true
+  endif
+  assign _section_id = section_id | default: product.id
+  assign _initial_media = featured_media | default: product.selected_or_first_available_variant.featured_media | default: product.featured_media
+  assign _ratio_value = '0.8'
+  if _media_size == 'small'
+    assign _ratio_value = '1'
+  elsif _media_size == 'large'
+    assign _ratio_value = '0.72'
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ _section_id }} .product-gallery {
+    --gallery-ratio: {{ _ratio_value }};
+    display: grid;
+    gap: var(--space-4);
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__thumbs {
+    display: flex;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow: auto;
+    scrollbar-width: thin;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__thumb {
+    flex: 0 0 72px;
+    width: 72px;
+    aspect-ratio: 1 / 1;
+    border: 1px solid color-mix(in oklab, var(--color-text) 15%, transparent);
+    background: var(--color-background);
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__thumb img,
+  #shopify-section-{{ _section_id }} .product-gallery__thumb svg.placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__thumb[aria-current="true"] {
+    border-color: var(--color-ink);
+    outline: 1px solid var(--color-ink);
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__thumb-icon {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    background: rgba(15, 15, 15, 0.6);
+    color: var(--color-cream);
+    border-radius: var(--radius-full);
+    padding: 2px 4px;
+    font-size: 10px;
+    line-height: 1;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__stage {
+    position: relative;
+    background: var(--color-beige);
+    overflow: hidden;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__slide {
+    position: relative;
+    aspect-ratio: var(--gallery-ratio);
+    width: 100%;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__slide[hidden] { display: none; }
+  #shopify-section-{{ _section_id }} .product-gallery__slide img,
+  #shopify-section-{{ _section_id }} .product-gallery__slide video,
+  #shopify-section-{{ _section_id }} .product-gallery__slide iframe,
+  #shopify-section-{{ _section_id }} .product-gallery__slide svg.placeholder,
+  #shopify-section-{{ _section_id }} .product-gallery__slide model-viewer {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__zoom {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: rgba(245, 239, 230, 0.9);
+    color: var(--color-ink);
+    border: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-base);
+  }
+  #shopify-section-{{ _section_id }} .product-gallery__zoom:hover,
+  #shopify-section-{{ _section_id }} .product-gallery__zoom:focus-visible {
+    background: var(--color-cream);
+    transform: scale(1.05);
+  }
+  #shopify-section-{{ _section_id }} .product-gallery--layout-thumbnails-below {
+    grid-template-areas: "stage" "thumbs";
+  }
+  #shopify-section-{{ _section_id }} .product-gallery--layout-stacked {
+    grid-template-areas: "stage";
+  }
+  #shopify-section-{{ _section_id }} .product-gallery--layout-stacked .product-gallery__thumbs { display: none; }
+  #shopify-section-{{ _section_id }} .product-gallery--layout-stacked .product-gallery__stack {
+    display: grid;
+    gap: var(--space-3);
+  }
+  @media (min-width: 960px) {
+    #shopify-section-{{ _section_id }} .product-gallery--layout-thumbnails-left {
+      grid-template-columns: 88px 1fr;
+      grid-template-areas: "thumbs stage";
+      align-items: start;
+    }
+    #shopify-section-{{ _section_id }} .product-gallery--layout-thumbnails-left .product-gallery__thumbs {
+      flex-direction: column;
+      grid-area: thumbs;
+      max-height: 80vh;
+    }
+    #shopify-section-{{ _section_id }} .product-gallery--layout-thumbnails-left .product-gallery__stage {
+      grid-area: stage;
+    }
+    #shopify-section-{{ _section_id }} .product-gallery--layout-thumbnails-below .product-gallery__thumbs {
+      grid-area: thumbs;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* Lightbox (modal) */
+  #shopify-section-{{ _section_id }} .product-gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 15, 15, 0.9);
+    z-index: var(--z-modal);
+    padding: var(--space-4);
+  }
+  #shopify-section-{{ _section_id }} .product-gallery-lightbox.is-open { display: flex; }
+  #shopify-section-{{ _section_id }} .product-gallery-lightbox__panel {
+    position: relative;
+    width: min(1100px, 100%);
+    max-height: 90vh;
+    background: var(--color-background);
+    overflow: auto;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery-lightbox__close {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 40px;
+    height: 40px;
+    background: var(--color-background);
+    border: 1px solid color-mix(in oklab, var(--color-text) 20%, transparent);
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+  }
+  #shopify-section-{{ _section_id }} .product-gallery-lightbox media-gallery {
+    display: block;
+    padding: var(--space-6);
+  }
+</style>
+
+<media-gallery
+  class="product-gallery product-gallery--layout-{{ _layout }}"
+  data-section-id="{{ _section_id }}"
+  data-layout="{{ _layout }}"
+  role="region"
+  aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
+  tabindex="0"
+>
+  {%- if product.media.size > 0 -%}
+    {%- if _layout != 'stacked' -%}
+      <ul class="product-gallery__thumbs" role="list" aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+        {%- for media in product.media -%}
+          {%- assign is_active = false -%}
+          {%- if _initial_media and media.id == _initial_media.id -%}{%- assign is_active = true -%}{%- endif -%}
+          {%- if _initial_media == blank and forloop.first -%}{%- assign is_active = true -%}{%- endif -%}
+          <li>
+            <button
+              type="button"
+              class="product-gallery__thumb"
+              data-media-thumb
+              data-media-id="{{ media.id }}"
+              {% if is_active %}aria-current="true"{% endif %}
+              aria-label="{{ 'products.product.media.open_media' | t: index: forloop.index }}"
+            >
+              {%- if media.preview_image -%}
+                {%- render 'responsive-image',
+                    image: media.preview_image,
+                    sizes: '72px',
+                    widths: '72,144,216',
+                    class: 'product-gallery__thumb-image',
+                    loading: 'lazy',
+                    alt: media.alt
+                -%}
+              {%- else -%}
+                {%- render 'responsive-image', image: blank, class: 'product-gallery__thumb-image' -%}
+              {%- endif -%}
+              {%- case media.media_type -%}
+                {%- when 'video', 'external_video' -%}
+                  <span class="product-gallery__thumb-icon" aria-hidden="true">&#9658;</span>
+                {%- when 'model' -%}
+                  <span class="product-gallery__thumb-icon" aria-hidden="true">3D</span>
+              {%- endcase -%}
+            </button>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    <div class="product-gallery__stage">
+      <div class="product-gallery__stack">
+        {%- for media in product.media -%}
+          {%- assign is_active = false -%}
+          {%- if _initial_media and media.id == _initial_media.id -%}{%- assign is_active = true -%}{%- endif -%}
+          {%- if _initial_media == blank and forloop.first -%}{%- assign is_active = true -%}{%- endif -%}
+          {%- assign loading = 'lazy' -%}
+          {%- assign fp = nil -%}
+          {%- if forloop.first -%}
+            {%- assign loading = 'eager' -%}
+            {%- assign fp = 'high' -%}
+          {%- endif -%}
+          <figure
+            class="product-gallery__slide"
+            data-media-slide
+            data-media-id="{{ media.id }}"
+            data-media-type="{{ media.media_type }}"
+            {% if is_active %}data-active="true"{% else %}hidden{% endif %}
+          >
+            {%- case media.media_type -%}
+              {%- when 'image' -%}
+                {%- render 'responsive-image',
+                    image: media,
+                    sizes: '(min-width: 960px) 60vw, 100vw',
+                    widths: '400,600,800,1000,1200,1600,2000',
+                    loading: loading,
+                    fetchpriority: fp,
+                    alt: media.alt | default: product.title
+                -%}
+              {%- when 'video' -%}
+                <video
+                  controls
+                  playsinline
+                  muted
+                  preload="metadata"
+                  poster="{{ media.preview_image | image_url: width: 1200 }}"
+                  aria-label="{{ 'products.product.media.play_video' | t }}"
+                >
+                  {%- for source in media.sources -%}
+                    <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                  {%- endfor -%}
+                </video>
+              {%- when 'external_video' -%}
+                <deferred-media data-media-src="{{ media.external_id }}">
+                  <button type="button" class="deferred-media__poster" aria-label="{{ 'products.product.media.play_video' | t }}">
+                    {%- if media.preview_image -%}
+                      {%- render 'responsive-image',
+                          image: media.preview_image,
+                          sizes: '(min-width: 960px) 60vw, 100vw',
+                          loading: loading,
+                          alt: media.alt | default: product.title
+                      -%}
+                    {%- endif -%}
+                  </button>
+                  <template>
+                    {%- if media.host == 'youtube' -%}
+                      <iframe
+                        src="https://www.youtube.com/embed/{{ media.external_id }}?autoplay=1"
+                        title="{{ media.alt | default: product.title | escape }}"
+                        allow="autoplay; encrypted-media"
+                        allowfullscreen
+                        loading="lazy"
+                      ></iframe>
+                    {%- else -%}
+                      <iframe
+                        src="https://player.vimeo.com/video/{{ media.external_id }}?autoplay=1"
+                        title="{{ media.alt | default: product.title | escape }}"
+                        allow="autoplay; fullscreen"
+                        allowfullscreen
+                        loading="lazy"
+                      ></iframe>
+                    {%- endif -%}
+                  </template>
+                </deferred-media>
+              {%- when 'model' -%}
+                <deferred-media data-media-type="model">
+                  <button type="button" class="deferred-media__poster" aria-label="{{ 'products.product.media.play_model_viewer' | t }}">
+                    {%- if media.preview_image -%}
+                      {%- render 'responsive-image',
+                          image: media.preview_image,
+                          sizes: '(min-width: 960px) 60vw, 100vw',
+                          loading: loading,
+                          alt: media.alt | default: product.title
+                      -%}
+                    {%- endif -%}
+                  </button>
+                  <template>
+                    {{ media | model_viewer_tag: reveal: 'interaction', toggleable: true, loading: 'lazy' }}
+                  </template>
+                </deferred-media>
+              {%- else -%}
+                {%- render 'responsive-image', image: media.preview_image, alt: media.alt | default: product.title -%}
+            {%- endcase -%}
+          </figure>
+        {%- endfor -%}
+      </div>
+
+      {%- if _enable_zoom -%}
+        <button
+          type="button"
+          class="product-gallery__zoom"
+          data-media-zoom
+          aria-label="{{ 'products.product.media.open_media' | t: index: 1 }}"
+          aria-haspopup="dialog"
+          aria-controls="MediaLightbox-{{ _section_id }}"
+        >
+          +
+        </button>
+      {%- endif -%}
+    </div>
+  {%- else -%}
+    <div class="product-gallery__stage">
+      <div class="product-gallery__slide" data-active="true">
+        {%- render 'responsive-image', image: blank, alt: product.title -%}
+      </div>
+    </div>
+  {%- endif -%}
+</media-gallery>
+
+{%- if _enable_zoom and product.media.size > 0 -%}
+  <modal-dialog
+    id="MediaLightbox-{{ _section_id }}"
+    class="product-gallery-lightbox"
+    aria-hidden="true"
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ 'products.product.media.gallery_viewer' | t }}"
+  >
+    <div class="product-gallery-lightbox__panel" role="document">
+      <button
+        type="button"
+        class="product-gallery-lightbox__close"
+        data-modal-close
+        aria-label="{{ 'general.accessibility.close' | t }}"
+      >
+        {%- render 'icon-close', size: 18 -%}
+      </button>
+      <media-gallery
+        class="product-gallery product-gallery--layout-stacked"
+        data-section-id="lightbox-{{ _section_id }}"
+        data-layout="stacked"
+      >
+        <div class="product-gallery__stage">
+          <div class="product-gallery__stack">
+            {%- for media in product.media -%}
+              <figure
+                class="product-gallery__slide"
+                data-media-slide
+                data-media-id="{{ media.id }}"
+                data-media-type="{{ media.media_type }}"
+                {% if forloop.first %}data-active="true"{% else %}hidden{% endif %}
+              >
+                {%- if media.media_type == 'image' -%}
+                  {%- render 'responsive-image',
+                      image: media,
+                      sizes: '(min-width: 960px) 80vw, 100vw',
+                      widths: '600,900,1200,1600,2000,2400',
+                      loading: 'lazy',
+                      alt: media.alt | default: product.title
+                  -%}
+                {%- else -%}
+                  {%- render 'responsive-image',
+                      image: media.preview_image,
+                      loading: 'lazy',
+                      alt: media.alt | default: product.title
+                  -%}
+                {%- endif -%}
+              </figure>
+            {%- endfor -%}
+          </div>
+        </div>
+      </media-gallery>
+    </div>
+  </modal-dialog>
+{%- endif -%}

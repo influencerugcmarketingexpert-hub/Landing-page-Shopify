@@ -1,0 +1,55 @@
+{%- comment -%}
+  Recently viewed snippet.
+
+  Wraps a <recently-viewed> custom element (assets/product.js) that reads
+  product handles from localStorage under the key `orlaven.recentlyViewed`
+  and renders compact cards by fetching /products/<handle>.js for each.
+
+  On a product page, the current product handle is excluded (seeded by
+  <product-info> on connectedCallback).
+
+  Accepts:
+    product         (optional) - used to exclude the current handle
+    section_id      string (required)
+    limit           number default 8
+
+  Usage:
+    {%- render 'recently-viewed',
+        product: product,
+        section_id: section.id,
+        limit: section.settings.limit
+    -%}
+{%- endcomment -%}
+
+{%- liquid
+  assign _section_id = section_id | default: 'recently-viewed'
+  assign _limit = limit | default: 8
+  if _limit < 2
+    assign _limit = 2
+  endif
+  if _limit > 12
+    assign _limit = 12
+  endif
+  assign _exclude = ''
+  if product != blank
+    assign _exclude = product.handle
+  endif
+-%}
+
+<recently-viewed
+  class="recently-viewed"
+  data-section-id="{{ _section_id }}"
+  data-limit="{{ _limit }}"
+  data-exclude-handle="{{ _exclude }}"
+  data-empty
+>
+  <div class="recently-viewed__empty" data-recently-viewed-empty>
+    <p>{{ 'sections.featured_collection.empty_no_collection' | t | default: 'Products you browse will appear here.' }}</p>
+  </div>
+  <ul
+    class="recently-viewed__grid product-recommendations__grid"
+    data-recently-viewed-list
+    role="list"
+    hidden
+  ></ul>
+</recently-viewed>

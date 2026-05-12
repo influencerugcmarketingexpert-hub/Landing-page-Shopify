@@ -1,0 +1,152 @@
+{%- comment -%}
+  Recently viewed products
+  ------------------------
+  Renders the <recently-viewed> custom element (defined in assets/product.js)
+  which reads handles from localStorage under `orlaven.recentlyViewed` and
+  fetches /products/<handle>.js for each. Compact product cards are rendered
+  client-side.
+
+  Compact empty state is rendered server-side so Shopify theme editor
+  previews and first-visit users still see a placeholder.
+{%- endcomment -%}
+
+{%- liquid
+  assign heading = section.settings.heading | default: 'Recently viewed'
+  assign subheading = section.settings.subheading
+  assign limit = section.settings.limit | default: 8
+  assign cols_desktop = section.settings.columns_desktop | default: 4
+  assign cols_mobile = section.settings.columns_mobile | default: 2
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .recently-viewed-section {
+    padding: var(--spacing-sections, 72px) 0;
+    border-top: 1px solid color-mix(in oklab, var(--color-text) 10%, transparent);
+  }
+  #shopify-section-{{ section.id }} .recently-viewed-section__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-6);
+  }
+  #shopify-section-{{ section.id }} .recently-viewed-section__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 2vw + 1rem, 2rem);
+    line-height: var(--leading-tight);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .recently-viewed-section__sub {
+    font-size: var(--text-md);
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: var(--space-2) 0 0;
+  }
+  #shopify-section-{{ section.id }} .recently-viewed__grid {
+    display: grid;
+    grid-template-columns: repeat({{ cols_mobile }}, minmax(0, 1fr));
+    gap: var(--space-5);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .recently-viewed__grid {
+      grid-template-columns: repeat({{ cols_desktop }}, minmax(0, 1fr));
+    }
+  }
+  #shopify-section-{{ section.id }} recently-viewed[data-empty] .recently-viewed-section__container {
+    display: none;
+  }
+  #shopify-section-{{ section.id }} .recently-viewed__empty {
+    padding: var(--space-6) var(--space-4);
+    text-align: center;
+    font-size: var(--text-sm);
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+    border: 1px dashed color-mix(in oklab, var(--color-text) 15%, transparent);
+  }
+  #shopify-section-{{ section.id }} recently-viewed[data-empty] {
+    display: block;
+  }
+  #shopify-section-{{ section.id }} .product-card--compact .product-card__body {
+    padding-top: var(--space-2);
+  }
+</style>
+
+<section class="recently-viewed-section">
+  <div class="container">
+    <header class="recently-viewed-section__header">
+      <div>
+        {%- if heading != blank -%}
+          <h2 class="recently-viewed-section__heading">{{ heading }}</h2>
+        {%- endif -%}
+        {%- if subheading != blank -%}
+          <p class="recently-viewed-section__sub">{{ subheading }}</p>
+        {%- endif -%}
+      </div>
+    </header>
+
+    {%- render 'recently-viewed',
+        product: product,
+        section_id: section.id,
+        limit: limit
+    -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Recently viewed",
+  "tag": "section",
+  "class": "section-recently-viewed",
+  "enabled_on": {
+    "templates": ["product", "collection", "search", "cart"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Recently viewed"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Products to show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Columns (mobile)",
+      "min": 1,
+      "max": 2,
+      "step": 1,
+      "default": 2
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recently viewed",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}
