@@ -1,0 +1,169 @@
+{%- comment -%}
+  Customer register
+  -----------------
+  Create account form for Classic customer accounts. First name, last
+  name, email, password. Design tokens + accessible errors.
+{%- endcomment -%}
+<style>
+  .customer-page {
+    padding: var(--space-12) 0 var(--space-16);
+    display: flex;
+    justify-content: center;
+  }
+  .customer-page__inner {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+  .customer-page__header { text-align: center; display: flex; flex-direction: column; gap: var(--space-2); }
+  .customer-page__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-cognac);
+    margin: 0;
+  }
+  .customer-page__title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+    color: var(--color-espresso);
+    margin: 0;
+  }
+  .customer-page__subtext {
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+  .customer-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .customer-form__row-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+  @media (min-width: 560px) {
+    .customer-form__row-2 { grid-template-columns: 1fr 1fr; }
+  }
+  .customer-form__errors {
+    padding: var(--space-3) var(--space-4);
+    background-color: #fdecea;
+    border-left: 3px solid #b3261e;
+    color: #5a1715;
+    font-size: var(--text-sm);
+  }
+  .customer-form__errors ul { padding-left: var(--space-5); list-style: disc; margin: var(--space-1) 0 0; }
+  .customer-form__switch {
+    text-align: center;
+    font-size: var(--text-sm);
+    margin: 0;
+    color: color-mix(in oklab, var(--color-text) 75%, transparent);
+  }
+  .customer-form__switch a {
+    color: var(--color-espresso);
+    border-bottom: 1px solid var(--color-cognac);
+  }
+  .customer-form__help {
+    font-size: var(--text-xs);
+    color: color-mix(in oklab, var(--color-text) 65%, transparent);
+  }
+</style>
+
+<section class="customer-page" aria-labelledby="RegisterTitle">
+  <div class="container">
+    <div class="customer-page__inner">
+      <header class="customer-page__header">
+        <p class="customer-page__eyebrow">{{ 'general.password.tagline' | t }}</p>
+        <h1 id="RegisterTitle" class="customer-page__title">{{ 'customer.register.title' | t }}</h1>
+        <p class="customer-page__subtext">{{ 'customer.register.subtext' | t | default: 'Track orders, save your favourites, manage fit notes.' }}</p>
+      </header>
+
+      {%- form 'create_customer', novalidate: 'novalidate' -%}
+        {%- if form.errors -%}
+          <div class="customer-form__errors" role="alert" tabindex="-1" autofocus>
+            <strong>{{ 'shopify.errors.form' | t }}</strong>
+            <ul>
+              {%- for field in form.errors -%}
+                <li>
+                  {%- if field == 'form' -%}
+                    {{ form.errors.messages[field] }}
+                  {%- else -%}
+                    {{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        <div class="customer-form">
+          <div class="customer-form__row-2">
+            <div class="field">
+              <label for="RegisterFirstName" class="field__label">{{ 'customer.register.first_name' | t }}</label>
+              <input
+                type="text"
+                name="customer[first_name]"
+                id="RegisterFirstName"
+                autocomplete="given-name"
+                {% if form.first_name %}value="{{ form.first_name }}"{% endif %}
+                {% if form.errors contains 'first_name' %}aria-invalid="true"{% endif %}
+                required>
+            </div>
+            <div class="field">
+              <label for="RegisterLastName" class="field__label">{{ 'customer.register.last_name' | t }}</label>
+              <input
+                type="text"
+                name="customer[last_name]"
+                id="RegisterLastName"
+                autocomplete="family-name"
+                {% if form.last_name %}value="{{ form.last_name }}"{% endif %}
+                {% if form.errors contains 'last_name' %}aria-invalid="true"{% endif %}
+                required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="RegisterEmail" class="field__label">{{ 'customer.register.email' | t }}</label>
+            <input
+              type="email"
+              name="customer[email]"
+              id="RegisterEmail"
+              autocomplete="email"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              {% if form.email %}value="{{ form.email }}"{% endif %}
+              {% if form.errors contains 'email' %}aria-invalid="true"{% endif %}
+              required>
+          </div>
+
+          <div class="field">
+            <label for="RegisterPassword" class="field__label">{{ 'customer.register.password' | t }}</label>
+            <input
+              type="password"
+              name="customer[password]"
+              id="RegisterPassword"
+              autocomplete="new-password"
+              minlength="5"
+              {% if form.errors contains 'password' %}aria-invalid="true"{% endif %}
+              required>
+            <p class="customer-form__help">{{ 'customer.register.password_hint' | t | default: 'At least 5 characters.' }}</p>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--full">
+            {{ 'customer.register.submit' | t }}
+          </button>
+
+          <p class="customer-form__switch">
+            {{ 'customer.login_page.have_account' | t | default: 'Already have an account?' }}
+            <a href="{{ routes.account_login_url }}">{{ 'customer.login_page.sign_in' | t }}</a>
+          </p>
+        </div>
+      {%- endform -%}
+    </div>
+  </div>
+</section>

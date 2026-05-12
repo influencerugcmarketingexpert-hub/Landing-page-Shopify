@@ -1,0 +1,200 @@
+{%- comment -%}
+  Main page
+  ---------
+  Default generic renderer for the Shopify `page` object. Used by
+  templates/page.json and several policy-style JSON page templates
+  (page.shipping-returns.json, page.privacy.json, page.terms.json).
+
+  Settings:
+    show_title        bool   - render page.title as an h1
+    max_width         select - narrow (720px) | medium (960px) | wide (1200px)
+    show_breadcrumbs  bool   - render a Home / Page trail above the title
+    text_alignment    select - left | center
+{%- endcomment -%}
+{%- liquid
+  assign max_width = section.settings.max_width | default: 'medium'
+  case max_width
+    when 'narrow'
+      assign measure = '720px'
+    when 'wide'
+      assign measure = '1200px'
+    else
+      assign measure = '960px'
+  endcase
+  assign alignment = section.settings.text_alignment | default: 'left'
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .main-page {
+    padding: var(--space-12) 0 var(--space-16);
+  }
+  #shopify-section-{{ section.id }} .main-page__inner {
+    max-width: {{ measure }};
+    margin-inline: auto;
+    text-align: {{ alignment }};
+  }
+  #shopify-section-{{ section.id }} .main-page__breadcrumbs {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+    margin: 0 0 var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .main-page__breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  #shopify-section-{{ section.id }} .main-page__breadcrumbs a:hover {
+    color: var(--color-cognac);
+    border-bottom-color: currentColor;
+  }
+  #shopify-section-{{ section.id }} .main-page__breadcrumbs .sep {
+    opacity: 0.55;
+    margin: 0 var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .main-page__title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3vw + 1rem, 3rem);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-snug);
+    color: var(--color-espresso);
+    margin: 0 0 var(--space-8);
+  }
+  #shopify-section-{{ section.id }} .main-page__rte {
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: var(--color-ink);
+  }
+  #shopify-section-{{ section.id }} .main-page__rte > * + * { margin-top: var(--space-4); }
+  #shopify-section-{{ section.id }} .main-page__rte h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.375rem, 2vw + 0.5rem, 1.875rem);
+    line-height: var(--leading-snug);
+    margin-top: var(--space-10);
+    margin-bottom: var(--space-3);
+    color: var(--color-espresso);
+  }
+  #shopify-section-{{ section.id }} .main-page__rte h3 {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-3);
+    color: var(--color-espresso);
+  }
+  #shopify-section-{{ section.id }} .main-page__rte a {
+    color: var(--color-cognac);
+    border-bottom: 1px solid currentColor;
+  }
+  #shopify-section-{{ section.id }} .main-page__rte a:hover { color: var(--color-espresso); }
+  #shopify-section-{{ section.id }} .main-page__rte ul,
+  #shopify-section-{{ section.id }} .main-page__rte ol {
+    padding-left: var(--space-6);
+    list-style: disc;
+  }
+  #shopify-section-{{ section.id }} .main-page__rte ol { list-style: decimal; }
+  #shopify-section-{{ section.id }} .main-page__rte li + li { margin-top: var(--space-2); }
+  #shopify-section-{{ section.id }} .main-page__rte blockquote {
+    border-left: 2px solid var(--color-cognac);
+    padding-left: var(--space-4);
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: var(--text-lg);
+    color: color-mix(in oklab, var(--color-text) 85%, transparent);
+  }
+  #shopify-section-{{ section.id }} .main-page__rte table th {
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+    color: var(--color-espresso);
+  }
+  #shopify-section-{{ section.id }} .main-page__empty {
+    padding: var(--space-10);
+    border: 1px dashed color-mix(in oklab, var(--color-text) 20%, transparent);
+    color: color-mix(in oklab, var(--color-text) 65%, transparent);
+    text-align: center;
+  }
+</style>
+
+<article class="main-page">
+  <div class="container">
+    <div class="main-page__inner">
+      {%- if section.settings.show_breadcrumbs -%}
+        <nav class="main-page__breadcrumbs" aria-label="{{ 'general.breadcrumbs.aria_label' | t }}">
+          <a href="{{ routes.root_url }}">{{ 'general.breadcrumbs.home' | t }}</a>
+          <span class="sep" aria-hidden="true">{{ 'general.breadcrumbs.separator' | t }}</span>
+          <span aria-current="page">{{ page.title | default: 'Page' }}</span>
+        </nav>
+      {%- endif -%}
+
+      {%- if section.settings.show_title and page.title != blank -%}
+        <h1 class="main-page__title">{{ page.title }}</h1>
+      {%- endif -%}
+
+      {%- if page.content != blank -%}
+        <div class="main-page__rte rte">
+          {{ page.content }}
+        </div>
+      {%- else -%}
+        <div class="main-page__empty" role="status">
+          {{ 'sections.main_page.empty' | t | default: 'Add page content from Shopify admin > Online Store > Pages.' }}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Page content",
+  "tag": "section",
+  "class": "section-main-page",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show page title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show breadcrumbs",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "max_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow (720px)" },
+        { "value": "medium", "label": "Medium (960px)" },
+        { "value": "wide",   "label": "Wide (1200px)" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "left"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page content",
+      "category": "Page"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["page"]
+  }
+}
+{% endschema %}

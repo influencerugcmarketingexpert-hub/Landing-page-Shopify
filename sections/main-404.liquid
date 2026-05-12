@@ -1,0 +1,242 @@
+{%- comment -%}
+  Main 404
+  --------
+  Friendly "page not found" state. Hero with headline + copy + primary
+  CTA to the homepage and secondary CTA to shop all products. A search
+  bar below lets visitors try a different query. Optional popular
+  collections grid at the bottom.
+{%- endcomment -%}
+{%- liquid
+  assign collection = section.settings.popular_collection
+  assign show_collection = section.settings.show_popular_collection
+  assign products_limit = section.settings.products_to_show | default: 4
+  if products_limit < 2
+    assign products_limit = 2
+  endif
+  if products_limit > 8
+    assign products_limit = 8
+  endif
+  assign has_popular = false
+  if collection != blank and collection.all_products_count > 0
+    assign has_popular = true
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .error-page {
+    padding: var(--space-16) 0 var(--space-20);
+    text-align: center;
+  }
+  #shopify-section-{{ section.id }} .error-page__kicker {
+    font-family: var(--font-heading);
+    font-size: clamp(4rem, 12vw + 1rem, 9rem);
+    line-height: 1;
+    color: var(--color-cognac);
+    margin: 0;
+    letter-spacing: var(--tracking-snug);
+  }
+  #shopify-section-{{ section.id }} .error-page__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+    line-height: var(--leading-tight);
+    color: var(--color-espresso);
+    margin: var(--space-4) 0 var(--space-3);
+  }
+  #shopify-section-{{ section.id }} .error-page__body {
+    max-width: 56ch;
+    margin: 0 auto var(--space-8);
+    color: color-mix(in oklab, var(--color-text) 75%, transparent);
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+  }
+  #shopify-section-{{ section.id }} .error-page__ctas {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-bottom: var(--space-10);
+  }
+  #shopify-section-{{ section.id }} .error-page__search {
+    max-width: 520px;
+    margin: 0 auto var(--space-16);
+  }
+  #shopify-section-{{ section.id }} .error-page__search-form {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 2px solid var(--color-espresso);
+    padding: 0 0 4px;
+  }
+  #shopify-section-{{ section.id }} .error-page__search-input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-base);
+    padding: var(--space-3) 0;
+    color: inherit;
+  }
+  #shopify-section-{{ section.id }} .error-page__search-input:focus { outline: none; }
+  #shopify-section-{{ section.id }} .error-page__search-submit {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0 var(--space-3);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+  #shopify-section-{{ section.id }} .error-page__popular {
+    border-top: 1px solid rgba(15, 15, 15, 0.08);
+    padding-top: var(--space-10);
+  }
+  #shopify-section-{{ section.id }} .error-page__popular-heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    color: var(--color-espresso);
+    margin: 0 0 var(--space-6);
+  }
+  #shopify-section-{{ section.id }} .error-page__popular-grid {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (min-width: 900px) {
+    #shopify-section-{{ section.id }} .error-page__popular-grid {
+      grid-template-columns: repeat({{ products_limit | at_most: 4 }}, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<section class="error-page" role="region" aria-labelledby="ErrorHeading-{{ section.id }}">
+  <div class="container">
+    <p class="error-page__kicker">404</p>
+    <h1 id="ErrorHeading-{{ section.id }}" class="error-page__heading">
+      {{ section.settings.heading | default: 'This path went off-road.' }}
+    </h1>
+    <div class="error-page__body rte">
+      {%- if section.settings.body != blank -%}
+        {{ section.settings.body }}
+      {%- else -%}
+        <p>The page you were looking for has moved or never existed. The links below should get you back on course.</p>
+      {%- endif -%}
+    </div>
+
+    <div class="error-page__ctas">
+      <a class="btn btn--primary" href="{{ routes.root_url }}">
+        {{ section.settings.primary_cta_label | default: 'Return home' }}
+      </a>
+      <a class="btn btn--secondary" href="{{ routes.all_products_collection_url }}">
+        {{ section.settings.secondary_cta_label | default: 'Shop everything' }}
+      </a>
+    </div>
+
+    <form action="{{ routes.search_url }}" method="get" role="search" class="error-page__search" aria-label="{{ 'general.search.heading' | t }}">
+      <div class="error-page__search-form">
+        <label for="ErrorSearch-{{ section.id }}" class="visually-hidden">
+          {{ 'general.search.label' | t }}
+        </label>
+        <input
+          id="ErrorSearch-{{ section.id }}"
+          class="error-page__search-input"
+          type="search"
+          name="q"
+          autocomplete="off"
+          placeholder="{{ 'general.search.placeholder' | t }}">
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="submit" class="error-page__search-submit">
+          {{ 'general.search.submit' | t }}
+        </button>
+      </div>
+    </form>
+
+    {%- if show_collection and has_popular -%}
+      <div class="error-page__popular">
+        <h2 class="error-page__popular-heading">
+          {{ section.settings.popular_heading | default: 'Popular right now' }}
+        </h2>
+        <ul class="error-page__popular-grid" role="list">
+          {%- for product in collection.products limit: products_limit -%}
+            <li>
+              {%- render 'product-card',
+                  product: product,
+                  image_ratio: 'portrait',
+                  show_secondary_image: true,
+                  sizes: '(min-width: 900px) 25vw, 50vw'
+              -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "404 content",
+  "tag": "section",
+  "class": "section-main-404",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "This path went off-road."
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body",
+      "default": "<p>The page you were looking for has moved or never existed. The links below should get you back on course.</p>"
+    },
+    {
+      "type": "text",
+      "id": "primary_cta_label",
+      "label": "Primary CTA label",
+      "default": "Return home"
+    },
+    {
+      "type": "text",
+      "id": "secondary_cta_label",
+      "label": "Secondary CTA label",
+      "default": "Shop everything"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_popular_collection",
+      "label": "Show popular products",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "popular_heading",
+      "label": "Popular heading",
+      "default": "Popular right now"
+    },
+    {
+      "type": "collection",
+      "id": "popular_collection",
+      "label": "Popular collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "404",
+      "category": "404"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["404"]
+  }
+}
+{% endschema %}

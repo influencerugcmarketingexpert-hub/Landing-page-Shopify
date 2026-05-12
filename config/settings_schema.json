@@ -353,5 +353,20 @@
         "info": "Recommended size: 1200 x 630 px"
       }
     ]
+  },
+  {
+    "name": "Password page",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "These settings appear on the storefront password page (shown when the store is gated)."
+      },
+      {
+        "type": "image_picker",
+        "id": "password_background_image",
+        "label": "Background image",
+        "info": "Full-bleed background behind the password gate. Leave empty to show a flat espresso background."
+      }
+    ]
   }
 ]

@@ -1,0 +1,551 @@
+{%- comment -%}
+  Contact form
+  ------------
+  Two-column layout: the contact form on the left, store information
+  on the right (address, phone, email, hours, map). Subject dropdown
+  is populated from 'subject_option' blocks so merchants can tune the
+  list in the theme editor without touching liquid.
+
+  After submission, `form.posted_successfully?` shows a success state
+  that preserves branding (instead of Shopify's default plain message).
+{%- endcomment -%}
+{%- liquid
+  assign subject_blocks = section.blocks | where: 'type', 'subject_option'
+  assign has_subjects = false
+  if subject_blocks.size > 0
+    assign has_subjects = true
+  endif
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .contact-form-section {
+    padding: var(--space-12) 0 var(--space-16);
+    position: relative;
+    isolation: isolate;
+  }
+  #shopify-section-{{ section.id }} .contact-form-section__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .contact-form-section__bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.12;
+  }
+  #shopify-section-{{ section.id }} .contact-form-section__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: var(--space-10);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 900px) {
+    #shopify-section-{{ section.id }} .contact-form-section__inner {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: var(--space-16);
+    }
+  }
+  #shopify-section-{{ section.id }} .contact-form-section__header {
+    margin-bottom: var(--space-8);
+  }
+  #shopify-section-{{ section.id }} .contact-form-section__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-cognac);
+    margin: 0 0 var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .contact-form-section__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3vw + 1rem, 3rem);
+    line-height: var(--leading-tight);
+    color: var(--color-espresso);
+    margin: 0 0 var(--space-3);
+  }
+  #shopify-section-{{ section.id }} .contact-form-section__subheading {
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: color-mix(in oklab, var(--color-text) 75%, transparent);
+    margin: 0;
+    max-width: 60ch;
+  }
+  #shopify-section-{{ section.id }} .contact-form {
+    display: grid;
+    gap: var(--space-4);
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .contact-form__row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+  }
+  #shopify-section-{{ section.id }} .contact-form__success {
+    padding: var(--space-6);
+    background-color: color-mix(in oklab, var(--color-cognac) 10%, var(--color-background));
+    border: 1px solid var(--color-cognac);
+    color: var(--color-espresso);
+  }
+  #shopify-section-{{ section.id }} .contact-form__errors {
+    padding: var(--space-4) var(--space-5);
+    background-color: #fdecea;
+    border-left: 3px solid #b3261e;
+    color: #5a1715;
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .contact-form__errors ul {
+    margin: var(--space-2) 0 0;
+    padding-left: var(--space-5);
+    list-style: disc;
+  }
+  #shopify-section-{{ section.id }} .contact-info {
+    padding: var(--space-6);
+    background-color: var(--color-cream);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  #shopify-section-{{ section.id }} .contact-info__heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    color: var(--color-espresso);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .contact-info__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  #shopify-section-{{ section.id }} .contact-info__label {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 60%, transparent);
+  }
+  #shopify-section-{{ section.id }} .contact-info__value {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    color: var(--color-ink);
+  }
+  #shopify-section-{{ section.id }} .contact-info__value a {
+    color: inherit;
+    border-bottom: 1px solid color-mix(in oklab, currentColor 40%, transparent);
+  }
+  #shopify-section-{{ section.id }} .contact-info__value a:hover { color: var(--color-cognac); }
+  #shopify-section-{{ section.id }} .contact-info__map {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border: 0;
+    display: block;
+    background-color: var(--color-beige);
+  }
+  #shopify-section-{{ section.id }} .contact-info__social {
+    display: inline-flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+  #shopify-section-{{ section.id }} .contact-info__social a {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    border: 1px solid currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-espresso);
+    transition: var(--transition-base);
+  }
+  #shopify-section-{{ section.id }} .contact-info__social a:hover {
+    background-color: var(--color-espresso);
+    color: var(--color-cream);
+  }
+</style>
+
+<section class="contact-form-section" aria-labelledby="ContactFormHeading-{{ section.id }}">
+  {%- if section.settings.form_background_image != blank -%}
+    <div class="contact-form-section__bg" aria-hidden="true">
+      {%- render 'responsive-image',
+          image: section.settings.form_background_image,
+          sizes: '100vw',
+          widths: '800,1200,1600,2000',
+          alt: ''
+      -%}
+    </div>
+  {%- endif -%}
+
+  <div class="container">
+    <div class="contact-form-section__inner">
+      <div>
+        <header class="contact-form-section__header">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="contact-form-section__eyebrow">{{ section.settings.eyebrow }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h1 id="ContactFormHeading-{{ section.id }}" class="contact-form-section__heading">
+              {{ section.settings.heading }}
+            </h1>
+          {%- endif -%}
+          {%- if section.settings.subheading != blank -%}
+            <div class="contact-form-section__subheading rte">{{ section.settings.subheading }}</div>
+          {%- endif -%}
+        </header>
+
+        {%- form 'contact', id: 'ContactForm-' | append: section.id, class: 'contact-form' -%}
+          {%- if form.posted_successfully? -%}
+            <div class="contact-form__success" role="status" tabindex="-1" autofocus>
+              <p style="margin:0; font-family: var(--font-heading); font-size: var(--text-lg); color: var(--color-espresso);">
+                {{ section.settings.success_message | default: 'contact.form.post_success' | t }}
+              </p>
+            </div>
+          {%- else -%}
+            {%- if form.errors -%}
+              <div class="contact-form__errors" role="alert" tabindex="-1" autofocus>
+                <strong>{{ 'contact.form.error_heading' | t }}</strong>
+                <ul>
+                  {%- for field in form.errors -%}
+                    <li>
+                      {%- if field == 'form' -%}
+                        {{ form.errors.messages[field] }}
+                      {%- else -%}
+                        {{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+            <div class="contact-form__row">
+              <div class="field">
+                <label class="field__label" for="ContactFormName-{{ section.id }}">
+                  {{ 'contact.form.name' | t }}
+                </label>
+                <input
+                  id="ContactFormName-{{ section.id }}"
+                  type="text"
+                  name="contact[{{ 'contact.form.name' | t }}]"
+                  autocomplete="name"
+                  required
+                  value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+                  {% if form.errors contains 'name' %}aria-invalid="true"{% endif %}>
+              </div>
+              <div class="field">
+                <label class="field__label" for="ContactFormEmail-{{ section.id }}">
+                  {{ 'contact.form.email' | t }}
+                  <span aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="ContactFormEmail-{{ section.id }}"
+                  type="email"
+                  name="contact[email]"
+                  autocomplete="email"
+                  spellcheck="false"
+                  required
+                  value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                  {% if form.errors contains 'email' %}aria-invalid="true"{% endif %}>
+              </div>
+            </div>
+
+            <div class="contact-form__row">
+              {%- if section.settings.show_phone -%}
+                <div class="field">
+                  <label class="field__label" for="ContactFormPhone-{{ section.id }}">
+                    {{ 'contact.form.phone' | t }}
+                  </label>
+                  <input
+                    id="ContactFormPhone-{{ section.id }}"
+                    type="tel"
+                    name="contact[{{ 'contact.form.phone' | t }}]"
+                    autocomplete="tel"
+                    pattern="[0-9 \-+().]*"
+                    value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}">
+                </div>
+              {%- endif -%}
+
+              {%- if has_subjects -%}
+                <div class="field">
+                  <label class="field__label" for="ContactFormSubject-{{ section.id }}">
+                    {{ section.settings.subject_label | default: 'Subject' }}
+                  </label>
+                  <select
+                    id="ContactFormSubject-{{ section.id }}"
+                    name="contact[subject]"
+                    required>
+                    {%- for block in subject_blocks -%}
+                      <option value="{{ block.settings.label | escape }}" {{ block.shopify_attributes }}>
+                        {{ block.settings.label }}
+                      </option>
+                    {%- endfor -%}
+                  </select>
+                </div>
+              {%- endif -%}
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="ContactFormMessage-{{ section.id }}">
+                {{ 'contact.form.message' | t }}
+                <span aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id="ContactFormMessage-{{ section.id }}"
+                name="contact[body]"
+                rows="7"
+                required
+                {% if form.errors contains 'body' %}aria-invalid="true"{% endif %}>{% if form.body %}{{ form.body }}{% endif %}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn--primary" style="align-self: flex-start;">
+              {{ 'contact.form.send' | t }}
+            </button>
+          {%- endif -%}
+        {%- endform -%}
+      </div>
+
+      <aside class="contact-info" aria-labelledby="ContactInfoHeading-{{ section.id }}">
+        <h2 id="ContactInfoHeading-{{ section.id }}" class="contact-info__heading">
+          {{ section.settings.info_heading | default: 'Visit the atelier' }}
+        </h2>
+
+        {%- if section.settings.address_block != blank -%}
+          <div class="contact-info__item">
+            <span class="contact-info__label">{{ section.settings.address_label | default: 'Address' }}</span>
+            <div class="contact-info__value rte">{{ section.settings.address_block }}</div>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.phone != blank -%}
+          <div class="contact-info__item">
+            <span class="contact-info__label">{{ 'contact.form.phone' | t }}</span>
+            <p class="contact-info__value">
+              <a href="tel:{{ section.settings.phone | replace: ' ', '' }}">{{ section.settings.phone }}</a>
+            </p>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.email != blank -%}
+          <div class="contact-info__item">
+            <span class="contact-info__label">{{ 'contact.form.email' | t }}</span>
+            <p class="contact-info__value">
+              <a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a>
+            </p>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.hours != blank -%}
+          <div class="contact-info__item">
+            <span class="contact-info__label">{{ section.settings.hours_label | default: 'Hours' }}</span>
+            <div class="contact-info__value rte">{{ section.settings.hours }}</div>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.map_embed_url != blank -%}
+          <iframe
+            class="contact-info__map"
+            src="{{ section.settings.map_embed_url }}"
+            title="{{ 'contact.form.map_title' | t | default: 'Store map' }}"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        {%- endif -%}
+
+        {%- if section.settings.show_social -%}
+          {%- liquid
+            assign has_social = false
+            if settings.social_instagram_link != blank
+              assign has_social = true
+            endif
+            if settings.social_facebook_link != blank
+              assign has_social = true
+            endif
+            if settings.social_pinterest_link != blank
+              assign has_social = true
+            endif
+            if settings.social_tiktok_link != blank
+              assign has_social = true
+            endif
+            if settings.social_youtube_link != blank
+              assign has_social = true
+            endif
+          -%}
+          {%- if has_social -%}
+            <div class="contact-info__item">
+              <span class="contact-info__label">{{ 'general.social.share' | t | default: 'Follow' }}</span>
+              <div class="contact-info__social">
+                {%- if settings.social_instagram_link != blank -%}
+                  <a href="{{ settings.social_instagram_link }}" target="_blank" rel="noopener" aria-label="Instagram">
+                    {%- render 'icon-instagram', size: 18 -%}
+                  </a>
+                {%- endif -%}
+                {%- if settings.social_facebook_link != blank -%}
+                  <a href="{{ settings.social_facebook_link }}" target="_blank" rel="noopener" aria-label="Facebook">
+                    {%- render 'icon-facebook', size: 18 -%}
+                  </a>
+                {%- endif -%}
+                {%- if settings.social_pinterest_link != blank -%}
+                  <a href="{{ settings.social_pinterest_link }}" target="_blank" rel="noopener" aria-label="Pinterest">
+                    {%- render 'icon-pinterest', size: 18 -%}
+                  </a>
+                {%- endif -%}
+                {%- if settings.social_tiktok_link != blank -%}
+                  <a href="{{ settings.social_tiktok_link }}" target="_blank" rel="noopener" aria-label="TikTok">
+                    {%- render 'icon-tiktok', size: 18 -%}
+                  </a>
+                {%- endif -%}
+                {%- if settings.social_youtube_link != blank -%}
+                  <a href="{{ settings.social_youtube_link }}" target="_blank" rel="noopener" aria-label="YouTube">
+                    {%- render 'icon-youtube', size: 18 -%}
+                  </a>
+                {%- endif -%}
+              </div>
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact form",
+  "tag": "section",
+  "class": "section-contact-form",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Get in touch"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Talk to the atelier."
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>Fit questions, custom orders, press enquiries. Our team replies within two business days.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "form_background_image",
+      "label": "Background image (subtle)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Show phone field",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subject_label",
+      "label": "Subject label",
+      "default": "Subject"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thank you. Our atelier replies within two business days."
+    },
+    {
+      "type": "header",
+      "content": "Store information"
+    },
+    {
+      "type": "text",
+      "id": "info_heading",
+      "label": "Info heading",
+      "default": "Visit the atelier"
+    },
+    {
+      "type": "text",
+      "id": "address_label",
+      "label": "Address label",
+      "default": "Address"
+    },
+    {
+      "type": "richtext",
+      "id": "address_block",
+      "label": "Address",
+      "default": "<p>Via degli Artigiani 12<br>10121 Torino, Italy</p>"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "Phone",
+      "default": "+39 011 000 0000"
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "Email",
+      "default": "atelier@orlaven.com"
+    },
+    {
+      "type": "text",
+      "id": "hours_label",
+      "label": "Hours label",
+      "default": "Hours"
+    },
+    {
+      "type": "richtext",
+      "id": "hours",
+      "label": "Hours",
+      "default": "<p>Monday to Friday, 10am to 6pm<br>Saturday by appointment</p>"
+    },
+    {
+      "type": "text",
+      "id": "map_embed_url",
+      "label": "Map embed URL",
+      "info": "Paste a Google Maps or similar embed URL (the src of their <iframe>)."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "label": "Show social links",
+      "info": "Uses the social URLs set under Theme settings > Social.",
+      "default": true
+    }
+  ],
+  "max_blocks": 12,
+  "blocks": [
+    {
+      "type": "subject_option",
+      "name": "Subject option",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Option label",
+          "default": "General enquiry"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Contact form",
+      "category": "Page",
+      "blocks": [
+        { "type": "subject_option", "settings": { "label": "General enquiry" } },
+        { "type": "subject_option", "settings": { "label": "Fit or sizing help" } },
+        { "type": "subject_option", "settings": { "label": "Custom or made-to-measure" } },
+        { "type": "subject_option", "settings": { "label": "Press or partnership" } },
+        { "type": "subject_option", "settings": { "label": "Repairs or after-care" } }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["page"]
+  }
+}
+{% endschema %}

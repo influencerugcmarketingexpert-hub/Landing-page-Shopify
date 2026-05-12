@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "show_title": true,
+        "show_breadcrumbs": true,
+        "max_width": "wide",
+        "text_alignment": "left"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Keep in touch",
+        "subheading": "<p>Receive our atelier letter. No spam. You can unsubscribe any time.</p>",
+        "overlay_opacity": 40,
+        "button_text": "Subscribe",
+        "success_text": "Welcome. Check your inbox for a warm hello."
+      }
+    }
+  },
+  "order": ["main", "newsletter"]
+}

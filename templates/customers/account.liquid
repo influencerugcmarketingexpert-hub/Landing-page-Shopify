@@ -1,0 +1,244 @@
+{%- comment -%}
+  Customer account
+  ----------------
+  Dashboard for logged-in customers. Shows:
+    - Welcome header with customer name
+    - Account links: addresses, log out
+    - Recent orders table with status pills and per-order link
+
+  `paginate customer.orders by 10` for the order list.
+{%- endcomment -%}
+<style>
+  .account-page {
+    padding: var(--space-10) 0 var(--space-16);
+  }
+  .account-page__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-10);
+    border-bottom: 1px solid rgba(15, 15, 15, 0.08);
+    padding-bottom: var(--space-6);
+  }
+  .account-page__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-cognac);
+    margin: 0 0 var(--space-2);
+  }
+  .account-page__title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+    color: var(--color-espresso);
+    margin: 0;
+  }
+  .account-page__subtitle {
+    font-size: var(--text-sm);
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: var(--space-2) 0 0;
+  }
+  .account-page__actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+  }
+  .account-page__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
+  @media (min-width: 960px) {
+    .account-page__grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+  }
+  .account-section-heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    color: var(--color-espresso);
+    margin: 0 0 var(--space-4);
+  }
+  .account-card {
+    padding: var(--space-6);
+    background-color: var(--color-cream);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .account-card address { font-style: normal; line-height: var(--leading-relaxed); }
+  .account-card a { color: var(--color-espresso); border-bottom: 1px solid var(--color-cognac); font-size: var(--text-sm); }
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .orders-table thead th {
+    text-align: left;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--color-espresso);
+    padding: var(--space-3) var(--space-3);
+    border-bottom: 1px solid rgba(15, 15, 15, 0.1);
+  }
+  .orders-table tbody td {
+    padding: var(--space-4) var(--space-3);
+    border-bottom: 1px solid rgba(15, 15, 15, 0.06);
+    font-size: var(--text-sm);
+    vertical-align: top;
+  }
+  .orders-table tbody tr:hover { background-color: rgba(245, 239, 230, 0.4); }
+  .orders-table__number a {
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    color: var(--color-espresso);
+    border-bottom: 1px solid var(--color-cognac);
+  }
+  .order-status {
+    display: inline-flex;
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+  }
+  .order-status--paid { color: #2b6a3c; background-color: rgba(43, 106, 60, 0.08); }
+  .order-status--pending { color: var(--color-cognac); background-color: rgba(154, 90, 60, 0.08); }
+  .order-status--refunded, .order-status--voided { color: #6e6e6e; background-color: rgba(110, 110, 110, 0.08); }
+  .order-status--fulfilled { color: #2b6a3c; background-color: rgba(43, 106, 60, 0.08); }
+  .order-status--unfulfilled { color: var(--color-cognac); background-color: rgba(154, 90, 60, 0.08); }
+  .order-status--partial { color: #a66a1c; background-color: rgba(166, 106, 28, 0.08); }
+  .orders-empty {
+    padding: var(--space-10);
+    text-align: center;
+    border: 1px dashed rgba(15, 15, 15, 0.15);
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+  }
+  .account-pagination { margin-top: var(--space-6); }
+</style>
+
+<section class="account-page" aria-labelledby="AccountTitle">
+  <div class="container">
+    <header class="account-page__header">
+      <div>
+        <p class="account-page__eyebrow">{{ 'customer.account.title' | t }}</p>
+        <h1 id="AccountTitle" class="account-page__title">
+          {{ 'customer.account.welcome_name_html' | t: name: customer.first_name | default: customer.first_name | default: customer.name }}
+        </h1>
+        <p class="account-page__subtitle">{{ customer.email }}</p>
+      </div>
+      <div class="account-page__actions">
+        <a class="btn btn--secondary btn--small" href="{{ routes.account_addresses_url }}">
+          {{ 'customer.account.view_addresses' | t: count: customer.addresses_count }}
+        </a>
+        <a class="btn btn--ghost btn--small" href="{{ routes.account_logout_url }}">
+          {{ 'customer.log_out' | t }}
+        </a>
+      </div>
+    </header>
+
+    <div class="account-page__grid">
+      <section aria-labelledby="OrdersHeading">
+        <h2 id="OrdersHeading" class="account-section-heading">
+          {{ 'customer.orders.title' | t }}
+        </h2>
+
+        {%- paginate customer.orders by 10 -%}
+          {%- if customer.orders.size > 0 -%}
+            <div class="orders-table-wrap" style="overflow-x:auto;">
+              <table class="orders-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{{ 'customer.orders.order_number' | t }}</th>
+                    <th scope="col">{{ 'customer.orders.date' | t }}</th>
+                    <th scope="col">{{ 'customer.orders.payment_status' | t }}</th>
+                    <th scope="col">{{ 'customer.orders.fulfillment_status' | t }}</th>
+                    <th scope="col">{{ 'customer.orders.total' | t }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {%- for order in customer.orders -%}
+                    <tr>
+                      <td class="orders-table__number">
+                        <a href="{{ order.customer_url }}" aria-label="{{ 'customer.orders.order_number_link' | t: number: order.name }}">
+                          {{ order.name }}
+                        </a>
+                      </td>
+                      <td>{{ order.created_at | date: format: 'date' }}</td>
+                      <td>
+                        <span class="order-status order-status--{{ order.financial_status }}">
+                          {{ order.financial_status_label }}
+                        </span>
+                      </td>
+                      <td>
+                        {%- if order.fulfillment_status_label -%}
+                          <span class="order-status order-status--{{ order.fulfillment_status }}">
+                            {{ order.fulfillment_status_label }}
+                          </span>
+                        {%- else -%}
+                          <span class="order-status order-status--unfulfilled">
+                            {{ 'customer.orders.unfulfilled' | t | default: 'Unfulfilled' }}
+                          </span>
+                        {%- endif -%}
+                      </td>
+                      <td>{{ order.total_price | money }}</td>
+                    </tr>
+                  {%- endfor -%}
+                </tbody>
+              </table>
+            </div>
+            {%- if paginate.pages > 1 -%}
+              <div class="account-pagination">
+                {%- render 'pagination', paginate: paginate -%}
+              </div>
+            {%- endif -%}
+          {%- else -%}
+            <div class="orders-empty" role="status">
+              <p>{{ 'customer.orders.none' | t }}</p>
+              <p style="margin-top: var(--space-4);">
+                <a class="btn btn--primary" href="{{ routes.all_products_collection_url }}">
+                  {{ 'customer.orders.start_shopping' | t | default: 'Start shopping' }}
+                </a>
+              </p>
+            </div>
+          {%- endif -%}
+        {%- endpaginate -%}
+      </section>
+
+      <aside aria-labelledby="AddressHeading">
+        <h2 id="AddressHeading" class="account-section-heading">
+          {{ 'customer.account.details' | t }}
+        </h2>
+        <div class="account-card">
+          {%- if customer.default_address != blank -%}
+            <address>
+              <strong style="font-family: var(--font-heading); font-size: var(--text-lg); color: var(--color-espresso);">
+                {{ customer.default_address.first_name }} {{ customer.default_address.last_name }}
+              </strong><br>
+              {{ customer.default_address | format_address }}
+            </address>
+          {%- else -%}
+            <p>{{ 'customer.account.no_default_address' | t | default: 'No default address set yet.' }}</p>
+          {%- endif -%}
+          <a href="{{ routes.account_addresses_url }}">
+            {{ 'customer.account.manage_addresses' | t | default: 'Manage addresses' }}
+          </a>
+        </div>
+
+        <div class="account-card" style="margin-top: var(--space-4); background-color: var(--color-beige);">
+          <p style="margin:0; font-family: var(--font-heading); font-size: var(--text-lg); color: var(--color-espresso);">
+            {{ 'customer.account.need_help' | t | default: 'Need a hand?' }}
+          </p>
+          <p style="margin:0; font-size: var(--text-sm);">
+            {{ 'customer.account.need_help_body' | t | default: 'Fit adjustments, repairs, press enquiries. Our atelier team replies within two business days.' }}
+          </p>
+          <a href="{{ pages['contact'].url | default: '/pages/contact' }}">
+            {{ 'customer.account.contact_atelier' | t | default: 'Contact the atelier' }}
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

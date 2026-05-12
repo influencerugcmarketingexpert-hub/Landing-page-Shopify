@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "show_title": true,
+        "show_breadcrumbs": false,
+        "max_width": "medium",
+        "text_alignment": "left"
+      }
+    }
+  },
+  "order": ["main"]
+}

@@ -1,0 +1,38 @@
+{
+  "sections": {
+    "trust_strip": {
+      "type": "trust-strip",
+      "settings": {
+        "bg_color": "#F5EFE6",
+        "text_color": "#0F0F0F",
+        "divider": true
+      },
+      "blocks": {
+        "col_1": { "type": "column", "settings": { "icon": "truck", "heading": "Free shipping", "subheading": "On orders over $200 worldwide" } },
+        "col_2": { "type": "column", "settings": { "icon": "returns", "heading": "30-day returns", "subheading": "Free within the US and EU" } },
+        "col_3": { "type": "column", "settings": { "icon": "shield", "heading": "Lifetime repairs", "subheading": "We fix what we make" } }
+      },
+      "block_order": ["col_1", "col_2", "col_3"]
+    },
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "show_title": true,
+        "show_breadcrumbs": true,
+        "max_width": "wide",
+        "text_alignment": "left"
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Questions about a return?",
+        "subheading": "<p>Sign up for our atelier letter, or write to <a href=\"mailto:atelier@orlaven.com\">atelier@orlaven.com</a>. We reply to every message.</p>",
+        "overlay_opacity": 40,
+        "button_text": "Subscribe",
+        "success_text": "Welcome. Check your inbox for a warm hello."
+      }
+    }
+  },
+  "order": ["trust_strip", "main", "newsletter"]
+}

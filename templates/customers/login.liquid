@@ -1,0 +1,233 @@
+{%- comment -%}
+  Customer login
+  --------------
+  Classic customer accounts login page. Two forms:
+  1. Main login (customer_login): email + password + remember me
+  2. Recover password form, toggled via hash (#recover) or a named anchor.
+
+  Uses Orlaven branding via design tokens. All strings via locales.
+{%- endcomment -%}
+<style>
+  .customer-page {
+    padding: var(--space-12) 0 var(--space-16);
+    display: flex;
+    justify-content: center;
+  }
+  .customer-page__inner {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+  .customer-page__header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .customer-page__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-cognac);
+    margin: 0;
+  }
+  .customer-page__title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+    color: var(--color-espresso);
+    margin: 0;
+  }
+  .customer-page__subtext {
+    color: color-mix(in oklab, var(--color-text) 70%, transparent);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+  .customer-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .customer-form__row { display: flex; flex-direction: column; gap: var(--space-2); }
+  .customer-form__errors {
+    padding: var(--space-3) var(--space-4);
+    background-color: #fdecea;
+    border-left: 3px solid #b3261e;
+    color: #5a1715;
+    font-size: var(--text-sm);
+  }
+  .customer-form__errors ul { padding-left: var(--space-5); list-style: disc; margin: var(--space-1) 0 0; }
+  .customer-form__forgot {
+    font-size: var(--text-sm);
+    color: var(--color-cognac);
+    border-bottom: 1px solid currentColor;
+    align-self: flex-start;
+  }
+  .customer-form__switch {
+    text-align: center;
+    font-size: var(--text-sm);
+    margin: 0;
+    color: color-mix(in oklab, var(--color-text) 75%, transparent);
+  }
+  .customer-form__switch a {
+    color: var(--color-espresso);
+    border-bottom: 1px solid var(--color-cognac);
+  }
+</style>
+
+<section class="customer-page" aria-labelledby="LoginTitle">
+  <div class="container">
+    <div class="customer-page__inner">
+      <header class="customer-page__header">
+        <p class="customer-page__eyebrow">{{ 'general.password.tagline' | t }}</p>
+        <h1 id="LoginTitle" class="customer-page__title">{{ 'customer.login_page.title' | t }}</h1>
+        <p class="customer-page__subtext">{{ 'customer.login_page.welcome' | t | default: 'Track orders, manage addresses and save your favourites.' }}</p>
+      </header>
+
+      <div id="LoginForm">
+        {%- form 'customer_login', novalidate: 'novalidate' -%}
+          {%- if form.errors -%}
+            <div class="customer-form__errors" role="alert" tabindex="-1" autofocus>
+              <strong>{{ 'shopify.errors.form' | t }}</strong>
+              <ul>
+                {%- for field in form.errors -%}
+                  <li>{{ form.errors.messages[field] }}</li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+
+          <div class="customer-form">
+            <div class="customer-form__row field">
+              <label for="CustomerEmail" class="field__label">{{ 'customer.login_page.email' | t }}</label>
+              <input
+                type="email"
+                name="customer[email]"
+                id="CustomerEmail"
+                autocomplete="email"
+                autocapitalize="off"
+                autocorrect="off"
+                required
+                {% if form.errors contains 'form' %}aria-invalid="true"{% endif %}>
+            </div>
+            <div class="customer-form__row field">
+              <label for="CustomerPassword" class="field__label">{{ 'customer.login_page.password' | t }}</label>
+              <input
+                type="password"
+                name="customer[password]"
+                id="CustomerPassword"
+                autocomplete="current-password"
+                required
+                {% if form.errors contains 'form' %}aria-invalid="true"{% endif %}>
+              <a href="#RecoverForm" class="customer-form__forgot" data-show-recover>
+                {{ 'customer.login_page.forgot_password' | t }}
+              </a>
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--full">
+              {{ 'customer.login_page.sign_in' | t }}
+            </button>
+
+            {%- if shop.checkout.guest_login -%}
+              <p class="customer-form__switch">
+                {{ 'customer.login_page.guest_title' | t }} -
+                <a href="{{ routes.cart_url }}">{{ 'customer.login_page.guest_continue' | t }}</a>
+              </p>
+            {%- endif -%}
+
+            <p class="customer-form__switch">
+              {{ 'customer.login_page.new_customer' | t | default: 'New to Orlaven?' }}
+              <a href="{{ routes.account_register_url }}">{{ 'customer.login_page.create_account' | t }}</a>
+            </p>
+          </div>
+        {%- endform -%}
+      </div>
+
+      <div id="RecoverForm" hidden>
+        <header class="customer-page__header">
+          <h2 class="customer-page__title" style="font-size: var(--text-2xl);">
+            {{ 'customer.recover_password.title' | t }}
+          </h2>
+          <p class="customer-page__subtext">{{ 'customer.recover_password.subtext' | t }}</p>
+        </header>
+
+        {%- form 'recover_customer_password' -%}
+          {%- if form.posted_successfully? -%}
+            <p class="customer-form__errors" style="background-color: color-mix(in oklab, var(--color-cognac) 10%, var(--color-background)); color: var(--color-espresso); border-left-color: var(--color-cognac);" role="status">
+              {{ 'customer.recover_password.success' | t }}
+            </p>
+          {%- endif -%}
+          {%- if form.errors -%}
+            <div class="customer-form__errors" role="alert" tabindex="-1" autofocus>
+              <strong>{{ 'shopify.errors.form' | t }}</strong>
+              <ul>
+                {%- for field in form.errors -%}
+                  <li>{{ form.errors.messages[field] }}</li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          {%- endif -%}
+
+          <div class="customer-form" style="margin-top: var(--space-5);">
+            <div class="customer-form__row field">
+              <label for="RecoverEmail" class="field__label">{{ 'customer.login_page.email' | t }}</label>
+              <input
+                type="email"
+                name="email"
+                id="RecoverEmail"
+                autocomplete="email"
+                autocapitalize="off"
+                autocorrect="off"
+                required>
+            </div>
+            <button type="submit" class="btn btn--primary btn--full">
+              {{ 'customer.recover_password.submit' | t }}
+            </button>
+            <p class="customer-form__switch">
+              <a href="#LoginForm" data-show-login>{{ 'customer.recover_password.cancel' | t }}</a>
+            </p>
+          </div>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var loginEl = document.getElementById('LoginForm');
+    var recoverEl = document.getElementById('RecoverForm');
+    if (!loginEl || !recoverEl) return;
+
+    function show(which) {
+      if (which === 'recover') {
+        loginEl.hidden = true;
+        recoverEl.hidden = false;
+        recoverEl.querySelector('input')?.focus();
+      } else {
+        recoverEl.hidden = true;
+        loginEl.hidden = false;
+      }
+    }
+
+    document.addEventListener('click', function (event) {
+      if (event.target.closest('[data-show-recover]')) {
+        event.preventDefault();
+        window.location.hash = 'recover';
+        show('recover');
+      } else if (event.target.closest('[data-show-login]')) {
+        event.preventDefault();
+        window.location.hash = '';
+        show('login');
+      }
+    });
+
+    // Auto-open recover form if URL hash requests it, or if the form has
+    // errors (server-side indicator that the recover POST failed), or if
+    // it posted successfully.
+    if (window.location.hash === '#recover' || recoverEl.querySelector('[role="alert"], [role="status"]')) {
+      show('recover');
+    }
+  }());
+</script>

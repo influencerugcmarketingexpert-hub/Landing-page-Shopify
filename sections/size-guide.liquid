@@ -1,0 +1,573 @@
+{%- comment -%}
+  Size guide
+  ----------
+  Tabular measurement guides. Each `size_table` block defines one tab
+  (Men / Women / Unisex / Outerwear etc). Rows are configured via a
+  textarea, one row per line, fields separated by commas. The first
+  row becomes the table header.
+
+  Row parsing:
+    rows = "Size,Chest,Waist,Sleeve
+            XS,34,28,24
+            S,36,30,25"
+    => assign lines = rows | newline_to_br | split: '<br />'
+    => each line | split: ','
+
+  Unit toggle: each block also stores a cm version of the rows, and a
+  <local-tabs> wrapper lets visitors switch units per table.
+
+  A "How to measure" section with an illustration sits above the tables.
+{%- endcomment -%}
+{%- liquid
+  assign table_blocks = section.blocks | where: 'type', 'size_table'
+  assign table_count = table_blocks.size
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .size-guide {
+    padding: var(--space-12) 0 var(--space-16);
+  }
+  #shopify-section-{{ section.id }} .size-guide__header {
+    max-width: 760px;
+    margin: 0 auto var(--space-10);
+    text-align: center;
+  }
+  #shopify-section-{{ section.id }} .size-guide__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-cognac);
+    margin: 0 0 var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .size-guide__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3vw + 1rem, 3rem);
+    line-height: var(--leading-tight);
+    color: var(--color-espresso);
+    margin: 0 0 var(--space-3);
+  }
+  #shopify-section-{{ section.id }} .size-guide__subheading {
+    color: color-mix(in oklab, var(--color-text) 75%, transparent);
+    margin: 0 auto;
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to {
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: 1fr;
+    padding: var(--space-8) 0;
+    border-top: 1px solid rgba(15, 15, 15, 0.08);
+    border-bottom: 1px solid rgba(15, 15, 15, 0.08);
+    margin-bottom: var(--space-10);
+  }
+  @media (min-width: 900px) {
+    #shopify-section-{{ section.id }} .size-guide__how-to {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+      align-items: center;
+      gap: var(--space-12);
+    }
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to-media {
+    background-color: var(--color-beige);
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to-media img,
+  #shopify-section-{{ section.id }} .size-guide__how-to-media svg.placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to-heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 2vw + 0.5rem, 2rem);
+    line-height: var(--leading-snug);
+    margin: 0 0 var(--space-4);
+    color: var(--color-espresso);
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to ol {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to ol li {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to ol li::before {
+    content: counter(step);
+    counter-increment: step;
+    width: 32px; height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-espresso);
+    font-family: var(--font-heading);
+    font-size: var(--text-sm);
+    color: var(--color-espresso);
+  }
+  #shopify-section-{{ section.id }} .size-guide__how-to ol { counter-reset: step; }
+  #shopify-section-{{ section.id }} .size-guide__how-to-body {
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: color-mix(in oklab, var(--color-text) 80%, transparent);
+  }
+  #shopify-section-{{ section.id }} .size-guide__tabs {
+    margin-bottom: var(--space-8);
+  }
+  #shopify-section-{{ section.id }} .size-guide__tab-panel { padding-top: var(--space-6); }
+  #shopify-section-{{ section.id }} .size-guide__unit-toggle {
+    display: inline-flex;
+    gap: 0;
+    border: 1px solid var(--color-espresso);
+    margin-bottom: var(--space-4);
+  }
+  #shopify-section-{{ section.id }} .size-guide__unit-toggle button {
+    border: 0;
+    padding: var(--space-2) var(--space-4);
+    background: transparent;
+    color: var(--color-espresso);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: var(--transition-base);
+  }
+  #shopify-section-{{ section.id }} .size-guide__unit-toggle button[aria-pressed="true"] {
+    background: var(--color-espresso);
+    color: var(--color-cream);
+  }
+  #shopify-section-{{ section.id }} .size-guide__table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #shopify-section-{{ section.id }} .size-guide__table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 520px;
+  }
+  #shopify-section-{{ section.id }} .size-guide__table caption {
+    text-align: left;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 65%, transparent);
+    padding: 0 0 var(--space-3);
+  }
+  #shopify-section-{{ section.id }} .size-guide__table th,
+  #shopify-section-{{ section.id }} .size-guide__table td {
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid rgba(15, 15, 15, 0.1);
+    font-size: var(--text-sm);
+  }
+  #shopify-section-{{ section.id }} .size-guide__table thead th {
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+    color: var(--color-espresso);
+    background: var(--color-cream);
+  }
+  #shopify-section-{{ section.id }} .size-guide__table tbody tr:nth-child(even) {
+    background-color: rgba(232, 223, 210, 0.25);
+  }
+  #shopify-section-{{ section.id }} .size-guide__table tbody th {
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    color: var(--color-espresso);
+  }
+  #shopify-section-{{ section.id }} .size-guide__empty {
+    padding: var(--space-10);
+    border: 1px dashed color-mix(in oklab, var(--color-text) 20%, transparent);
+    text-align: center;
+    color: color-mix(in oklab, var(--color-text) 65%, transparent);
+  }
+  #shopify-section-{{ section.id }} [role="tablist"] {
+    display: flex;
+    gap: var(--space-6);
+    border-bottom: 1px solid rgba(15, 15, 15, 0.12);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #shopify-section-{{ section.id }} [role="tablist"]::-webkit-scrollbar { display: none; }
+  #shopify-section-{{ section.id }} [role="tab"] {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: var(--space-3) 0;
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-text) 55%, transparent);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+  #shopify-section-{{ section.id }} [role="tab"][aria-selected="true"] {
+    color: var(--color-espresso);
+    border-bottom-color: var(--color-cognac);
+  }
+</style>
+
+<section class="size-guide" aria-labelledby="SizeGuideHeading-{{ section.id }}">
+  <div class="container">
+    <header class="size-guide__header">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="size-guide__eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h1 id="SizeGuideHeading-{{ section.id }}" class="size-guide__heading">
+          {{ section.settings.heading }}
+        </h1>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="size-guide__subheading">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+    </header>
+
+    {%- if section.settings.show_how_to -%}
+      <div class="size-guide__how-to">
+        <div class="size-guide__how-to-media">
+          {%- if section.settings.how_to_image != blank -%}
+            {%- render 'responsive-image',
+                image: section.settings.how_to_image,
+                sizes: '(min-width: 900px) 40vw, 100vw',
+                widths: '400,600,800,1000,1200',
+                alt: section.settings.how_to_heading | default: 'How to measure'
+            -%}
+          {%- else -%}
+            {%- render 'responsive-image', image: blank, alt: section.settings.how_to_heading | default: 'How to measure' -%}
+          {%- endif -%}
+        </div>
+        <div>
+          <h2 class="size-guide__how-to-heading">
+            {{ section.settings.how_to_heading | default: 'How to measure' }}
+          </h2>
+          {%- if section.settings.how_to_body != blank -%}
+            <div class="size-guide__how-to-body rte">{{ section.settings.how_to_body }}</div>
+          {%- endif -%}
+          {%- assign steps = section.settings.how_to_steps | default: '' -%}
+          {%- if steps != blank -%}
+            {%- assign step_lines = steps | strip | newline_to_br | split: '<br />' -%}
+            <ol>
+              {%- for line in step_lines -%}
+                {%- assign clean = line | strip -%}
+                {%- if clean != blank -%}
+                  <li><span>{{ clean }}</span></li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ol>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if table_count > 0 -%}
+      <local-tabs class="size-guide__tabs">
+        <div role="tablist" aria-label="{{ section.settings.tabs_aria_label | default: 'Size tables' }}">
+          {%- for block in table_blocks -%}
+            {%- assign tab_id = 'SizeTab-' | append: section.id | append: '-' | append: forloop.index -%}
+            {%- assign panel_id = 'SizePanel-' | append: section.id | append: '-' | append: forloop.index -%}
+            <button
+              role="tab"
+              id="{{ tab_id }}"
+              aria-controls="{{ panel_id }}"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              {{ block.shopify_attributes }}>
+              {{ block.settings.tab_label | default: 'Table' }}
+            </button>
+          {%- endfor -%}
+        </div>
+
+        {%- for block in table_blocks -%}
+          {%- assign tab_id = 'SizeTab-' | append: section.id | append: '-' | append: forloop.index -%}
+          {%- assign panel_id = 'SizePanel-' | append: section.id | append: '-' | append: forloop.index -%}
+          <div
+            id="{{ panel_id }}"
+            role="tabpanel"
+            aria-labelledby="{{ tab_id }}"
+            class="size-guide__tab-panel"
+            data-size-panel
+            {% unless forloop.first %}hidden{% endunless %}>
+            {%- liquid
+              assign rows_in = block.settings.rows_inches | default: ''
+              assign rows_cm = block.settings.rows_cm | default: ''
+              assign has_cm = false
+              if rows_cm != blank
+                assign has_cm = true
+              endif
+            -%}
+
+            {%- if section.settings.unit_toggle and has_cm -%}
+              <div class="size-guide__unit-toggle" role="group" aria-label="{{ 'Units' }}">
+                <button type="button" data-unit-btn="in" aria-pressed="true">Inches</button>
+                <button type="button" data-unit-btn="cm" aria-pressed="false">Centimeters</button>
+              </div>
+            {%- endif -%}
+
+            {%- capture table_inches -%}
+              {%- assign lines = rows_in | strip | newline_to_br | split: '<br />' -%}
+              {%- if lines.size > 0 -%}
+                <table class="size-guide__table">
+                  {%- if block.settings.tab_label != blank -%}
+                    <caption>{{ block.settings.tab_label }} &mdash; Inches</caption>
+                  {%- endif -%}
+                  {%- for line in lines -%}
+                    {%- assign clean = line | strip -%}
+                    {%- if clean == blank -%}{%- continue -%}{%- endif -%}
+                    {%- assign cells = clean | split: ',' -%}
+                    {%- if forloop.first -%}
+                      <thead>
+                        <tr>
+                          {%- for cell in cells -%}
+                            <th scope="col">{{ cell | strip }}</th>
+                          {%- endfor -%}
+                        </tr>
+                      </thead>
+                      <tbody>
+                    {%- else -%}
+                      <tr>
+                        {%- for cell in cells -%}
+                          {%- if forloop.first -%}
+                            <th scope="row">{{ cell | strip }}</th>
+                          {%- else -%}
+                            <td>{{ cell | strip }}</td>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </tr>
+                    {%- endif -%}
+                  {%- endfor -%}
+                      </tbody>
+                </table>
+              {%- endif -%}
+            {%- endcapture -%}
+
+            {%- capture table_cm -%}
+              {%- if has_cm -%}
+                {%- assign lines_cm = rows_cm | strip | newline_to_br | split: '<br />' -%}
+                <table class="size-guide__table">
+                  {%- if block.settings.tab_label != blank -%}
+                    <caption>{{ block.settings.tab_label }} &mdash; Centimeters</caption>
+                  {%- endif -%}
+                  {%- for line in lines_cm -%}
+                    {%- assign clean = line | strip -%}
+                    {%- if clean == blank -%}{%- continue -%}{%- endif -%}
+                    {%- assign cells = clean | split: ',' -%}
+                    {%- if forloop.first -%}
+                      <thead>
+                        <tr>
+                          {%- for cell in cells -%}
+                            <th scope="col">{{ cell | strip }}</th>
+                          {%- endfor -%}
+                        </tr>
+                      </thead>
+                      <tbody>
+                    {%- else -%}
+                      <tr>
+                        {%- for cell in cells -%}
+                          {%- if forloop.first -%}
+                            <th scope="row">{{ cell | strip }}</th>
+                          {%- else -%}
+                            <td>{{ cell | strip }}</td>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </tr>
+                    {%- endif -%}
+                  {%- endfor -%}
+                      </tbody>
+                </table>
+              {%- endif -%}
+            {%- endcapture -%}
+
+            <div class="size-guide__table-wrap" data-unit-region="in">
+              {{ table_inches }}
+            </div>
+            {%- if has_cm -%}
+              <div class="size-guide__table-wrap" data-unit-region="cm" hidden>
+                {{ table_cm }}
+              </div>
+            {%- endif -%}
+
+            {%- if block.settings.note != blank -%}
+              <p style="margin-top: var(--space-4); font-size: var(--text-xs); color: color-mix(in oklab, var(--color-text) 65%, transparent);">
+                {{ block.settings.note }}
+              </p>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </local-tabs>
+    {%- else -%}
+      <div class="size-guide__empty" role="status">
+        {{ 'sections.size_guide.empty' | t | default: 'Add size table blocks in the theme editor.' }}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('shopify-section-{{ section.id }}');
+    if (!root) return;
+    var panels = root.querySelectorAll('[data-size-panel]');
+    panels.forEach(function (panel) {
+      var buttons = panel.querySelectorAll('[data-unit-btn]');
+      if (!buttons.length) return;
+      var regions = panel.querySelectorAll('[data-unit-region]');
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var unit = btn.getAttribute('data-unit-btn');
+          buttons.forEach(function (b) {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          regions.forEach(function (r) {
+            if (r.getAttribute('data-unit-region') === unit) {
+              r.hidden = false;
+            } else {
+              r.hidden = true;
+            }
+          });
+        });
+      });
+    });
+  }());
+</script>
+
+{% schema %}
+{
+  "name": "Size guide",
+  "tag": "section",
+  "class": "section-size-guide",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Fit"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Size guide"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Measurements by category. Not sure of your size? Our atelier team replies within one business day."
+    },
+    {
+      "type": "checkbox",
+      "id": "unit_toggle",
+      "label": "Show inches / cm toggle",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "How to measure"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_how_to",
+      "label": "Show 'How to measure' block",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "how_to_image",
+      "label": "Illustration / photo"
+    },
+    {
+      "type": "text",
+      "id": "how_to_heading",
+      "label": "Heading",
+      "default": "How to measure"
+    },
+    {
+      "type": "richtext",
+      "id": "how_to_body",
+      "label": "Intro body",
+      "default": "<p>Use a soft measuring tape over a light shirt. Keep the tape level and relaxed.</p>"
+    },
+    {
+      "type": "textarea",
+      "id": "how_to_steps",
+      "label": "Steps (one per line)",
+      "default": "Chest: measure at the fullest point under the arms.\nWaist: measure at your natural waistline.\nSleeve: from the centre of your back, across the shoulder, to your wrist.\nLength: from the base of your neck to the desired hem."
+    }
+  ],
+  "max_blocks": 5,
+  "blocks": [
+    {
+      "type": "size_table",
+      "name": "Size table",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tab_label",
+          "label": "Tab label",
+          "default": "Men"
+        },
+        {
+          "type": "textarea",
+          "id": "rows_inches",
+          "label": "Rows (inches)",
+          "info": "One row per line. Comma-separate cells. First line is the header.",
+          "default": "Size,Chest,Waist,Sleeve,Length\nXS,34-36,28-30,24,27\nS,37-39,31-33,24.5,27.5\nM,40-42,34-36,25,28\nL,43-45,37-39,25.5,28.5\nXL,46-48,40-42,26,29\nXXL,49-51,43-45,26.5,29.5"
+        },
+        {
+          "type": "textarea",
+          "id": "rows_cm",
+          "label": "Rows (centimeters)",
+          "info": "Same format as inches. Leave blank to hide the cm view.",
+          "default": "Size,Chest,Waist,Sleeve,Length\nXS,86-91,71-76,61,69\nS,94-99,79-84,62,70\nM,102-107,86-91,64,71\nL,109-114,94-99,65,72\nXL,117-122,102-107,66,74\nXXL,124-130,109-114,67,75"
+        },
+        {
+          "type": "text",
+          "id": "note",
+          "label": "Note",
+          "default": "Jackets are cut with a slim shoulder. Between sizes, we recommend sizing up."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Size guide",
+      "category": "Page",
+      "blocks": [
+        {
+          "type": "size_table",
+          "settings": {
+            "tab_label": "Men"
+          }
+        },
+        {
+          "type": "size_table",
+          "settings": {
+            "tab_label": "Women",
+            "rows_inches": "Size,Bust,Waist,Sleeve,Length\nXS,32-33,24-25,23,24\nS,34-35,26-27,23.5,24.5\nM,36-37,28-29,24,25\nL,38-40,30-32,24.5,25.5\nXL,41-43,33-35,25,26",
+            "rows_cm": "Size,Bust,Waist,Sleeve,Length\nXS,81-84,61-64,58,61\nS,86-89,66-69,60,62\nM,91-94,71-74,61,63\nL,97-102,76-81,62,65\nXL,104-109,84-89,64,66"
+          }
+        },
+        {
+          "type": "size_table",
+          "settings": {
+            "tab_label": "Unisex",
+            "rows_inches": "Size,Chest,Sleeve,Length\nXS,36,23.5,26\nS,39,24,27\nM,42,25,28\nL,45,25.5,29\nXL,48,26,30",
+            "rows_cm": "Size,Chest,Sleeve,Length\nXS,91,60,66\nS,99,61,69\nM,107,64,71\nL,114,65,74\nXL,122,66,76"
+          }
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "templates": ["page"]
+  }
+}
+{% endschema %}

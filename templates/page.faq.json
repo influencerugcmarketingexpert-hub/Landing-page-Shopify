@@ -1,0 +1,177 @@
+{
+  "sections": {
+    "faq": {
+      "type": "faq",
+      "settings": {
+        "eyebrow": "Help",
+        "heading": "Frequently asked",
+        "subheading": "<p>Sizing, shipping, returns, after-care. The answers below cover nine out of ten of the questions we receive. Still need a human? <a href=\"/pages/contact\">Write to the atelier</a>.</p>",
+        "layout": "single"
+      },
+      "blocks": {
+        "group_orders": {
+          "type": "faq_group",
+          "settings": {
+            "heading": "Orders & shipping",
+            "intro": ""
+          }
+        },
+        "faq_orders_1": {
+          "type": "faq_item",
+          "settings": {
+            "question": "When will my order arrive?",
+            "answer": "<p>In-stock jackets ship within two business days. Standard delivery takes 3 to 5 days in the US and EU, 5 to 10 days for the rest of the world. You will receive a tracking link by email once your order is dispatched.</p>"
+          }
+        },
+        "faq_orders_2": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Do you ship worldwide?",
+            "answer": "<p>Yes. We ship to every country that our logistics partners serve. Duties and taxes are calculated at checkout for the US, the UK, the EU, Australia and Canada. For other destinations, duties are collected on delivery.</p>"
+          }
+        },
+        "faq_orders_3": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Is shipping free?",
+            "answer": "<p>Shipping is free on orders over $200 (or the local equivalent). Below that threshold, shipping is calculated at checkout based on destination and weight.</p>"
+          }
+        },
+        "faq_orders_4": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Can I change my shipping address after ordering?",
+            "answer": "<p>Yes, if the order has not yet been dispatched. Email <a href=\"mailto:atelier@orlaven.com\">atelier@orlaven.com</a> with your order number and the new address as soon as possible.</p>"
+          }
+        },
+        "group_returns": {
+          "type": "faq_group",
+          "settings": {
+            "heading": "Returns & exchanges",
+            "intro": ""
+          }
+        },
+        "faq_returns_1": {
+          "type": "faq_item",
+          "settings": {
+            "question": "What is your return policy?",
+            "answer": "<p>You have 30 days from delivery to return or exchange an unworn jacket. Returns are free within the US and EU. For other regions, you cover the return shipping.</p>"
+          }
+        },
+        "faq_returns_2": {
+          "type": "faq_item",
+          "settings": {
+            "question": "How do I start an exchange?",
+            "answer": "<p>Log in to your <a href=\"/account\">account</a>, open the order, and select Exchange next to the item. You will receive a prepaid return label and a confirmation of the replacement size.</p>"
+          }
+        },
+        "faq_returns_3": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Are made-to-measure jackets returnable?",
+            "answer": "<p>Made-to-measure pieces are final sale, but they include our lifetime fit guarantee: we will adjust any measurement that drifts, at no cost, for as long as you own the jacket.</p>"
+          }
+        },
+        "group_fit": {
+          "type": "faq_group",
+          "settings": {
+            "heading": "Fit & sizing"
+          }
+        },
+        "faq_fit_1": {
+          "type": "faq_item",
+          "settings": {
+            "question": "How do Orlaven jackets fit?",
+            "answer": "<p>We cut slim in the shoulder and chest to sit close to the body. If you are between sizes, we recommend sizing up. The full measurement tables are on our <a href=\"/pages/size-guide\">size guide</a> page.</p>"
+          }
+        },
+        "faq_fit_2": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Do you offer alterations?",
+            "answer": "<p>Yes. Every Orlaven order includes a complimentary sleeve or hem alteration within the first 60 days. Contact our atelier and we will walk you through next steps.</p>"
+          }
+        },
+        "faq_fit_3": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Can I book a personal fitting?",
+            "answer": "<p>Yes. Book a video consultation from our <a href=\"/pages/contact\">contact page</a>. Sessions are free and last about 20 minutes.</p>"
+          }
+        },
+        "group_care": {
+          "type": "faq_group",
+          "settings": {
+            "heading": "Care & repairs"
+          }
+        },
+        "faq_care_1": {
+          "type": "faq_item",
+          "settings": {
+            "question": "How do I care for my jacket?",
+            "answer": "<p>Wipe with a soft cloth. Condition twice a year with a neutral leather balm. Avoid direct heat and prolonged rain. Detailed care notes are shipped with every jacket.</p>"
+          }
+        },
+        "faq_care_2": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Do you offer repairs?",
+            "answer": "<p>Yes, for the lifetime of the jacket. Seams, zips, linings, buttons: all included. Send us photos of the damage and we will send a prepaid return label.</p>"
+          }
+        },
+        "group_materials": {
+          "type": "faq_group",
+          "settings": {
+            "heading": "Materials & sourcing"
+          }
+        },
+        "faq_materials_1": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Where do you source your leather?",
+            "answer": "<p>Our hides come from LWG-certified tanneries in Tuscany and Piedmont. Every Orlaven jacket carries a certificate of origin listing the tannery and tanning method.</p>"
+          }
+        },
+        "faq_materials_2": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Is Orlaven sustainable?",
+            "answer": "<p>Sustainability for us is durability: a jacket that lasts 30 years beats five that last five. We repair for life and source responsibly. Our <a href=\"/pages/about\">atelier page</a> covers the full picture.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "group_orders",
+        "faq_orders_1",
+        "faq_orders_2",
+        "faq_orders_3",
+        "faq_orders_4",
+        "group_returns",
+        "faq_returns_1",
+        "faq_returns_2",
+        "faq_returns_3",
+        "group_fit",
+        "faq_fit_1",
+        "faq_fit_2",
+        "faq_fit_3",
+        "group_care",
+        "faq_care_1",
+        "faq_care_2",
+        "group_materials",
+        "faq_materials_1",
+        "faq_materials_2"
+      ]
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Still have a question?",
+        "subheading": "<p>Sign up and we will send a fit guide to your inbox, plus an introduction from our atelier team.</p>",
+        "overlay_opacity": 40,
+        "button_text": "Subscribe",
+        "success_text": "Welcome. Check your inbox for a warm hello."
+      }
+    }
+  },
+  "order": ["faq", "newsletter"]
+}

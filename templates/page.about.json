@@ -1,0 +1,187 @@
+{
+  "sections": {
+    "brand_story": {
+      "type": "brand-story",
+      "settings": {
+        "eyebrow": "Since 1987",
+        "heading": "A small atelier, six generations in.",
+        "subheading": "<p>Orlaven began in a single workshop on Via degli Artigiani in Torino. Leandro Orlaven, a fourth-generation cutter, wanted to build a jacket that could be repaired, not replaced. Today his grandchildren run the same benches, press the same hides, and sign the same labels.</p>",
+        "quote": "Every Orlaven jacket is cut, stitched, and finished by one artisan from start to finish.",
+        "author": "Leandro Orlaven, founder",
+        "layout": "video-left",
+        "cta_label": "Meet the team",
+        "cta_link": "#team"
+      }
+    },
+    "timeline": {
+      "type": "multicolumn",
+      "settings": {
+        "heading": "A short history",
+        "subheading": "Four decades, one workshop, one obsession: a jacket made well.",
+        "columns_desktop": 4,
+        "text_alignment": "left"
+      },
+      "blocks": {
+        "era_1987": {
+          "type": "column",
+          "settings": {
+            "icon": "craftsmanship",
+            "heading": "1987 &mdash; Beginnings",
+            "text": "Leandro opens the first Orlaven workshop in Torino with one cutter and two sewers."
+          }
+        },
+        "era_2001": {
+          "type": "column",
+          "settings": {
+            "icon": "star",
+            "heading": "2001 &mdash; The first capsule",
+            "text": "Orlaven releases its signature Biker cut, the beginning of what is now our core line."
+          }
+        },
+        "era_2015": {
+          "type": "column",
+          "settings": {
+            "icon": "shield",
+            "heading": "2015 &mdash; Lifetime repairs",
+            "text": "We formalize our lifetime repair guarantee. Jackets bought in the eighties still come home for service."
+          }
+        },
+        "era_2024": {
+          "type": "column",
+          "settings": {
+            "icon": "heart",
+            "heading": "2024 &mdash; The atelier today",
+            "text": "Six generations in, we ship worldwide, still from the same Torino workshop."
+          }
+        }
+      },
+      "block_order": ["era_1987", "era_2001", "era_2015", "era_2024"]
+    },
+    "material_guide": {
+      "type": "material-guide",
+      "settings": {
+        "eyebrow": "Materials",
+        "heading": "No corners cut.",
+        "subheading": "Full-grain hides, solid brass hardware, cotton-silk linings. We choose every component for feel and longevity.",
+        "columns_desktop": 3
+      },
+      "blocks": {
+        "mat_bridle": {
+          "type": "material",
+          "settings": {
+            "heading": "Full-grain bridle leather",
+            "description": "Aniline-finished, vegetable-tanned hides from a single Tuscan tannery. Patinas rather than fades.",
+            "link_label": "Read the material story",
+            "link": "/pages/materials"
+          }
+        },
+        "mat_shearling": {
+          "type": "material",
+          "settings": {
+            "heading": "Merino shearling",
+            "description": "Dense Spanish merino, cured for warmth and combed for softness. Natural insulation, nothing synthetic.",
+            "link_label": "Read the material story",
+            "link": "/pages/materials"
+          }
+        },
+        "mat_hardware": {
+          "type": "material",
+          "settings": {
+            "heading": "Solid brass hardware",
+            "description": "Never plated, never hollow. The same brass zips we used in 1987 still open smoothly today.",
+            "link_label": "Read the material story",
+            "link": "/pages/materials"
+          }
+        }
+      },
+      "block_order": ["mat_bridle", "mat_shearling", "mat_hardware"]
+    },
+    "team": {
+      "type": "multicolumn",
+      "settings": {
+        "heading": "The people behind the stitches",
+        "subheading": "Every jacket has a signature tag. Here are some of the hands that sign them.",
+        "columns_desktop": 4,
+        "text_alignment": "center"
+      },
+      "blocks": {
+        "team_leandro": {
+          "type": "column",
+          "settings": {
+            "icon": "none",
+            "heading": "Leandro Orlaven",
+            "text": "Founder & master cutter. 37 years at the bench."
+          }
+        },
+        "team_sofia": {
+          "type": "column",
+          "settings": {
+            "icon": "none",
+            "heading": "Sofia Orlaven",
+            "text": "Creative director. Leads silhouette and colour."
+          }
+        },
+        "team_marco": {
+          "type": "column",
+          "settings": {
+            "icon": "none",
+            "heading": "Marco Bianchi",
+            "text": "Lead pattern-maker. Formerly at Ferragamo."
+          }
+        },
+        "team_elena": {
+          "type": "column",
+          "settings": {
+            "icon": "none",
+            "heading": "Elena Moretti",
+            "text": "Atelier manager. Your first email reply."
+          }
+        }
+      },
+      "block_order": ["team_leandro", "team_sofia", "team_marco", "team_elena"]
+    },
+    "press_strip": {
+      "type": "press-strip",
+      "settings": {
+        "heading": "As seen in",
+        "bg_color": "#FAF7F2",
+        "text_color": "#0F0F0F",
+        "enable_marquee": false
+      },
+      "blocks": {
+        "logo_vogue": { "type": "logo", "settings": { "name": "Vogue", "alt": "Vogue" } },
+        "logo_gq": { "type": "logo", "settings": { "name": "GQ", "alt": "GQ" } },
+        "logo_esquire": { "type": "logo", "settings": { "name": "Esquire", "alt": "Esquire" } },
+        "logo_monocle": { "type": "logo", "settings": { "name": "Monocle", "alt": "Monocle" } },
+        "logo_highsnobiety": { "type": "logo", "settings": { "name": "Highsnobiety", "alt": "Highsnobiety" } },
+        "logo_hypebeast": { "type": "logo", "settings": { "name": "Hypebeast", "alt": "Hypebeast" } }
+      },
+      "block_order": [
+        "logo_vogue",
+        "logo_gq",
+        "logo_esquire",
+        "logo_monocle",
+        "logo_highsnobiety",
+        "logo_hypebeast"
+      ]
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "Dispatches from the workshop",
+        "subheading": "<p>Monthly letters on leather, craft, and what is on the cutting table. No spam, ever.</p>",
+        "overlay_opacity": 40,
+        "button_text": "Subscribe",
+        "success_text": "Welcome. Check your inbox for a warm hello."
+      }
+    }
+  },
+  "order": [
+    "brand_story",
+    "timeline",
+    "material_guide",
+    "team",
+    "press_strip",
+    "newsletter"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "sections": {
+    "contact_form": {
+      "type": "contact-form",
+      "settings": {
+        "eyebrow": "Get in touch",
+        "heading": "Talk to the atelier.",
+        "subheading": "<p>Fit questions, custom orders, press enquiries. Our team replies within two business days.</p>",
+        "show_phone": true,
+        "subject_label": "Subject",
+        "success_message": "Thank you. Our atelier replies within two business days.",
+        "info_heading": "Visit the atelier",
+        "address_label": "Address",
+        "address_block": "<p>Via degli Artigiani 12<br>10121 Torino, Italy</p>",
+        "phone": "+39 011 000 0000",
+        "email": "atelier@orlaven.com",
+        "hours_label": "Hours",
+        "hours": "<p>Monday to Friday, 10am to 6pm<br>Saturday by appointment<br>Sunday closed</p>",
+        "map_embed_url": "",
+        "show_social": true
+      },
+      "blocks": {
+        "subject_1": { "type": "subject_option", "settings": { "label": "General enquiry" } },
+        "subject_2": { "type": "subject_option", "settings": { "label": "Fit or sizing help" } },
+        "subject_3": { "type": "subject_option", "settings": { "label": "Custom or made-to-measure" } },
+        "subject_4": { "type": "subject_option", "settings": { "label": "Press or partnership" } },
+        "subject_5": { "type": "subject_option", "settings": { "label": "Repairs or after-care" } },
+        "subject_6": { "type": "subject_option", "settings": { "label": "Wholesale" } }
+      },
+      "block_order": [
+        "subject_1",
+        "subject_2",
+        "subject_3",
+        "subject_4",
+        "subject_5",
+        "subject_6"
+      ]
+    },
+    "trust_strip": {
+      "type": "trust-strip",
+      "settings": {
+        "bg_color": "#F5EFE6",
+        "text_color": "#0F0F0F",
+        "divider": true
+      },
+      "blocks": {
+        "col_1": { "type": "column", "settings": { "icon": "returns", "heading": "Reply within 2 business days", "subheading": "From our atelier team, not a bot" } },
+        "col_2": { "type": "column", "settings": { "icon": "shield", "heading": "Lifetime repairs", "subheading": "Zips, seams, linings, all covered" } },
+        "col_3": { "type": "column", "settings": { "icon": "craftsmanship", "heading": "Personal fitting", "subheading": "Book a 1:1 video consultation" } }
+      },
+      "block_order": ["col_1", "col_2", "col_3"]
+    }
+  },
+  "order": ["contact_form", "trust_strip"]
+}

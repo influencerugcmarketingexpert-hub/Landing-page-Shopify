@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-404",
+      "settings": {
+        "heading": "This path went off-road.",
+        "body": "<p>The page you were looking for has moved or never existed. The links below should get you back on course.</p>",
+        "primary_cta_label": "Return home",
+        "secondary_cta_label": "Shop everything",
+        "show_popular_collection": true,
+        "popular_heading": "Popular right now",
+        "popular_collection": "best-sellers",
+        "products_to_show": 4
+      }
+    }
+  },
+  "order": ["main"]
+}
