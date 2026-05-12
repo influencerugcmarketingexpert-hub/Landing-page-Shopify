@@ -1,0 +1,443 @@
+{%- comment -%}
+  Footer
+  ------
+  Top newsletter strip, middle grid of link/text/newsletter/social
+  blocks, bottom bar with copyright, payment icons and localization.
+{%- endcomment -%}
+{%- liquid
+  assign bg_color = section.settings.bg_color | default: settings.color_ink
+  assign text_color = section.settings.text_color | default: settings.color_cream
+-%}
+<div class="site-footer" role="contentinfo">
+  <style>
+    #shopify-section-{{ section.id }} .site-footer {
+      --footer-bg: {{ bg_color }};
+      --footer-fg: {{ text_color }};
+      background-color: var(--footer-bg);
+      color: var(--footer-fg);
+    }
+  </style>
+
+  {%- if section.settings.show_top_newsletter -%}
+    <div class="site-footer__newsletter-strip">
+      <div class="container">
+        <div class="site-footer__newsletter-strip-inner">
+          <div>
+            <h2 class="site-footer__newsletter-heading">
+              {{ section.settings.newsletter_heading | default: 'general.newsletter.heading' | t }}
+            </h2>
+            {%- if section.settings.newsletter_subheading != blank -%}
+              <p class="site-footer__newsletter-body">{{ section.settings.newsletter_subheading }}</p>
+            {%- endif -%}
+          </div>
+          {%- form 'customer', class: 'newsletter-form' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <label class="visually-hidden" for="FooterNewsletterEmail">{{ 'general.newsletter.email_label' | t }}</label>
+            <div class="newsletter-form__group">
+              <input
+                id="FooterNewsletterEmail"
+                type="email"
+                name="contact[email]"
+                class="newsletter-form__input"
+                required
+                autocomplete="email"
+                placeholder="{{ 'general.newsletter.email_placeholder' | t }}"
+                {% if form.errors %}aria-invalid="true"{% endif %}>
+              <button type="submit" class="btn btn--primary newsletter-form__submit">
+                {{ 'general.newsletter.submit' | t }}
+              </button>
+            </div>
+            {%- if form.posted_successfully? -%}
+              <p class="newsletter-form__success" role="status">
+                {{ 'general.newsletter.success' | t }}
+              </p>
+            {%- elsif form.errors -%}
+              <p class="newsletter-form__error" role="alert">
+                {{ form.errors | default_errors }}
+              </p>
+            {%- endif -%}
+          {%- endform -%}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="site-footer__main container">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        {%- if settings.logo != blank -%}
+          <img src="{{ settings.logo | image_url: width: 400 }}"
+               alt="{{ shop.name | escape }}"
+               width="160"
+               loading="lazy"
+               class="site-footer__logo">
+        {%- else -%}
+          <p class="site-footer__brand-name">{{ shop.name | default: 'Orlaven' }}</p>
+        {%- endif -%}
+        <p class="site-footer__tagline">{{ 'sections.footer.tagline' | t }}</p>
+      </div>
+
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'link_column' -%}
+            <div class="site-footer__column" {{ block.shopify_attributes }}>
+              {%- if block.settings.heading != blank -%}
+                <h3 class="site-footer__heading">{{ block.settings.heading }}</h3>
+              {%- endif -%}
+              {%- if block.settings.menu != blank -%}
+                <ul class="site-footer__list">
+                  {%- for link in linklists[block.settings.menu].links -%}
+                    <li><a href="{{ link.url }}" class="site-footer__link">{{ link.title }}</a></li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </div>
+
+          {%- when 'text' -%}
+            <div class="site-footer__column site-footer__column--text" {{ block.shopify_attributes }}>
+              {%- if block.settings.heading != blank -%}
+                <h3 class="site-footer__heading">{{ block.settings.heading }}</h3>
+              {%- endif -%}
+              {%- if block.settings.body != blank -%}
+                <div class="site-footer__richtext rte">{{ block.settings.body }}</div>
+              {%- endif -%}
+            </div>
+
+          {%- when 'newsletter' -%}
+            <div class="site-footer__column site-footer__column--newsletter" {{ block.shopify_attributes }}>
+              {%- if block.settings.heading != blank -%}
+                <h3 class="site-footer__heading">{{ block.settings.heading }}</h3>
+              {%- endif -%}
+              {%- if block.settings.subheading != blank -%}
+                <p class="site-footer__text">{{ block.settings.subheading }}</p>
+              {%- endif -%}
+              {%- form 'customer', class: 'newsletter-form newsletter-form--compact' -%}
+                <input type="hidden" name="contact[tags]" value="newsletter">
+                <label class="visually-hidden" for="FooterBlockNewsletter-{{ block.id }}">{{ 'general.newsletter.email_label' | t }}</label>
+                <div class="newsletter-form__group">
+                  <input
+                    id="FooterBlockNewsletter-{{ block.id }}"
+                    type="email"
+                    name="contact[email]"
+                    class="newsletter-form__input"
+                    required
+                    autocomplete="email"
+                    placeholder="{{ block.settings.placeholder | default: 'general.newsletter.email_placeholder' | t }}">
+                  <button type="submit" class="btn btn--primary newsletter-form__submit">
+                    {{ block.settings.button_text | default: 'general.newsletter.submit' | t }}
+                  </button>
+                </div>
+                {%- if form.posted_successfully? -%}
+                  <p class="newsletter-form__success" role="status">{{ 'general.newsletter.success' | t }}</p>
+                {%- elsif form.errors -%}
+                  <p class="newsletter-form__error" role="alert">{{ form.errors | default_errors }}</p>
+                {%- endif -%}
+              {%- endform -%}
+            </div>
+
+          {%- when 'social' -%}
+            <div class="site-footer__column site-footer__column--social" {{ block.shopify_attributes }}>
+              {%- if block.settings.heading != blank -%}
+                <h3 class="site-footer__heading">{{ block.settings.heading }}</h3>
+              {%- endif -%}
+              <ul class="site-footer__social">
+                {%- if settings.social_instagram_link != blank -%}
+                  <li>
+                    <a href="{{ settings.social_instagram_link }}" aria-label="Instagram" rel="noopener" target="_blank">
+                      {%- render 'icon-instagram', size: 20 -%}
+                    </a>
+                  </li>
+                {%- endif -%}
+                {%- if settings.social_facebook_link != blank -%}
+                  <li>
+                    <a href="{{ settings.social_facebook_link }}" aria-label="Facebook" rel="noopener" target="_blank">
+                      {%- render 'icon-facebook', size: 20 -%}
+                    </a>
+                  </li>
+                {%- endif -%}
+                {%- if settings.social_pinterest_link != blank -%}
+                  <li>
+                    <a href="{{ settings.social_pinterest_link }}" aria-label="Pinterest" rel="noopener" target="_blank">
+                      {%- render 'icon-pinterest', size: 20 -%}
+                    </a>
+                  </li>
+                {%- endif -%}
+                {%- if settings.social_tiktok_link != blank -%}
+                  <li>
+                    <a href="{{ settings.social_tiktok_link }}" aria-label="TikTok" rel="noopener" target="_blank">
+                      {%- render 'icon-tiktok', size: 20 -%}
+                    </a>
+                  </li>
+                {%- endif -%}
+                {%- if settings.social_youtube_link != blank -%}
+                  <li>
+                    <a href="{{ settings.social_youtube_link }}" aria-label="YouTube" rel="noopener" target="_blank">
+                      {%- render 'icon-youtube', size: 20 -%}
+                    </a>
+                  </li>
+                {%- endif -%}
+              </ul>
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <div class="container site-footer__bottom-inner">
+      <p class="site-footer__copyright">
+        {{ 'sections.footer.copyright_html' | t: year: 'now' | date: '%Y' }}
+      </p>
+
+      {%- if section.settings.show_country_selector or section.settings.show_locale_selector -%}
+        <div class="site-footer__localization">
+          {%- if section.settings.show_locale_selector and localization.available_languages.size > 1 -%}
+            <form method="post" action="{{ routes.root_url }}/localization" id="FooterLocaleForm" class="localization-form" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
+              <input type="hidden" name="_method" value="put">
+              <label class="visually-hidden" for="FooterLocale">{{ 'localization.language_label' | t }}</label>
+              <div class="localization-form__select">
+                <select name="locale_code" id="FooterLocale" class="localization-selector">
+                  {%- for language in localization.available_languages -%}
+                    <option value="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} selected{% endif %} lang="{{ language.iso_code }}">
+                      {{ language.endonym_name | capitalize }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+                {%- render 'icon-chevron-down', size: 12 -%}
+              </div>
+            </form>
+          {%- endif -%}
+          {%- if section.settings.show_country_selector and localization.available_countries.size > 1 -%}
+            <form method="post" action="{{ routes.root_url }}/localization" id="FooterCountryForm" class="localization-form" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
+              <input type="hidden" name="_method" value="put">
+              <label class="visually-hidden" for="FooterCountry">{{ 'localization.country_label' | t }}</label>
+              <div class="localization-form__select">
+                <select name="country_code" id="FooterCountry" class="localization-selector">
+                  {%- for country in localization.available_countries -%}
+                    <option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>
+                      {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+                    </option>
+                  {%- endfor -%}
+                </select>
+                {%- render 'icon-chevron-down', size: 12 -%}
+              </div>
+            </form>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_payment_icons -%}
+        <ul class="site-footer__payment" aria-label="{{ 'sections.footer.payment' | t }}">
+          <li aria-label="Visa">
+            <svg viewBox="0 0 48 32" width="40" height="28" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" role="img">
+              <rect width="48" height="32" rx="4" fill="#FFFFFF"/>
+              <path d="M20.6 12l-2.8 8h-2.3l-1.4-5.5c-.1-.4-.2-.5-.5-.6-.6-.3-1.3-.5-2-.7l.1-.2h3.7c.5 0 .9.3 1 .8l.7 3.8 1.8-4.6h2.7zm9 5.3c0-2.4-3.3-2.5-3.3-3.5 0-.3.3-.7 1-.7.4 0 1.2-.1 2 .3l.4-1.9c-.5-.2-1.2-.3-2-.3-2.1 0-3.6 1.1-3.6 2.7 0 1.2 1 1.9 1.9 2.3.9.4 1.1.7 1.1 1 0 .5-.6.7-1.2.7-1 0-1.6-.3-2.1-.5l-.4 2c.5.2 1.3.4 2.2.4 2.2 0 3.7-1.1 3.7-2.8zm5.5 2.7h2l-1.7-8h-1.8c-.4 0-.8.2-.9.6l-3 7.4h2.2l.4-1.2h2.7l.1 1.2zm-2.3-3l1.1-3 .6 3h-1.7zm-9-5l-1.8 8h-2.1l1.8-8h2.1z" fill="#1A1F71"/>
+            </svg>
+          </li>
+          <li aria-label="Mastercard">
+            <svg viewBox="0 0 48 32" width="40" height="28" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" role="img">
+              <rect width="48" height="32" rx="4" fill="#FFFFFF"/>
+              <circle cx="20" cy="16" r="7" fill="#EB001B"/>
+              <circle cx="28" cy="16" r="7" fill="#F79E1B"/>
+              <path d="M24 10.7a7 7 0 010 10.6 7 7 0 010-10.6z" fill="#FF5F00"/>
+            </svg>
+          </li>
+          <li aria-label="American Express">
+            <svg viewBox="0 0 48 32" width="40" height="28" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" role="img">
+              <rect width="48" height="32" rx="4" fill="#2E77BB"/>
+              <text x="24" y="20" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="8" font-weight="700">AMEX</text>
+            </svg>
+          </li>
+          <li aria-label="PayPal">
+            <svg viewBox="0 0 48 32" width="40" height="28" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" role="img">
+              <rect width="48" height="32" rx="4" fill="#FFFFFF"/>
+              <text x="24" y="20" text-anchor="middle" fill="#003087" font-family="Arial, sans-serif" font-size="8" font-weight="700">PayPal</text>
+            </svg>
+          </li>
+          <li aria-label="Apple Pay">
+            <svg viewBox="0 0 48 32" width="40" height="28" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" role="img">
+              <rect width="48" height="32" rx="4" fill="#000000"/>
+              <text x="24" y="20" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="8" font-weight="600">Pay</text>
+            </svg>
+          </li>
+          <li aria-label="Shop Pay">
+            <svg viewBox="0 0 48 32" width="40" height="28" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" role="img">
+              <rect width="48" height="32" rx="4" fill="#5A31F4"/>
+              <text x="24" y="20" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="8" font-weight="700">shop</text>
+            </svg>
+          </li>
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Footer",
+  "tag": "footer",
+  "class": "section-footer",
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#0F0F0F"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#F5EFE6"
+    },
+    {
+      "type": "header",
+      "content": "Newsletter strip"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_top_newsletter",
+      "label": "Show newsletter strip",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Newsletter heading",
+      "default": "Join the atelier"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_subheading",
+      "label": "Newsletter subheading",
+      "default": "First access to new drops, fitting guides and dispatches from the workshop."
+    },
+    {
+      "type": "header",
+      "content": "Bottom bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Show payment icons",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country_selector",
+      "label": "Show country selector",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_selector",
+      "label": "Show language selector",
+      "default": false
+    }
+  ],
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "link_column",
+      "name": "Link column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Shop"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "default": "footer"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Atelier"
+        },
+        {
+          "type": "richtext",
+          "id": "body",
+          "label": "Body",
+          "default": "<p>Handcrafted leather jackets, made one at a time in our Italian workshop.</p>"
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Atelier letter"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "Monthly stories from the workshop."
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Email placeholder",
+          "default": "you@example.com"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Subscribe"
+        }
+      ]
+    },
+    {
+      "type": "social",
+      "name": "Social",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Follow"
+        }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      { "type": "link_column", "settings": { "heading": "Shop" } },
+      { "type": "link_column", "settings": { "heading": "Company" } },
+      { "type": "link_column", "settings": { "heading": "Help" } },
+      { "type": "social", "settings": { "heading": "Follow" } }
+    ]
+  },
+  "presets": [
+    {
+      "name": "Footer",
+      "blocks": [
+        { "type": "link_column", "settings": { "heading": "Shop" } },
+        { "type": "link_column", "settings": { "heading": "Company" } },
+        { "type": "link_column", "settings": { "heading": "Help" } },
+        { "type": "social", "settings": { "heading": "Follow" } }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["footer"]
+  }
+}
+{% endschema %}

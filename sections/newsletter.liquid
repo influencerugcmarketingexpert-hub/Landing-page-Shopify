@@ -1,0 +1,130 @@
+{%- comment -%}
+  Newsletter section
+  ------------------
+  Standalone newsletter block usable on any template. Tags the contact
+  with "newsletter" so Shopify (and downstream tools like Klaviyo)
+  segment signups from contact form submissions.
+{%- endcomment -%}
+{%- liquid
+  assign text_color = section.settings.text_color | default: settings.color_cream
+  assign overlay = section.settings.overlay_opacity | default: 40
+  assign overlay_decimal = overlay | divided_by: 100.0
+-%}
+<section class="newsletter-section"
+         id="Newsletter-{{ section.id }}"
+         style="--newsletter-text: {{ text_color }}; --newsletter-overlay: {{ overlay_decimal }};">
+  {%- if section.settings.background_image != blank -%}
+    <div class="newsletter-section__media" aria-hidden="true">
+      <img
+        src="{{ section.settings.background_image | image_url: width: 2000 }}"
+        srcset="{{ section.settings.background_image | image_url: width: 800 }} 800w,
+                {{ section.settings.background_image | image_url: width: 1200 }} 1200w,
+                {{ section.settings.background_image | image_url: width: 1600 }} 1600w,
+                {{ section.settings.background_image | image_url: width: 2000 }} 2000w"
+        sizes="100vw"
+        alt=""
+        loading="lazy"
+        width="{{ section.settings.background_image.width }}"
+        height="{{ section.settings.background_image.height }}">
+    </div>
+    <span class="newsletter-section__overlay" aria-hidden="true"></span>
+  {%- endif -%}
+
+  <div class="container newsletter-section__inner">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="newsletter-section__heading">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+    {%- if section.settings.subheading != blank -%}
+      <div class="newsletter-section__subheading rte">{{ section.settings.subheading }}</div>
+    {%- endif -%}
+
+    {%- form 'customer', class: 'newsletter-form newsletter-form--centered' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <label class="visually-hidden" for="NewsletterEmail-{{ section.id }}">
+        {{ 'general.newsletter.email_label' | t }}
+      </label>
+      <div class="newsletter-form__group">
+        <input
+          id="NewsletterEmail-{{ section.id }}"
+          type="email"
+          name="contact[email]"
+          class="newsletter-form__input"
+          required
+          autocomplete="email"
+          placeholder="{{ 'general.newsletter.email_placeholder' | t }}"
+          {% if form.errors %}aria-invalid="true" aria-describedby="NewsletterError-{{ section.id }}"{% endif %}>
+        <button type="submit" class="btn btn--primary newsletter-form__submit">
+          {{ section.settings.button_text | default: 'general.newsletter.submit' | t }}
+        </button>
+      </div>
+      {%- if form.posted_successfully? -%}
+        <p class="newsletter-form__success" role="status">
+          {{ section.settings.success_text | default: 'general.newsletter.success' | t }}
+        </p>
+      {%- elsif form.errors -%}
+        <p class="newsletter-form__error" id="NewsletterError-{{ section.id }}" role="alert">
+          {{ form.errors | default_errors }}
+        </p>
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "tag": "section",
+  "class": "section-newsletter",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Join the atelier"
+    },
+    {
+      "type": "richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "<p>First access to new drops, fitting guides and dispatches from the workshop.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 40
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "success_text",
+      "label": "Success message",
+      "default": "Thank you. Welcome to Orlaven."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter"
+    }
+  ]
+}
+{% endschema %}

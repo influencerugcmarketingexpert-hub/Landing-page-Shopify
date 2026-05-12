@@ -1,0 +1,108 @@
+{%- comment -%}
+  Predictive search drawer
+  ------------------------
+  Overlay triggered from the header search icon. The <predictive-search>
+  custom element lives in assets/predictive-search.js.
+{%- endcomment -%}
+<predictive-search
+  id="PredictiveSearchDrawer"
+  class="predictive-search drawer drawer--top"
+  role="dialog"
+  aria-modal="true"
+  aria-label="{{ 'general.search.label' | t }}"
+  aria-hidden="true"
+  data-predictive-search
+  data-search-url="{{ routes.predictive_search_url }}"
+  data-search-limit="6"
+  hidden
+>
+  <div class="predictive-search__header drawer__header">
+    <form action="{{ routes.search_url }}"
+          method="get"
+          role="search"
+          class="predictive-search__form"
+          data-predictive-search-form
+          novalidate>
+      <label class="visually-hidden" for="PredictiveSearchInput">{{ 'general.search.label' | t }}</label>
+      <span class="predictive-search__icon" aria-hidden="true">
+        {%- render 'icon-search', size: 20 -%}
+      </span>
+      <input
+        id="PredictiveSearchInput"
+        type="search"
+        name="q"
+        class="predictive-search__input"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="{{ 'general.search.placeholder' | t }}"
+        aria-autocomplete="list"
+        aria-controls="PredictiveSearchResults"
+        aria-expanded="false"
+        data-predictive-search-input>
+      <input type="hidden" name="options[prefix]" value="last">
+      <input type="hidden" name="type" value="product">
+      <button type="reset"
+              class="predictive-search__reset"
+              aria-label="{{ 'general.search.reset' | t }}"
+              data-predictive-search-reset
+              hidden>
+        {%- render 'icon-close', size: 16 -%}
+      </button>
+    </form>
+    <button type="button"
+            class="drawer__close"
+            data-search-close
+            aria-label="{{ 'general.accessibility.close' | t }}">
+      {%- render 'icon-close', size: 20 -%}
+    </button>
+  </div>
+
+  <div class="predictive-search__body drawer__body">
+    <div class="predictive-search__suggestions" data-predictive-search-suggestions>
+      <h3 class="predictive-search__group-title">{{ 'general.search.suggestions' | t }}</h3>
+      <ul class="predictive-search__suggestion-list">
+        <li><button type="button" data-predictive-search-suggestion>Leather jacket</button></li>
+        <li><button type="button" data-predictive-search-suggestion>Biker</button></li>
+        <li><button type="button" data-predictive-search-suggestion>Bomber</button></li>
+        <li><button type="button" data-predictive-search-suggestion>Suede</button></li>
+        <li><button type="button" data-predictive-search-suggestion>Shearling</button></li>
+      </ul>
+    </div>
+
+    <div class="predictive-search__results"
+         id="PredictiveSearchResults"
+         role="listbox"
+         aria-label="{{ 'general.search.results' | t | default: 'Search results' }}"
+         data-predictive-search-results
+         hidden>
+      <div class="predictive-search__group" data-predictive-search-group="products" hidden>
+        <h3 class="predictive-search__group-title">{{ 'general.search.products' | t }}</h3>
+        <ul class="predictive-search__list" data-predictive-search-list="products"></ul>
+      </div>
+      <div class="predictive-search__group" data-predictive-search-group="collections" hidden>
+        <h3 class="predictive-search__group-title">{{ 'general.search.collections' | t }}</h3>
+        <ul class="predictive-search__list" data-predictive-search-list="collections"></ul>
+      </div>
+      <div class="predictive-search__group" data-predictive-search-group="pages" hidden>
+        <h3 class="predictive-search__group-title">{{ 'general.search.pages' | t }}</h3>
+        <ul class="predictive-search__list" data-predictive-search-list="pages"></ul>
+      </div>
+      <div class="predictive-search__group" data-predictive-search-group="articles" hidden>
+        <h3 class="predictive-search__group-title">{{ 'general.search.articles' | t }}</h3>
+        <ul class="predictive-search__list" data-predictive-search-list="articles"></ul>
+      </div>
+
+      <a href="{{ routes.search_url }}" class="predictive-search__view-all" data-predictive-search-view-all hidden>
+        {{ 'general.search.view_all' | t }}
+      </a>
+    </div>
+
+    <p class="predictive-search__empty" data-predictive-search-empty hidden role="status" aria-live="polite"></p>
+    <p class="predictive-search__loading" data-predictive-search-loading hidden aria-live="polite">
+      {{ 'general.accessibility.loading' | t }}
+    </p>
+    <p class="visually-hidden" data-predictive-search-announcer role="status" aria-live="polite"></p>
+  </div>
+</predictive-search>

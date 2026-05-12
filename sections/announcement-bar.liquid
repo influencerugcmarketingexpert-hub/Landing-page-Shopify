@@ -1,0 +1,308 @@
+{%- comment -%}
+  Announcement bar
+  ----------------
+  Rotating announcement strip with optional close-for-7-days behavior.
+  Rotation is CSS driven; JS pauses on hover/focus and handles dismissal.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign speed = section.settings.autoplay_speed | default: 5
+  if speed < 2
+    assign speed = 2
+  endif
+  assign total_duration = block_count | times: speed
+  if total_duration < 1
+    assign total_duration = speed
+  endif
+-%}
+{%- if block_count > 0 -%}
+  <style>
+    #shopify-section-{{ section.id }} .announcement-bar {
+      --announcement-bg: {{ section.settings.bg_color | default: settings.color_ink }};
+      --announcement-fg: {{ section.settings.text_color | default: settings.color_cream }};
+      --announcement-duration: {{ total_duration }}s;
+      --announcement-count: {{ block_count }};
+      background-color: var(--announcement-bg);
+      color: var(--announcement-fg);
+    }
+  </style>
+
+  <aside-announcement
+    class="announcement-bar{% unless section.settings.autoplay %} is-paused{% endunless %}"
+    role="region"
+    aria-label="{{ 'sections.announcement_bar.aria_label' | t | default: 'Announcements' }}"
+    data-autoplay="{{ section.settings.autoplay }}"
+    data-autoplay-speed="{{ speed }}"
+    data-show-close="{{ section.settings.show_close }}"
+    data-section-id="{{ section.id }}"
+    hidden
+  >
+    <div class="announcement-bar__inner">
+      <ul class="announcement-bar__track" data-announcement-track aria-live="polite">
+        {%- for block in section.blocks -%}
+          {%- assign block_text = block.settings.text | default: '' -%}
+          <li class="announcement-bar__slide"
+              data-announcement-slide
+              data-index="{{ forloop.index0 }}"
+              style="--slide-delay: {{ forloop.index0 | times: speed }}s;"
+              {{ block.shopify_attributes }}
+              {% if forloop.first %}data-active="true"{% endif %}
+              {% unless forloop.first %}aria-hidden="true"{% endunless %}>
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}" class="announcement-bar__link">
+                <span>{{ block_text }}</span>
+              </a>
+            {%- else -%}
+              <span>{{ block_text }}</span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if block_count > 1 -%}
+        <div class="announcement-bar__controls" role="group" aria-label="{{ 'sections.announcement_bar.controls' | t | default: 'Announcement controls' }}">
+          <button type="button"
+                  class="announcement-bar__control announcement-bar__control--prev"
+                  data-announcement-prev
+                  aria-label="{{ 'sections.announcement_bar.previous_slide' | t }}">
+            {%- render 'icon-arrow-left', size: 14 -%}
+          </button>
+          <button type="button"
+                  class="announcement-bar__control announcement-bar__control--toggle"
+                  data-announcement-toggle
+                  aria-pressed="{{ section.settings.autoplay }}"
+                  aria-label="{{ 'general.accessibility.pause' | t | default: 'Pause announcements' }}">
+            <span data-announcement-icon-play{% if section.settings.autoplay %} hidden{% endif %}>
+              {%- render 'icon-play', size: 12 -%}
+            </span>
+            <span data-announcement-icon-pause{% unless section.settings.autoplay %} hidden{% endunless %}>
+              {%- render 'icon-pause', size: 12 -%}
+            </span>
+          </button>
+          <button type="button"
+                  class="announcement-bar__control announcement-bar__control--next"
+                  data-announcement-next
+                  aria-label="{{ 'sections.announcement_bar.next_slide' | t }}">
+            {%- render 'icon-arrow-right', size: 14 -%}
+          </button>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_close -%}
+        <button type="button"
+                class="announcement-bar__close"
+                data-announcement-close
+                aria-label="{{ 'general.accessibility.close' | t }}">
+          {%- render 'icon-close', size: 14 -%}
+        </button>
+      {%- endif -%}
+    </div>
+  </aside-announcement>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = 'orlaven.announcementDismissed.{{ section.id }}';
+      var DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+
+      function isDismissed() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return false;
+          var ts = parseInt(raw, 10);
+          if (!ts) return false;
+          return (Date.now() - ts) < DISMISS_MS;
+        } catch (e) { return false; }
+      }
+
+      function dismiss() {
+        try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
+      }
+
+      if (customElements.get('aside-announcement')) return;
+
+      class AsideAnnouncement extends HTMLElement {
+        connectedCallback() {
+          if (isDismissed()) {
+            this.setAttribute('hidden', '');
+            return;
+          }
+          this.removeAttribute('hidden');
+          this.slides = Array.from(this.querySelectorAll('[data-announcement-slide]'));
+          if (!this.slides.length) return;
+          this.index = 0;
+          this.speedMs = (parseInt(this.getAttribute('data-autoplay-speed'), 10) || 5) * 1000;
+          this.autoplay = this.getAttribute('data-autoplay') === 'true' && this.slides.length > 1;
+          this._bind();
+          this._show(0);
+          if (this.autoplay) this._start();
+        }
+
+        disconnectedCallback() {
+          this._stop();
+        }
+
+        _bind() {
+          var self = this;
+          var prev = this.querySelector('[data-announcement-prev]');
+          var next = this.querySelector('[data-announcement-next]');
+          var toggle = this.querySelector('[data-announcement-toggle]');
+          var close = this.querySelector('[data-announcement-close]');
+          if (prev) prev.addEventListener('click', function () { self._go(-1); });
+          if (next) next.addEventListener('click', function () { self._go(1); });
+          if (toggle) toggle.addEventListener('click', function () { self._toggle(); });
+          if (close) close.addEventListener('click', function () { self._dismiss(); });
+          this.addEventListener('mouseenter', function () { self._stop(true); });
+          this.addEventListener('mouseleave', function () { if (self.autoplay) self._start(); });
+          this.addEventListener('focusin', function () { self._stop(true); });
+          this.addEventListener('focusout', function () { if (self.autoplay) self._start(); });
+        }
+
+        _show(i) {
+          this.slides.forEach(function (el, idx) {
+            if (idx === i) {
+              el.setAttribute('data-active', 'true');
+              el.removeAttribute('aria-hidden');
+            } else {
+              el.removeAttribute('data-active');
+              el.setAttribute('aria-hidden', 'true');
+            }
+          });
+          this.index = i;
+        }
+
+        _go(dir) {
+          var n = this.slides.length;
+          this._show(((this.index + dir) % n + n) % n);
+        }
+
+        _start() {
+          this._stop();
+          var self = this;
+          this._timer = setInterval(function () { self._go(1); }, this.speedMs);
+          this.classList.remove('is-paused');
+          var toggle = this.querySelector('[data-announcement-toggle]');
+          var play = this.querySelector('[data-announcement-icon-play]');
+          var pause = this.querySelector('[data-announcement-icon-pause]');
+          if (toggle) toggle.setAttribute('aria-pressed', 'true');
+          if (play) play.setAttribute('hidden', '');
+          if (pause) pause.removeAttribute('hidden');
+        }
+
+        _stop(visual) {
+          if (this._timer) { clearInterval(this._timer); this._timer = null; }
+          if (visual) {
+            this.classList.add('is-paused');
+          }
+        }
+
+        _toggle() {
+          if (this._timer) {
+            this.autoplay = false;
+            this._stop(true);
+            var toggle = this.querySelector('[data-announcement-toggle]');
+            var play = this.querySelector('[data-announcement-icon-play]');
+            var pause = this.querySelector('[data-announcement-icon-pause]');
+            if (toggle) toggle.setAttribute('aria-pressed', 'false');
+            if (play) play.removeAttribute('hidden');
+            if (pause) pause.setAttribute('hidden', '');
+          } else {
+            this.autoplay = true;
+            this._start();
+          }
+        }
+
+        _dismiss() {
+          dismiss();
+          this.setAttribute('hidden', '');
+        }
+      }
+
+      customElements.define('aside-announcement', AsideAnnouncement);
+    }());
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "tag": "aside",
+  "class": "section-announcement-bar",
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#0F0F0F"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#F5EFE6"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Auto-rotate announcements",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Rotation speed",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "show_close",
+      "label": "Allow visitors to dismiss",
+      "info": "Hidden for 7 days after dismissal (localStorage).",
+      "default": true
+    }
+  ],
+  "max_blocks": 5,
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "Announcement",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Announcement text",
+          "default": "Free shipping on orders over $200"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {},
+    "blocks": [
+      { "type": "announcement", "settings": { "text": "Free shipping on orders over $200" } },
+      { "type": "announcement", "settings": { "text": "30-day returns on all full-price items" } },
+      { "type": "announcement", "settings": { "text": "Handcrafted. Since day one." } }
+    ]
+  },
+  "presets": [
+    {
+      "name": "Announcement bar",
+      "blocks": [
+        { "type": "announcement", "settings": { "text": "Free shipping on orders over $200" } },
+        { "type": "announcement", "settings": { "text": "30-day returns on all full-price items" } }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

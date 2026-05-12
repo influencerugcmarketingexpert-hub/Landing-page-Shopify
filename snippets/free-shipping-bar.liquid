@@ -1,0 +1,48 @@
+{%- comment -%}
+  Free shipping progress bar
+  --------------------------
+  Renders a progress bar toward the free-shipping threshold defined at
+  settings.free_shipping_threshold. Server side emits the correct
+  width + copy based on cart.total_price; client side cart.js updates
+  the same data-attributes after an ajax cart mutation.
+
+  Accepts:
+    - threshold (optional, overrides settings.free_shipping_threshold)
+{%- endcomment -%}
+{%- liquid
+  assign threshold_amount = threshold | default: settings.free_shipping_threshold | default: 0
+  assign threshold_cents = threshold_amount | times: 100
+  assign current_cents = cart.total_price | default: 0
+  assign remaining_cents = threshold_cents | minus: current_cents
+  if remaining_cents < 0
+    assign remaining_cents = 0
+  endif
+  assign progress = 0
+  if threshold_cents > 0
+    assign progress = current_cents | times: 100 | divided_by: threshold_cents
+    if progress > 100
+      assign progress = 100
+    endif
+  endif
+-%}
+{%- if threshold_amount > 0 -%}
+  <div class="free-shipping-bar"
+       data-free-shipping-bar
+       data-threshold="{{ threshold_cents }}"
+       data-progress="{{ progress }}">
+    <p class="free-shipping-bar__message" data-free-shipping-message aria-live="polite">
+      {%- if remaining_cents <= 0 -%}
+        {{ 'general.cart.free_shipping_reached' | t }}
+      {%- else -%}
+        {{ 'general.cart.free_shipping_prompt' | t: remaining: remaining_cents | money }}
+      {%- endif -%}
+    </p>
+    <div class="free-shipping-bar__track" role="progressbar"
+         aria-valuemin="0"
+         aria-valuemax="100"
+         aria-valuenow="{{ progress }}"
+         aria-label="{{ 'general.cart.free_shipping_prompt' | t: remaining: remaining_cents | money | escape }}">
+      <span class="free-shipping-bar__fill" data-free-shipping-fill style="width: {{ progress }}%;"></span>
+    </div>
+  </div>
+{%- endif -%}

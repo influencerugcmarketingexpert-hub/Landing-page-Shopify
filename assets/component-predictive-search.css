@@ -1,0 +1,169 @@
+/* ============================================================================
+ * component-predictive-search.css
+ *
+ * Top overlay drawer containing the predictive search combobox.
+ * ========================================================================== */
+
+predictive-search {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  max-height: 100vh;
+  max-height: 100dvh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-drawer);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(-100%);
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+predictive-search[hidden] { display: none; }
+predictive-search.is-open { transform: translateY(0); }
+
+.predictive-search__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid rgba(15, 15, 15, 0.08);
+}
+.predictive-search__form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-inline: var(--space-2);
+  border: 1px solid rgba(15, 15, 15, 0.12);
+}
+.predictive-search__icon {
+  display: inline-flex;
+  color: rgba(15, 15, 15, 0.5);
+  margin-left: var(--space-2);
+}
+.predictive-search__input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: var(--space-3) var(--space-2);
+  font-size: var(--text-base);
+  outline: none;
+}
+.predictive-search__reset {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: rgba(15, 15, 15, 0.5);
+  border-radius: 50%;
+}
+.predictive-search__reset:hover { color: var(--color-cognac); }
+
+.predictive-search__body {
+  padding: var(--space-5) var(--space-6);
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.predictive-search__group-title {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: rgba(15, 15, 15, 0.55);
+  margin-bottom: var(--space-3);
+}
+.predictive-search__suggestion-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+.predictive-search__suggestion-list li button {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  border: 1px solid rgba(15, 15, 15, 0.12);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+.predictive-search__suggestion-list li button:hover {
+  border-color: var(--color-cognac);
+  color: var(--color-cognac);
+}
+
+.predictive-search__results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.predictive-search__group[hidden] { display: none; }
+.predictive-search__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.predictive-search__result { list-style: none; }
+.predictive-search__result a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  color: var(--color-ink);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.predictive-search__result a:hover,
+.predictive-search__result[aria-selected='true'] a {
+  background-color: var(--color-cream);
+}
+.predictive-search__result-media img {
+  width: 60px;
+  height: 72px;
+  object-fit: cover;
+  background-color: var(--color-beige);
+}
+.predictive-search__result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.predictive-search__result-title {
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-snug);
+}
+.predictive-search__result-meta,
+.predictive-search__result-price {
+  font-size: var(--text-xs);
+  color: rgba(15, 15, 15, 0.6);
+}
+
+.predictive-search__view-all {
+  display: inline-flex;
+  justify-self: start;
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  color: var(--color-cognac);
+  margin-top: var(--space-3);
+}
+.predictive-search__empty {
+  font-size: var(--text-sm);
+  color: rgba(15, 15, 15, 0.65);
+  margin-top: var(--space-4);
+}
+.predictive-search__loading {
+  font-size: var(--text-sm);
+  color: rgba(15, 15, 15, 0.55);
+  margin-top: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .predictive-search__header { padding: var(--space-5) var(--space-8); }
+  .predictive-search__body { padding: var(--space-6) var(--space-8); }
+}

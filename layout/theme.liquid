@@ -46,6 +46,11 @@
     {{ type_body_font | font_face: font_display: 'swap' }}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'component-header.css' | asset_url | stylesheet_tag }}
+    {{ 'component-cart.css' | asset_url | stylesheet_tag }}
+    {{ 'component-predictive-search.css' | asset_url | stylesheet_tag }}
+    {{ 'component-footer.css' | asset_url | stylesheet_tag }}
+    {{ 'component-newsletter.css' | asset_url | stylesheet_tag }}
 
     <style>
       :root {
@@ -115,5 +120,7 @@
     {% section 'footer' %}
 
     <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
   </body>
 </html>

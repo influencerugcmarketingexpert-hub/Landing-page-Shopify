@@ -1,0 +1,574 @@
+{%- comment -%}
+  Header
+  ------
+  Sticky header with utility bar, logo + primary nav + mega menu, action
+  icons (search, account, wishlist, cart) and a mobile off-canvas menu.
+  Renders the cart drawer + predictive search overlay snippets so they
+  share the header's DOM scope.
+{%- endcomment -%}
+{%- liquid
+  assign header_logo = section.settings.logo | default: settings.logo
+  assign header_menu = section.settings.menu
+  assign logo_width = section.settings.logo_width | default: settings.logo_width | default: 140
+  assign sticky = section.settings.sticky
+  assign search_type = section.settings.search_type | default: 'drawer'
+  assign mega_menu_enable = section.settings.mega_menu_enable
+  assign enable_search = section.settings.enable_search
+  assign enable_account = section.settings.enable_account
+  assign enable_wishlist = section.settings.enable_wishlist
+  assign enable_country_selector = section.settings.enable_country_selector
+  assign enable_locale_selector = section.settings.enable_locale_selector
+
+  assign mega_menu_handles = ''
+  for block in section.blocks
+    if block.type == 'mega_menu_column' or block.type == 'mega_menu_promo'
+      if block.settings.parent_link != blank
+        assign mega_menu_handles = mega_menu_handles | append: block.settings.parent_link | append: '|'
+      endif
+    endif
+  endfor
+-%}
+<sticky-header
+  class="site-header{% if sticky %} site-header--sticky{% endif %}"
+  data-scroll-threshold="80"
+  role="banner"
+>
+  {%- if section.settings.utility_bar_text != blank or enable_country_selector or enable_locale_selector -%}
+    <div class="site-header__utility">
+      <div class="container site-header__utility-inner">
+        <p class="site-header__utility-text">
+          {{ section.settings.utility_bar_text | default: 'Free shipping on orders over $200 | 30-day returns' }}
+        </p>
+        <div class="site-header__utility-actions">
+          {%- if enable_locale_selector and localization.available_languages.size > 1 -%}
+            <form method="post" action="{{ routes.root_url }}/localization" id="HeaderLocaleForm" class="localization-form" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
+              <input type="hidden" name="_method" value="put">
+              <label class="visually-hidden" for="HeaderLocale">{{ 'localization.language_label' | t }}</label>
+              <div class="localization-form__select">
+                <select name="locale_code" id="HeaderLocale" class="localization-selector">
+                  {%- for language in localization.available_languages -%}
+                    <option value="{{ language.iso_code }}"{% if language.iso_code == localization.language.iso_code %} selected{% endif %} lang="{{ language.iso_code }}">
+                      {{ language.endonym_name | capitalize }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+                {%- render 'icon-chevron-down', size: 12 -%}
+              </div>
+            </form>
+          {%- endif -%}
+          {%- if enable_country_selector and localization.available_countries.size > 1 -%}
+            <form method="post" action="{{ routes.root_url }}/localization" id="HeaderCountryForm" class="localization-form" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
+              <input type="hidden" name="_method" value="put">
+              <label class="visually-hidden" for="HeaderCountry">{{ 'localization.country_label' | t }}</label>
+              <div class="localization-form__select">
+                <select name="country_code" id="HeaderCountry" class="localization-selector">
+                  {%- for country in localization.available_countries -%}
+                    <option value="{{ country.iso_code }}"{% if country.iso_code == localization.country.iso_code %} selected{% endif %}>
+                      {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+                    </option>
+                  {%- endfor -%}
+                </select>
+                {%- render 'icon-chevron-down', size: 12 -%}
+              </div>
+            </form>
+          {%- endif -%}
+          {%- if shop.customer_accounts_enabled and enable_account -%}
+            {%- if customer -%}
+              <a href="{{ routes.account_url }}" class="site-header__utility-link">
+                {{ 'sections.header.account' | t }}
+              </a>
+            {%- else -%}
+              <a href="{{ routes.account_login_url }}" class="site-header__utility-link">
+                {{ 'sections.header.log_in' | t }}
+              </a>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="site-header__main">
+    <div class="container site-header__inner">
+      <button type="button"
+              class="site-header__menu-toggle"
+              aria-controls="MobileMenuDrawer"
+              aria-expanded="false"
+              data-mobile-menu-open
+              aria-label="{{ 'general.accessibility.menu' | t }}">
+        {%- render 'icon-menu', size: 22 -%}
+      </button>
+
+      <a href="{{ routes.root_url }}" class="site-header__logo" aria-label="{{ shop.name }}">
+        {%- if header_logo != blank -%}
+          {%- assign logo_alt = header_logo.alt | default: shop.name -%}
+          <img
+            src="{{ header_logo | image_url: width: 600 }}"
+            srcset="{{ header_logo | image_url: width: 300 }} 1x, {{ header_logo | image_url: width: 600 }} 2x"
+            alt="{{ logo_alt | escape }}"
+            width="{{ logo_width }}"
+            height="{{ logo_width | divided_by: header_logo.aspect_ratio | round }}"
+            style="max-width: {{ logo_width }}px;"
+            loading="eager"
+            fetchpriority="high"
+          >
+        {%- else -%}
+          <span class="site-header__logo-text" style="max-width: {{ logo_width }}px;">
+            {{ shop.name | default: 'Orlaven' }}
+          </span>
+        {%- endif -%}
+      </a>
+
+      {%- if header_menu != blank -%}
+        <nav class="site-header__nav" aria-label="{{ 'sections.header.menu' | t }}">
+          <ul class="site-header__nav-list">
+            {%- for link in linklists[header_menu].links -%}
+              {%- assign has_mega = false -%}
+              {%- if mega_menu_enable -%}
+                {%- if mega_menu_handles contains link.handle -%}
+                  {%- assign has_mega = true -%}
+                {%- endif -%}
+              {%- endif -%}
+              <li class="site-header__nav-item{% if link.links.size > 0 or has_mega %} has-children{% endif %}">
+                {%- if has_mega -%}
+                  <button type="button"
+                          class="site-header__nav-link"
+                          aria-expanded="false"
+                          aria-controls="MegaMenu-{{ forloop.index }}"
+                          data-mega-menu-trigger
+                          data-mega-handle="{{ link.handle }}">
+                    <span>{{ link.title }}</span>
+                    {%- render 'icon-chevron-down', size: 12 -%}
+                  </button>
+
+                  <div class="mega-menu"
+                       id="MegaMenu-{{ forloop.index }}"
+                       data-mega-menu
+                       data-mega-handle="{{ link.handle }}"
+                       hidden>
+                    <div class="container mega-menu__inner">
+                      <div class="mega-menu__columns">
+                        {%- for block in section.blocks -%}
+                          {%- if block.type == 'mega_menu_column' and block.settings.parent_link == link.handle -%}
+                            <div class="mega-menu__column" {{ block.shopify_attributes }}>
+                              {%- if block.settings.heading != blank -%}
+                                <h3 class="mega-menu__heading">{{ block.settings.heading }}</h3>
+                              {%- endif -%}
+                              {%- if block.settings.menu != blank -%}
+                                <ul class="mega-menu__list">
+                                  {%- for sublink in linklists[block.settings.menu].links -%}
+                                    <li>
+                                      <a href="{{ sublink.url }}" class="mega-menu__link">
+                                        {{ sublink.title }}
+                                      </a>
+                                    </li>
+                                  {%- endfor -%}
+                                </ul>
+                              {%- elsif link.links.size > 0 -%}
+                                <ul class="mega-menu__list">
+                                  {%- for sublink in link.links -%}
+                                    <li>
+                                      <a href="{{ sublink.url }}" class="mega-menu__link">
+                                        {{ sublink.title }}
+                                      </a>
+                                    </li>
+                                  {%- endfor -%}
+                                </ul>
+                              {%- endif -%}
+                              {%- if block.settings.image != blank -%}
+                                <a href="{{ block.settings.image_link | default: link.url }}" class="mega-menu__image-link">
+                                  <img
+                                    src="{{ block.settings.image | image_url: width: 600 }}"
+                                    srcset="{{ block.settings.image | image_url: width: 400 }} 400w, {{ block.settings.image | image_url: width: 600 }} 600w, {{ block.settings.image | image_url: width: 800 }} 800w"
+                                    sizes="240px"
+                                    alt="{{ block.settings.image.alt | escape }}"
+                                    loading="lazy"
+                                    width="{{ block.settings.image.width }}"
+                                    height="{{ block.settings.image.height }}"
+                                  >
+                                </a>
+                              {%- endif -%}
+                            </div>
+                          {%- endif -%}
+                        {%- endfor -%}
+
+                        {%- for block in section.blocks -%}
+                          {%- if block.type == 'mega_menu_promo' and block.settings.parent_link == link.handle -%}
+                            <a href="{{ block.settings.link | default: '#' }}" class="mega-menu__promo" {{ block.shopify_attributes }}>
+                              {%- if block.settings.image != blank -%}
+                                <div class="mega-menu__promo-media">
+                                  <img
+                                    src="{{ block.settings.image | image_url: width: 800 }}"
+                                    srcset="{{ block.settings.image | image_url: width: 400 }} 400w, {{ block.settings.image | image_url: width: 600 }} 600w, {{ block.settings.image | image_url: width: 800 }} 800w"
+                                    sizes="(min-width: 1024px) 320px, 100vw"
+                                    alt="{{ block.settings.image.alt | escape }}"
+                                    loading="lazy"
+                                    width="{{ block.settings.image.width }}"
+                                    height="{{ block.settings.image.height }}"
+                                  >
+                                </div>
+                              {%- endif -%}
+                              <div class="mega-menu__promo-body">
+                                {%- if block.settings.heading != blank -%}
+                                  <p class="mega-menu__promo-heading">{{ block.settings.heading }}</p>
+                                {%- endif -%}
+                                {%- if block.settings.subheading != blank -%}
+                                  <p class="mega-menu__promo-subheading">{{ block.settings.subheading }}</p>
+                                {%- endif -%}
+                                <span class="mega-menu__promo-cta">
+                                  {{ block.settings.cta_text | default: 'Explore' }}
+                                  {%- render 'icon-arrow-right', size: 12 -%}
+                                </span>
+                              </div>
+                            </a>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </div>
+                    </div>
+                  </div>
+                {%- elsif link.links.size > 0 -%}
+                  <a href="{{ link.url }}" class="site-header__nav-link"
+                     aria-haspopup="true"
+                     aria-expanded="false"
+                     data-submenu-trigger>
+                    <span>{{ link.title }}</span>
+                    {%- render 'icon-chevron-down', size: 12 -%}
+                  </a>
+                  <ul class="site-header__submenu" data-submenu>
+                    {%- for sublink in link.links -%}
+                      <li>
+                        <a href="{{ sublink.url }}" class="site-header__submenu-link">
+                          {{ sublink.title }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- else -%}
+                  <a href="{{ link.url }}" class="site-header__nav-link"{% if link.current %} aria-current="page"{% endif %}>
+                    <span>{{ link.title }}</span>
+                  </a>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+
+      <div class="site-header__actions">
+        {%- if enable_search -%}
+          {%- if search_type == 'drawer' -%}
+            <button type="button"
+                    class="site-header__action"
+                    data-search-open
+                    aria-controls="PredictiveSearchDrawer"
+                    aria-expanded="false"
+                    aria-label="{{ 'general.search.label' | t }}">
+              {%- render 'icon-search', size: 20 -%}
+            </button>
+          {%- else -%}
+            <a href="{{ routes.search_url }}" class="site-header__action" aria-label="{{ 'general.search.label' | t }}">
+              {%- render 'icon-search', size: 20 -%}
+            </a>
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if shop.customer_accounts_enabled and enable_account -%}
+          <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}"
+             class="site-header__action"
+             aria-label="{{ 'sections.header.account' | t }}">
+            {%- render 'icon-user', size: 20 -%}
+          </a>
+        {%- endif -%}
+
+        {%- if enable_wishlist -%}
+          <a href="/pages/wishlist" class="site-header__action" data-wishlist-trigger aria-label="{{ 'sections.header.wishlist' | t | default: 'Wishlist' }}">
+            {%- render 'icon-heart', size: 20 -%}
+          </a>
+        {%- endif -%}
+
+        <button type="button"
+                class="site-header__action site-header__action--cart"
+                data-cart-open
+                aria-controls="CartDrawer"
+                aria-expanded="false"
+                aria-label="{{ 'general.cart.open_drawer' | t }}">
+          {%- render 'icon-cart', size: 20 -%}
+          {%- render 'cart-icon-bubble' -%}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} Mobile off-canvas menu {%- endcomment -%}
+  <div class="mobile-drawer drawer drawer--left"
+       id="MobileMenuDrawer"
+       data-mobile-menu
+       role="dialog"
+       aria-modal="true"
+       aria-label="{{ 'sections.header.menu' | t }}"
+       aria-hidden="true"
+       hidden>
+    <div class="drawer__header">
+      <span class="drawer__title">{{ 'sections.header.menu' | t }}</span>
+      <button type="button"
+              class="drawer__close"
+              data-mobile-menu-close
+              aria-label="{{ 'general.accessibility.close' | t }}">
+        {%- render 'icon-close', size: 20 -%}
+      </button>
+    </div>
+    <div class="drawer__body">
+      {%- if header_menu != blank -%}
+        <ul class="mobile-drawer__list" data-mobile-nav>
+          {%- for link in linklists[header_menu].links -%}
+            <li class="mobile-drawer__item">
+              {%- if link.links.size > 0 -%}
+                <details>
+                  <summary class="mobile-drawer__summary">
+                    <span>{{ link.title }}</span>
+                    {%- render 'icon-chevron-down', size: 14 -%}
+                  </summary>
+                  <ul class="mobile-drawer__sublist">
+                    <li>
+                      <a href="{{ link.url }}" class="mobile-drawer__link mobile-drawer__link--all">
+                        {{ link.title }} {{ 'general.search.view_all' | t | default: 'View all' | downcase }}
+                      </a>
+                    </li>
+                    {%- for sublink in link.links -%}
+                      <li>
+                        <a href="{{ sublink.url }}" class="mobile-drawer__link">
+                          {{ sublink.title }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </details>
+              {%- else -%}
+                <a href="{{ link.url }}" class="mobile-drawer__link">
+                  {{ link.title }}
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+    <div class="drawer__footer">
+      {%- if shop.customer_accounts_enabled -%}
+        {%- if customer -%}
+          <a href="{{ routes.account_url }}" class="btn btn--ghost btn--full">{{ 'sections.header.account' | t }}</a>
+        {%- else -%}
+          <a href="{{ routes.account_login_url }}" class="btn btn--ghost btn--full">{{ 'sections.header.log_in' | t }}</a>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  </div>
+  <div class="drawer-backdrop" data-drawer-backdrop hidden></div>
+
+  {%- comment -%} Cart drawer + predictive search slots {%- endcomment -%}
+  {%- if settings.cart_type == 'drawer' -%}
+    {%- render 'cart-drawer' -%}
+  {%- endif -%}
+  {%- if enable_search and search_type == 'drawer' and settings.predictive_search_enabled -%}
+    {%- render 'predictive-search' -%}
+  {%- endif -%}
+</sticky-header>
+
+<style>
+  #shopify-section-{{ section.id }} .site-header__utility {
+    background-color: {{ section.settings.utility_bg_color | default: settings.color_beige }};
+    color: {{ section.settings.utility_text_color | default: settings.color_ink }};
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Header",
+  "tag": "header",
+  "class": "section-header",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo override",
+      "info": "Falls back to the theme logo setting."
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo width",
+      "min": 60,
+      "max": 320,
+      "step": 10,
+      "unit": "px",
+      "default": 140
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Sticky header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "mega_menu_enable",
+      "label": "Enable mega menu",
+      "default": true,
+      "info": "Add mega menu column and promo blocks below. Set the block's Parent link to the handle of the top-level menu link."
+    },
+    {
+      "type": "header",
+      "content": "Utility bar"
+    },
+    {
+      "type": "text",
+      "id": "utility_bar_text",
+      "label": "Utility bar text",
+      "default": "Free shipping on orders over $200 | 30-day returns"
+    },
+    {
+      "type": "color",
+      "id": "utility_bg_color",
+      "label": "Utility bar background"
+    },
+    {
+      "type": "color",
+      "id": "utility_text_color",
+      "label": "Utility bar text color"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_country_selector",
+      "label": "Show country selector",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_locale_selector",
+      "label": "Show language selector",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Actions"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_search",
+      "label": "Show search",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "search_type",
+      "label": "Search type",
+      "options": [
+        { "value": "drawer", "label": "Drawer" },
+        { "value": "page", "label": "Page" }
+      ],
+      "default": "drawer"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_account",
+      "label": "Show account",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_wishlist",
+      "label": "Show wishlist",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mega_menu_column",
+      "name": "Mega menu column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "parent_link",
+          "label": "Parent link handle",
+          "info": "Handle of the top-level menu link this column appears under (e.g. 'shop')."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Links"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Feature image"
+        },
+        {
+          "type": "url",
+          "id": "image_link",
+          "label": "Image link"
+        }
+      ]
+    },
+    {
+      "type": "mega_menu_promo",
+      "name": "Mega menu promo",
+      "settings": [
+        {
+          "type": "text",
+          "id": "parent_link",
+          "label": "Parent link handle"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "New arrivals"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "text",
+          "id": "cta_text",
+          "label": "CTA text",
+          "default": "Shop now"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  }
+}
+{% endschema %}

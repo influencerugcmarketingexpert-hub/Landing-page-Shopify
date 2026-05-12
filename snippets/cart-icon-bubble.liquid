@@ -1,0 +1,24 @@
+{%- comment -%}
+  Cart icon bubble
+  ----------------
+  Small standalone snippet so it can be re-rendered via the Shopify
+  Section Rendering API without touching the rest of the header.
+  Output id is consumed by assets/cart.js.
+
+  Accepts:
+    - cart (optional, defaults to global `cart`)
+{%- endcomment -%}
+{%- liquid
+  assign _cart = cart
+  assign item_count = _cart.item_count | default: 0
+-%}
+<span class="cart-count-bubble{% if item_count == 0 %} cart-count-bubble--empty{% endif %}"
+      id="CartCountBubble"
+      data-cart-count-bubble
+      data-count="{{ item_count }}"
+      aria-hidden="{% if item_count == 0 %}true{% else %}false{% endif %}">
+  <span class="cart-count-bubble__count" data-cart-count>{{ item_count }}</span>
+  <span class="visually-hidden" data-cart-count-label>
+    {{- 'sections.header.cart_count' | t: count: item_count -}}
+  </span>
+</span>
