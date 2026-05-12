@@ -1,0 +1,228 @@
+{%- comment -%}
+  Marquee text
+  ------------
+  Horizontal scrolling strip. Each block is a short phrase with an
+  optional icon from the shared icon set. Pure CSS keyframe animation
+  translating the track by -50% while the content is duplicated so the
+  loop appears seamless. Pauses on hover / focus. Respects
+  prefers-reduced-motion by falling back to a static centered row.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign bg = section.settings.bg_color | default: settings.color_ink
+  assign fg = section.settings.text_color | default: settings.color_cream
+  assign speed = section.settings.speed | default: 'medium'
+  case speed
+    when 'slow'
+      assign duration = '50s'
+    when 'fast'
+      assign duration = '20s'
+    else
+      assign duration = '35s'
+  endcase
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .marquee-text {
+    background-color: {{ bg }};
+    color: {{ fg }};
+    overflow: hidden;
+    padding: var(--space-4) 0;
+    border-top: 1px solid color-mix(in oklab, {{ fg }} 10%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, {{ fg }} 10%, transparent);
+  }
+  #shopify-section-{{ section.id }} .marquee-text__viewport {
+    position: relative;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  }
+  #shopify-section-{{ section.id }} .marquee-text__track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-10);
+    width: max-content;
+    animation: marquee-scroll-{{ section.id }} {{ duration }} linear infinite;
+  }
+  #shopify-section-{{ section.id }} .marquee-text__viewport:hover .marquee-text__track,
+  #shopify-section-{{ section.id }} .marquee-text__viewport:focus-within .marquee-text__track {
+    animation-play-state: paused;
+  }
+  @keyframes marquee-scroll-{{ section.id }} {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ section.id }} .marquee-text__track {
+      animation: none;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    #shopify-section-{{ section.id }} .marquee-text__viewport {
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+  }
+  #shopify-section-{{ section.id }} .marquee-text__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-heading);
+    font-size: clamp(1.25rem, 2vw + 0.5rem, 2rem);
+    line-height: 1;
+    letter-spacing: var(--tracking-snug);
+    white-space: nowrap;
+    color: inherit;
+  }
+  #shopify-section-{{ section.id }} .marquee-text__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    color: inherit;
+    opacity: 0.9;
+  }
+  #shopify-section-{{ section.id }} .marquee-text__icon svg { width: 100%; height: 100%; }
+  #shopify-section-{{ section.id }} .marquee-text__empty {
+    text-align: center;
+    color: color-mix(in oklab, {{ fg }} 70%, transparent);
+    font-size: var(--text-sm);
+  }
+</style>
+
+<section class="marquee-text" aria-label="{{ 'sections.marquee.aria' | t | default: 'Brand marquee' }}">
+  {%- if block_count > 0 -%}
+    <div class="marquee-text__viewport">
+      <div class="marquee-text__track" aria-hidden="false">
+        {%- for block in section.blocks -%}
+          {%- assign icon_name = block.settings.icon | default: 'none' -%}
+          <span class="marquee-text__item" {{ block.shopify_attributes }}>
+            {%- if icon_name != blank and icon_name != 'none' -%}
+              <span class="marquee-text__icon" aria-hidden="true">
+                {%- case icon_name -%}
+                  {%- when 'star' -%}{%- render 'icon-star', size: 18 -%}
+                  {%- when 'heart' -%}{%- render 'icon-heart', size: 18 -%}
+                  {%- when 'shield' -%}{%- render 'icon-shield', size: 18 -%}
+                  {%- when 'craftsmanship' -%}{%- render 'icon-craftsmanship', size: 18 -%}
+                  {%- when 'truck' -%}{%- render 'icon-truck', size: 18 -%}
+                  {%- when 'returns' -%}{%- render 'icon-returns', size: 18 -%}
+                  {%- when 'checkmark' -%}{%- render 'icon-checkmark', size: 18 -%}
+                  {%- when 'arrow' -%}{%- render 'icon-arrow-right', size: 18 -%}
+                  {%- else -%}{%- render 'icon-star', size: 18 -%}
+                {%- endcase -%}
+              </span>
+            {%- endif -%}
+            <span>{{ block.settings.text }}</span>
+          </span>
+        {%- endfor -%}
+
+        {%- comment -%} Duplicated run so the scroll loops seamlessly. Hidden from AT. {%- endcomment -%}
+        {%- for block in section.blocks -%}
+          {%- assign icon_name = block.settings.icon | default: 'none' -%}
+          <span class="marquee-text__item" aria-hidden="true">
+            {%- if icon_name != blank and icon_name != 'none' -%}
+              <span class="marquee-text__icon" aria-hidden="true">
+                {%- case icon_name -%}
+                  {%- when 'star' -%}{%- render 'icon-star', size: 18 -%}
+                  {%- when 'heart' -%}{%- render 'icon-heart', size: 18 -%}
+                  {%- when 'shield' -%}{%- render 'icon-shield', size: 18 -%}
+                  {%- when 'craftsmanship' -%}{%- render 'icon-craftsmanship', size: 18 -%}
+                  {%- when 'truck' -%}{%- render 'icon-truck', size: 18 -%}
+                  {%- when 'returns' -%}{%- render 'icon-returns', size: 18 -%}
+                  {%- when 'checkmark' -%}{%- render 'icon-checkmark', size: 18 -%}
+                  {%- when 'arrow' -%}{%- render 'icon-arrow-right', size: 18 -%}
+                  {%- else -%}{%- render 'icon-star', size: 18 -%}
+                {%- endcase -%}
+              </span>
+            {%- endif -%}
+            <span>{{ block.settings.text }}</span>
+          </span>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- else -%}
+    <p class="marquee-text__empty">
+      {{ 'sections.marquee.empty' | t | default: 'Add marquee items in the theme editor.' }}
+    </p>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Marquee text",
+  "tag": "section",
+  "class": "section-marquee-text",
+  "settings": [
+    {
+      "type": "select",
+      "id": "speed",
+      "label": "Scroll speed",
+      "options": [
+        { "value": "slow",   "label": "Slow" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "fast",   "label": "Fast" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#0F0F0F"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#F5EFE6"
+    }
+  ],
+  "max_blocks": 10,
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Handcrafted since day one"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon (optional separator)",
+          "options": [
+            { "value": "none",          "label": "None" },
+            { "value": "star",          "label": "Star" },
+            { "value": "heart",         "label": "Heart" },
+            { "value": "shield",        "label": "Shield" },
+            { "value": "craftsmanship", "label": "Craftsmanship" },
+            { "value": "truck",         "label": "Truck" },
+            { "value": "returns",       "label": "Returns" },
+            { "value": "checkmark",     "label": "Checkmark" },
+            { "value": "arrow",         "label": "Arrow" }
+          ],
+          "default": "star"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Marquee text",
+      "category": "Custom",
+      "blocks": [
+        { "type": "item", "settings": { "text": "Handcrafted since day one", "icon": "craftsmanship" } },
+        { "type": "item", "settings": { "text": "Lifetime repairs",           "icon": "shield" } },
+        { "type": "item", "settings": { "text": "Full-grain Italian leather", "icon": "star" } },
+        { "type": "item", "settings": { "text": "Free worldwide shipping",    "icon": "truck" } },
+        { "type": "item", "settings": { "text": "30-day returns",              "icon": "returns" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

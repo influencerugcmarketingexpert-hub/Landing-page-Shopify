@@ -1,0 +1,252 @@
+{%- comment -%}
+  Press strip
+  -----------
+  Monochrome 'As seen in' logo row. Each block is one logo with image,
+  link and alt text. When enable_marquee is on, the logos translate
+  horizontally on a CSS keyframe and are duplicated in the DOM so the
+  scroll appears seamless. Respects prefers-reduced-motion.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign bg = section.settings.bg_color | default: settings.color_background
+  assign fg = section.settings.text_color | default: settings.color_text
+  assign marquee = section.settings.enable_marquee
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .press-strip {
+    background-color: {{ bg }};
+    color: {{ fg }};
+    padding: var(--space-10) 0;
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .press-strip__heading {
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: color-mix(in oklab, {{ fg }} 60%, transparent);
+    margin: 0 0 var(--space-6);
+  }
+  #shopify-section-{{ section.id }} .press-strip__viewport {
+    position: relative;
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .press-strip__track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-10);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  {% if marquee %}
+  #shopify-section-{{ section.id }} .press-strip__track {
+    flex-wrap: nowrap;
+    gap: var(--space-12);
+    width: max-content;
+    justify-content: flex-start;
+    animation: press-scroll-{{ section.id }} 40s linear infinite;
+  }
+  #shopify-section-{{ section.id }} .press-strip__viewport:hover .press-strip__track,
+  #shopify-section-{{ section.id }} .press-strip__viewport:focus-within .press-strip__track {
+    animation-play-state: paused;
+  }
+  @keyframes press-scroll-{{ section.id }} {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #shopify-section-{{ section.id }} .press-strip__track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+      justify-content: center;
+    }
+  }
+  {% endif %}
+  #shopify-section-{{ section.id }} .press-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity var(--duration-base) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .press-logo:hover { opacity: 1; }
+  #shopify-section-{{ section.id }} .press-logo img,
+  #shopify-section-{{ section.id }} .press-logo svg.placeholder {
+    max-height: 40px;
+    width: auto;
+    filter: grayscale(1) contrast(1.1);
+    object-fit: contain;
+  }
+  #shopify-section-{{ section.id }} .press-strip__placeholder-logo {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: var(--text-xl);
+    letter-spacing: var(--tracking-wide);
+    color: color-mix(in oklab, {{ fg }} 55%, transparent);
+    white-space: nowrap;
+  }
+  #shopify-section-{{ section.id }} .press-strip__empty {
+    text-align: center;
+    color: color-mix(in oklab, {{ fg }} 60%, transparent);
+  }
+</style>
+
+<section class="press-strip" aria-label="{{ section.settings.heading | default: 'Press' | escape }}">
+  <div class="container">
+    {%- if section.settings.heading != blank -%}
+      <p class="press-strip__heading">{{ section.settings.heading }}</p>
+    {%- endif -%}
+
+    {%- if block_count > 0 -%}
+      <div class="press-strip__viewport">
+        <div class="press-strip__track">
+          {%- for block in section.blocks -%}
+            {%- assign logo_alt = block.settings.alt | default: block.settings.name | default: 'Press logo' -%}
+            {%- capture logo_inner -%}
+              {%- if block.settings.image != blank -%}
+                <img src="{{ block.settings.image | image_url: width: 240 }}"
+                     srcset="{{ block.settings.image | image_url: width: 120 }} 120w,
+                             {{ block.settings.image | image_url: width: 240 }} 240w,
+                             {{ block.settings.image | image_url: width: 360 }} 360w"
+                     sizes="160px"
+                     width="{{ block.settings.image.width }}"
+                     height="{{ block.settings.image.height }}"
+                     alt="{{ logo_alt | escape }}"
+                     loading="lazy" decoding="async">
+              {%- elsif block.settings.name != blank -%}
+                <span class="press-strip__placeholder-logo">{{ block.settings.name }}</span>
+              {%- else -%}
+                <span class="press-strip__placeholder-logo">Press</span>
+              {%- endif -%}
+            {%- endcapture -%}
+
+            {%- if block.settings.link != blank -%}
+              <a class="press-logo"
+                 href="{{ block.settings.link }}"
+                 target="_blank"
+                 rel="noopener"
+                 aria-label="{{ logo_alt | escape }}"
+                 {{ block.shopify_attributes }}>
+                {{ logo_inner }}
+              </a>
+            {%- else -%}
+              <span class="press-logo" {{ block.shopify_attributes }}>{{ logo_inner }}</span>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- if marquee -%}
+            {%- comment -%} Duplicated track for seamless scroll. aria-hidden so screen readers skip. {%- endcomment -%}
+            {%- for block in section.blocks -%}
+              {%- assign logo_alt = block.settings.alt | default: block.settings.name | default: 'Press logo' -%}
+              {%- if block.settings.image != blank -%}
+                <span class="press-logo" aria-hidden="true">
+                  <img src="{{ block.settings.image | image_url: width: 240 }}"
+                       srcset="{{ block.settings.image | image_url: width: 120 }} 120w,
+                               {{ block.settings.image | image_url: width: 240 }} 240w,
+                               {{ block.settings.image | image_url: width: 360 }} 360w"
+                       sizes="160px"
+                       width="{{ block.settings.image.width }}"
+                       height="{{ block.settings.image.height }}"
+                       alt=""
+                       loading="lazy" decoding="async">
+                </span>
+              {%- else -%}
+                <span class="press-logo" aria-hidden="true">
+                  <span class="press-strip__placeholder-logo">{{ block.settings.name | default: 'Press' }}</span>
+                </span>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </div>
+      </div>
+    {%- else -%}
+      <p class="press-strip__empty">
+        {{ 'sections.press.empty' | t | default: 'Add press logos in the theme editor.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Press strip",
+  "tag": "section",
+  "class": "section-press-strip",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "As seen in"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color",
+      "default": "#FAF7F2"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text / logo color",
+      "default": "#0F0F0F"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_marquee",
+      "label": "Scroll logos continuously",
+      "info": "When enabled, logos move horizontally in a loop. Pauses on hover. Disabled for visitors with reduced motion.",
+      "default": false
+    }
+  ],
+  "max_blocks": 10,
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Logo image",
+          "info": "SVG or transparent PNG works best. Will be rendered in monochrome."
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Name (used as fallback when no image is set)",
+          "default": "Publication"
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "Alt text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Press strip",
+      "category": "Custom",
+      "blocks": [
+        { "type": "logo", "settings": { "name": "Vogue" } },
+        { "type": "logo", "settings": { "name": "GQ" } },
+        { "type": "logo", "settings": { "name": "Esquire" } },
+        { "type": "logo", "settings": { "name": "Hypebeast" } },
+        { "type": "logo", "settings": { "name": "Monocle" } },
+        { "type": "logo", "settings": { "name": "Highsnobiety" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

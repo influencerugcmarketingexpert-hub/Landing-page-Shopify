@@ -1,0 +1,428 @@
+{%- comment -%}
+  Reviews + UGC
+  -------------
+  Two parts in one section:
+    1. Aggregate row: average rating, review count, headline,
+       subheading, CTA. Stars rendered statically with icon-star /
+       icon-star-half.
+    2. UGC grid: up to 12 tiles (blocks type 'ugc_tile') each with an
+       image, customer name, linked product and short review text.
+
+  Optional Judge.me and Loox integrations: when the merchant fills in
+  `judgeme_shop_domain` or `loox_shop_id` we render empty mount
+  elements plus `<!-- JUDGEME_WIDGET -->` / `<!-- LOOX_WIDGET -->`
+  HTML comments so their scripts (installed via the corresponding
+  Shopify apps) can find and hydrate them.
+{%- endcomment -%}
+{%- liquid
+  assign block_count = section.blocks.size
+  assign avg = section.settings.average_rating | default: 4.8
+  assign review_count = section.settings.review_count | default: 0
+  assign review_max = 5
+
+  assign avg_times_two = avg | times: 2 | round
+  assign full_stars = avg_times_two | divided_by: 2
+  assign remainder = avg_times_two | modulo: 2
+  assign half_star = 0
+  if remainder == 1
+    assign half_star = 1
+  endif
+  assign empty_stars = review_max | minus: full_stars | minus: half_star
+  if empty_stars < 0
+    assign empty_stars = 0
+  endif
+
+  assign judgeme_shop = section.settings.judgeme_shop_domain | strip
+  assign loox_shop = section.settings.loox_shop_id | strip
+-%}
+
+<style>
+  #shopify-section-{{ section.id }} .reviews-ugc {
+    padding: var(--spacing-sections, 72px) 0;
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__aggregate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-10);
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--color-cognac);
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__stars svg { width: 22px; height: 22px; }
+  #shopify-section-{{ section.id }} .reviews-ugc__stars .star--empty { color: color-mix(in oklab, var(--color-ink) 20%, transparent); }
+  #shopify-section-{{ section.id }} .reviews-ugc__avg {
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    line-height: 1;
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__meta {
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-ink) 70%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw + 1rem, 2.75rem);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-snug);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__subheading {
+    font-size: var(--text-md);
+    line-height: var(--leading-relaxed);
+    color: color-mix(in oklab, var(--color-ink) 75%, transparent);
+    margin: 0;
+    max-width: 60ch;
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__cta {
+    margin-top: var(--space-2);
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__mounts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    width: 100%;
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__mounts > * { width: 100%; max-width: 560px; }
+
+  #shopify-section-{{ section.id }} .reviews-ugc__grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (min-width: 640px) {
+    #shopify-section-{{ section.id }} .reviews-ugc__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    #shopify-section-{{ section.id }} .reviews-ugc__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  #shopify-section-{{ section.id }} .ugc-tile {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background-color: var(--color-beige);
+    border-radius: var(--card-radius, 0);
+    color: var(--color-cream);
+    text-decoration: none;
+  }
+  #shopify-section-{{ section.id }} .ugc-tile img,
+  #shopify-section-{{ section.id }} .ugc-tile svg.placeholder {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform var(--duration-slow) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .ugc-tile:hover img {
+    transform: scale(1.04);
+  }
+  #shopify-section-{{ section.id }} .ugc-tile__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--space-3);
+    background: linear-gradient(180deg, transparent 50%, rgba(15, 15, 15, 0.7) 100%);
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-out);
+  }
+  #shopify-section-{{ section.id }} .ugc-tile:hover .ugc-tile__overlay,
+  #shopify-section-{{ section.id }} .ugc-tile:focus-visible .ugc-tile__overlay {
+    opacity: 1;
+  }
+  #shopify-section-{{ section.id }} .ugc-tile__stars {
+    display: inline-flex;
+    gap: 2px;
+    color: var(--color-cream);
+    margin-bottom: var(--space-1);
+  }
+  #shopify-section-{{ section.id }} .ugc-tile__stars svg { width: 12px; height: 12px; }
+  #shopify-section-{{ section.id }} .ugc-tile__text {
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    margin: 0 0 var(--space-1);
+    color: var(--color-cream);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #shopify-section-{{ section.id }} .ugc-tile__name {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--color-cream) 80%, transparent);
+    margin: 0;
+  }
+  #shopify-section-{{ section.id }} .ugc-tile__product {
+    font-size: var(--text-xs);
+    color: color-mix(in oklab, var(--color-cream) 80%, transparent);
+    margin: 2px 0 0;
+  }
+  #shopify-section-{{ section.id }} .reviews-ugc__empty {
+    text-align: center;
+    color: color-mix(in oklab, var(--color-ink) 70%, transparent);
+  }
+</style>
+
+<section class="reviews-ugc" aria-label="{{ section.settings.heading | default: 'Customer reviews' | escape }}">
+  <div class="container">
+
+    <header class="reviews-ugc__aggregate">
+      {%- if review_count > 0 or section.settings.show_aggregate -%}
+        <div class="reviews-ugc__stars"
+             role="img"
+             aria-label="{{ avg }} out of {{ review_max }} stars">
+          {%- for i in (1..full_stars) -%}
+            {%- render 'icon-star', size: 22 -%}
+          {%- endfor -%}
+          {%- if half_star == 1 -%}
+            {%- render 'icon-star-half', size: 22 -%}
+          {%- endif -%}
+          {%- for i in (1..empty_stars) -%}
+            <span class="star--empty">{%- render 'icon-star', size: 22 -%}</span>
+          {%- endfor -%}
+        </div>
+        <p class="reviews-ugc__avg">{{ avg }} <span style="font-family: var(--font-body); font-size: var(--text-sm); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: color-mix(in oklab, var(--color-ink) 60%, transparent);">{{ 'sections.reviews.out_of_five' | t | default: 'out of 5' }}</span></p>
+        {%- if review_count > 0 -%}
+          <p class="reviews-ugc__meta">
+            {{ 'sections.reviews.based_on_count' | t: count: review_count | default: 'Based on verified reviews' }}
+          </p>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="reviews-ugc__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="reviews-ugc__subheading">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.cta_label != blank -%}
+        <a class="btn btn--secondary reviews-ugc__cta"
+           href="{{ section.settings.cta_link | default: '#' }}">
+          {{ section.settings.cta_label }}
+        </a>
+      {%- endif -%}
+
+      {%- if judgeme_shop != blank or loox_shop != blank -%}
+        <div class="reviews-ugc__mounts" aria-hidden="true">
+          {%- if judgeme_shop != blank -%}
+            <!-- JUDGEME_WIDGET -->
+            <div data-judgeme-badge
+                 data-shop="{{ judgeme_shop | escape }}"
+                 class="jdgm-widget jdgm-all-reviews-widget"></div>
+          {%- endif -%}
+          {%- if loox_shop != blank -%}
+            <!-- LOOX_WIDGET -->
+            <div data-loox-widget
+                 data-shop-id="{{ loox_shop | escape }}"
+                 id="looxReviews"
+                 class="loox-reviews-default"></div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </header>
+
+    {%- if block_count > 0 -%}
+      <ul class="reviews-ugc__grid" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign tile_href = '#'
+            if block.settings.product != blank
+              assign tile_href = block.settings.product.url
+            elsif block.settings.product_link != blank
+              assign tile_href = block.settings.product_link
+            endif
+            assign product_label = ''
+            if block.settings.product != blank
+              assign product_label = block.settings.product.title
+            endif
+          -%}
+          <li {{ block.shopify_attributes }}>
+            <a class="ugc-tile"
+               href="{{ tile_href }}"
+               {% if block.settings.product == blank and block.settings.product_link == blank %}aria-disabled="true"{% endif %}>
+              {%- if block.settings.image != blank -%}
+                {%- render 'responsive-image',
+                    image: block.settings.image,
+                    sizes: '(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw',
+                    widths: '200,300,400,600,800',
+                    alt: block.settings.customer_name | default: 'Customer photo'
+                -%}
+              {%- else -%}
+                {%- render 'responsive-image', image: blank, alt: 'Customer photo placeholder' -%}
+              {%- endif -%}
+              <div class="ugc-tile__overlay">
+                <span class="ugc-tile__stars" aria-hidden="true">
+                  {%- for i in (1..5) -%}
+                    {%- render 'icon-star', size: 12 -%}
+                  {%- endfor -%}
+                </span>
+                {%- if block.settings.review_text != blank -%}
+                  <p class="ugc-tile__text">&ldquo;{{ block.settings.review_text }}&rdquo;</p>
+                {%- endif -%}
+                {%- if block.settings.customer_name != blank -%}
+                  <p class="ugc-tile__name">{{ block.settings.customer_name }}</p>
+                {%- endif -%}
+                {%- if product_label != blank -%}
+                  <p class="ugc-tile__product">{{ product_label }}</p>
+                {%- endif -%}
+              </div>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p class="reviews-ugc__empty">
+        {{ 'sections.reviews.empty' | t | default: 'Add customer UGC tiles in the theme editor.' }}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Reviews + UGC",
+  "tag": "section",
+  "class": "section-reviews-ugc",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Aggregate rating"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_aggregate",
+      "label": "Show star rating row",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "average_rating",
+      "label": "Average rating",
+      "min": 1,
+      "max": 5,
+      "step": 0.1,
+      "default": 4.8
+    },
+    {
+      "type": "number",
+      "id": "review_count",
+      "label": "Total review count",
+      "default": 1284
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Worn and loved."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Thousands of jackets in the wild. A handful of their stories are below."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Read all reviews"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "header",
+      "content": "App integrations (optional)"
+    },
+    {
+      "type": "paragraph",
+      "content": "Leave these blank to use the built-in aggregate display. If you have Judge.me or Loox installed, enter your shop identifier and their script will mount onto the placeholder div automatically."
+    },
+    {
+      "type": "text",
+      "id": "judgeme_shop_domain",
+      "label": "Judge.me shop domain",
+      "info": "e.g. orlaven.myshopify.com"
+    },
+    {
+      "type": "text",
+      "id": "loox_shop_id",
+      "label": "Loox shop ID"
+    }
+  ],
+  "max_blocks": 12,
+  "blocks": [
+    {
+      "type": "ugc_tile",
+      "name": "UGC tile",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Customer photo"
+        },
+        {
+          "type": "text",
+          "id": "customer_name",
+          "label": "Customer name",
+          "default": "@customer"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product (preferred)"
+        },
+        {
+          "type": "url",
+          "id": "product_link",
+          "label": "Product link (fallback)"
+        },
+        {
+          "type": "text",
+          "id": "review_text",
+          "label": "Review quote",
+          "default": "Fit is incredible and the leather only gets better."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews + UGC",
+      "category": "Custom",
+      "blocks": [
+        { "type": "ugc_tile" },
+        { "type": "ugc_tile" },
+        { "type": "ugc_tile" },
+        { "type": "ugc_tile" },
+        { "type": "ugc_tile" },
+        { "type": "ugc_tile" },
+        { "type": "ugc_tile" },
+        { "type": "ugc_tile" }
+      ]
+    }
+  ]
+}
+{% endschema %}
