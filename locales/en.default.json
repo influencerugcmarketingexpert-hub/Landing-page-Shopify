@@ -1,0 +1,90 @@
+{
+  "general": {
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "link_messages": { "new_window": "Opens in a new window." }
+    },
+    "meta": {
+      "tags": "Tagged \"{{ tags }}\"",
+      "page": "Page {{ page }}"
+    },
+    "search": {
+      "placeholder": "Search jackets, collections, journal…",
+      "search": "Search",
+      "no_results_html": "No results for <strong>\"{{ terms }}\"</strong>. Try something broader.",
+      "results_for_html": "Results for <strong>\"{{ terms }}\"</strong>",
+      "title": "Search"
+    },
+    "newsletter_form": {
+      "email_placeholder": "Your email address",
+      "confirmation": "Thanks for joining the Orlaven circle.",
+      "button_label": "Subscribe"
+    },
+    "pagination": { "previous": "Previous", "next": "Next", "page": "Page" },
+    "cart": {
+      "title": "Your bag",
+      "empty": "Your bag is empty.",
+      "subtotal": "Subtotal",
+      "shipping_at_checkout": "Shipping & taxes calculated at checkout.",
+      "checkout": "Checkout",
+      "view_cart": "View bag",
+      "remove": "Remove",
+      "update": "Update",
+      "note": "Order notes",
+      "note_placeholder": "Add a gift message or special instruction…",
+      "added": "Added to bag"
+    },
+    "password_page": {
+      "opening_soon": "Opening soon",
+      "login_form_heading": "Enter store using password",
+      "login_form_password_label": "Password",
+      "login_form_submit": "Enter",
+      "signup_form_email_label": "Email",
+      "signup_form_success": "We’ll send you an email right before we open."
+    },
+    "404": {
+      "title": "Page not found",
+      "subtext": "The page you’re looking for doesn’t exist.",
+      "link": "Continue shopping"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to bag",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "quantity": "Quantity",
+      "description": "Description",
+      "details": "Details",
+      "shipping": "Shipping & returns",
+      "from": "From {{ price }}",
+      "on_sale": "Sale",
+      "new": "New",
+      "price_per_unit": "{{ price }} / {{ unit }}",
+      "vendor": "Brand",
+      "sku": "SKU",
+      "share": "Share",
+      "size_guide": "Size guide"
+    },
+    "facets": {
+      "filter": "Filter",
+      "sort_by": "Sort",
+      "clear": "Clear",
+      "apply": "Apply",
+      "results": "{{ count }} products"
+    }
+  },
+  "collections": {
+    "general": { "view_all": "View all", "no_matches": "No products match these filters." }
+  },
+  "blogs": {
+    "article": { "read_more": "Read more", "by_author": "By {{ author }}", "minute_read": "{{ minutes }} min read" }
+  },
+  "customer": {
+    "account": { "title": "Account", "details": "Details", "orders": "Orders", "addresses": "Addresses", "logout": "Log out" },
+    "login": { "title": "Log in", "email": "Email", "password": "Password", "submit": "Log in", "forgot_password": "Forgot password?", "guest_title": "Continue as guest", "guest_continue": "Continue", "create_account": "Create account" },
+    "register": { "title": "Create account", "first_name": "First name", "last_name": "Last name", "submit": "Create" },
+    "orders": { "title": "Order history", "none": "You have no orders yet.", "order_number": "Order {{ number }}", "date": "Date", "total": "Total", "status": "Status", "view": "View" },
+    "addresses": { "title": "Addresses", "add": "Add new address", "default": "Default", "edit": "Edit", "delete": "Delete" }
+  }
+}

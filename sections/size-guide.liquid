@@ -1,0 +1,62 @@
+<div class="modal" id="SizeGuide" role="dialog" aria-modal="true" aria-labelledby="SizeGuideTitle" hidden>
+  <div class="modal__scrim" data-modal-close></div>
+  <div class="modal__dialog">
+    <header class="modal__head">
+      <h2 id="SizeGuideTitle" class="modal__title">{{ section.settings.title }}</h2>
+      <button type="button" class="modal__close" data-modal-close aria-label="Close">{% render 'icon', name: 'close' %}</button>
+    </header>
+    <div class="modal__body rte">
+      {{ section.settings.body }}
+      {%- if section.blocks.size > 0 -%}
+        <table class="size-table">
+          <thead><tr>
+            <th>Size</th>{%- for block in section.blocks -%}<th>{{ block.settings.title }}</th>{%- endfor -%}
+          </tr></thead>
+          <tbody>
+            <tr><td>XS</td>{%- for block in section.blocks -%}<td>{{ block.settings.xs }}</td>{%- endfor -%}</tr>
+            <tr><td>S</td>{%- for block in section.blocks -%}<td>{{ block.settings.s }}</td>{%- endfor -%}</tr>
+            <tr><td>M</td>{%- for block in section.blocks -%}<td>{{ block.settings.m }}</td>{%- endfor -%}</tr>
+            <tr><td>L</td>{%- for block in section.blocks -%}<td>{{ block.settings.l }}</td>{%- endfor -%}</tr>
+            <tr><td>XL</td>{%- for block in section.blocks -%}<td>{{ block.settings.xl }}</td>{%- endfor -%}</tr>
+            <tr><td>XXL</td>{%- for block in section.blocks -%}<td>{{ block.settings.xxl }}</td>{%- endfor -%}</tr>
+          </tbody>
+        </table>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Size guide modal",
+  "class": "section-size-guide",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Title", "default": "Size guide" },
+    { "type": "richtext", "id": "body", "label": "Intro", "default": "<p>Measurements are in inches. When between sizes, we recommend sizing up for layering.</p>" }
+  ],
+  "blocks": [
+    {
+      "type": "column", "name": "Measurement column",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Column heading", "default": "Chest" },
+        { "type": "text", "id": "xs", "label": "XS", "default": "34" },
+        { "type": "text", "id": "s",  "label": "S",  "default": "36" },
+        { "type": "text", "id": "m",  "label": "M",  "default": "38" },
+        { "type": "text", "id": "l",  "label": "L",  "default": "40" },
+        { "type": "text", "id": "xl", "label": "XL", "default": "42" },
+        { "type": "text", "id": "xxl","label": "XXL","default": "44" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Size guide",
+      "blocks": [
+        { "type": "column", "settings": { "title": "Chest" } },
+        { "type": "column", "settings": { "title": "Waist", "xs": "28", "s": "30", "m": "32", "l": "34", "xl": "36", "xxl": "38" } },
+        { "type": "column", "settings": { "title": "Sleeve", "xs": "32", "s": "33", "m": "34", "l": "35", "xl": "36", "xxl": "37" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

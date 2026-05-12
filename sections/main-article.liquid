@@ -1,0 +1,54 @@
+<article class="article section">
+  <div class="page-wrap page-wrap--narrow">
+    <header class="article__head">
+      {%- if article.tags.size > 0 -%}<p class="eyebrow">{{ article.tags[0] }}</p>{%- endif -%}
+      <h1 class="article__title">{{ article.title }}</h1>
+      <p class="article__meta">
+        {{ 'blogs.article.by_author' | t: author: article.author }} · {{ article.published_at | date: '%b %d, %Y' }}
+      </p>
+    </header>
+    {%- if article.image -%}
+      <figure class="article__hero">
+        {{ article.image | image_url: width: 1600 | image_tag: loading: 'eager', widths: '480,720,960,1200,1600', sizes: '100vw', alt: article.title }}
+      </figure>
+    {%- endif -%}
+    <div class="article__content rte">{{ article.content }}</div>
+
+    {%- if article.tags.size > 0 -%}
+      <ul class="article__tags">
+        {%- for tag in article.tags -%}
+          <li><a href="{{ blog.url }}/tagged/{{ tag | handle }}">#{{ tag }}</a></li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if blog.comments_enabled? -%}
+      <section class="article__comments">
+        <h2>Comments ({{ article.comments_count }})</h2>
+        {%- for comment in article.comments -%}
+          <div class="comment">
+            <strong>{{ comment.author }}</strong> <span class="muted">· {{ comment.created_at | date: '%b %d, %Y' }}</span>
+            <div class="rte">{{ comment.content }}</div>
+          </div>
+        {%- endfor -%}
+
+        {%- form 'new_comment', article, class: 'comment-form' -%}
+          {%- if form.errors -%}
+            <p class="form__error">Please check the form and try again.</p>
+          {%- endif -%}
+          {%- if form.posted_successfully? -%}
+            <p class="form__success">Thanks — your comment was posted.</p>
+          {%- endif -%}
+          <label>Name<input type="text" name="comment[author]" required></label>
+          <label>Email<input type="email" name="comment[email]" required></label>
+          <label>Comment<textarea name="comment[body]" required rows="4"></textarea></label>
+          <button class="btn btn--solid" type="submit">Post comment</button>
+        {%- endform -%}
+      </section>
+    {%- endif -%}
+  </div>
+</article>
+
+{% schema %}
+{ "name": "Article", "class": "section-main-article", "settings": [] }
+{% endschema %}

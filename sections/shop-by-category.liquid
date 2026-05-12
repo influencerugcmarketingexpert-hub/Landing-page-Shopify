@@ -1,0 +1,74 @@
+<section class="sxc section" aria-label="Shop by category">
+  <div class="page-wrap">
+    {%- if section.settings.heading != blank -%}
+      <header class="section-head">
+        {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.subheading != blank -%}<p class="section-head__sub">{{ section.settings.subheading }}</p>{%- endif -%}
+      </header>
+    {%- endif -%}
+
+    <div class="sxc__grid" style="--cols: {{ section.settings.columns }};">
+      {%- for block in section.blocks -%}
+        {%- assign coll = collections[block.settings.collection] -%}
+        {%- assign label = block.settings.label | default: coll.title -%}
+        {%- assign link  = block.settings.link | default: coll.url -%}
+        {%- assign img   = block.settings.image | default: coll.image -%}
+        <a class="sxc__tile" href="{{ link }}" {{ block.shopify_attributes }}>
+          <div class="sxc__media" style="aspect-ratio: {{ block.settings.aspect | default: '4/5' }};">
+            {%- if img != blank -%}
+              {{ img | image_url: width: 900 | image_tag: loading: 'lazy', widths: '300,480,640,900', sizes: '(max-width: 640px) 50vw, 25vw', alt: label }}
+            {%- endif -%}
+            <div class="sxc__tile-scrim"></div>
+            <span class="sxc__label">{{ label }}</span>
+          </div>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Shop by category",
+  "class": "section-sxc",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Browse" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shop by category" },
+    { "type": "text", "id": "subheading", "label": "Subheading" },
+    { "type": "range", "id": "columns", "label": "Columns", "min": 2, "max": 6, "step": 1, "default": 6 }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "Tile",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "text", "id": "label", "label": "Label (overrides collection name)" },
+        { "type": "url",  "id": "link", "label": "Link (overrides collection URL)" },
+        { "type": "image_picker", "id": "image", "label": "Image (overrides collection image)" },
+        { "type": "select", "id": "aspect", "label": "Aspect", "options": [
+          { "value": "1/1", "label": "Square" },
+          { "value": "4/5", "label": "Portrait 4:5" },
+          { "value": "3/4", "label": "Portrait 3:4" }
+        ], "default": "4/5" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by category",
+      "settings": { "columns": 6 },
+      "blocks": [
+        { "type": "tile", "settings": { "label": "Men" } },
+        { "type": "tile", "settings": { "label": "Women" } },
+        { "type": "tile", "settings": { "label": "Biker" } },
+        { "type": "tile", "settings": { "label": "Bomber" } },
+        { "type": "tile", "settings": { "label": "Aviator" } },
+        { "type": "tile", "settings": { "label": "Shearling" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

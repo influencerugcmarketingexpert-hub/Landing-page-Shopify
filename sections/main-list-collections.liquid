@@ -1,0 +1,27 @@
+<section class="list-collections section">
+  <div class="page-wrap">
+    <header class="section-head">
+      <p class="eyebrow">All</p>
+      <h1 class="section-head__title">Collections</h1>
+    </header>
+    <div class="sxc__grid" style="--cols: 4;">
+      {%- for coll in collections -%}
+        {%- if coll.handle != 'frontpage' and coll.handle != 'all' -%}
+          <a class="sxc__tile" href="{{ coll.url }}">
+            <div class="sxc__media" style="aspect-ratio:4/5;">
+              {%- if coll.image -%}
+                {{ coll.image | image_url: width: 700 | image_tag: loading: 'lazy', widths: '320,480,640,700', sizes: '(max-width: 640px) 50vw, 25vw', alt: coll.title }}
+              {%- endif -%}
+              <div class="sxc__tile-scrim"></div>
+              <span class="sxc__label">{{ coll.title }}</span>
+            </div>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Collections list", "class": "section-list-collections", "settings": [] }
+{% endschema %}

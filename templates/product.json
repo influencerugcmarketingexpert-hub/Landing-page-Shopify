@@ -1,0 +1,25 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "settings": { "show_dynamic_checkout": true },
+      "blocks": {
+        "vendor":  { "type": "vendor" },
+        "title":   { "type": "title" },
+        "rating":  { "type": "rating" },
+        "price":   { "type": "price" },
+        "picker":  { "type": "variant-picker" },
+        "size":    { "type": "size-guide" },
+        "desc":    { "type": "description" },
+        "details": { "type": "details" },
+        "care":    { "type": "care" },
+        "shipping":{ "type": "shipping" },
+        "share":   { "type": "share" }
+      },
+      "block_order": ["vendor","title","rating","price","picker","size","desc","details","care","shipping","share"]
+    },
+    "size-guide": { "type": "size-guide" },
+    "related":   { "type": "related-products", "settings": { "heading": "You may also like" } }
+  },
+  "order": ["main", "size-guide", "related"]
+}

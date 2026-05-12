@@ -1,0 +1,45 @@
+<section class="newsletter section newsletter--{{ section.settings.layout }}" style="background:{{ section.settings.bg }};color:{{ section.settings.fg }};" aria-label="Newsletter">
+  {%- if section.settings.image != blank and section.settings.layout == 'banner' -%}
+    <div class="newsletter__bg">
+      {{ section.settings.image | image_url: width: 2000 | image_tag: loading: 'lazy', widths: '640,960,1280,1600,2000', sizes: '100vw', alt: section.settings.heading }}
+      <div class="newsletter__scrim" style="opacity: {{ section.settings.scrim | divided_by: 100.0 }};"></div>
+    </div>
+  {%- endif -%}
+  <div class="page-wrap newsletter__inner">
+    <div class="newsletter__copy">
+      {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 class="newsletter__heading">{{ section.settings.heading }}</h2>
+      {%- if section.settings.subheading != blank -%}<p class="newsletter__sub">{{ section.settings.subheading }}</p>{%- endif -%}
+    </div>
+    {% form 'customer', class: 'newsletter__form' %}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <label class="visually-hidden" for="NewsletterEmail">Email</label>
+      <input id="NewsletterEmail" type="email" name="contact[email]" placeholder="{{ 'general.newsletter_form.email_placeholder' | t }}" required>
+      <button type="submit" class="btn btn--solid">{{ section.settings.button_text | default: 'general.newsletter_form.button_label' | t }}</button>
+      {%- if form.posted_successfully? -%}<p class="newsletter__success">{{ 'general.newsletter_form.confirmation' | t }}</p>{%- endif -%}
+      {%- if form.errors -%}<p class="newsletter__error">{{ form.errors.messages.email }}</p>{%- endif -%}
+    {% endform %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "class": "section-newsletter",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Layout", "options": [
+      { "value": "simple", "label": "Simple band" },
+      { "value": "banner", "label": "Banner with image" }
+    ], "default": "banner" },
+    { "type": "image_picker", "id": "image", "label": "Background image" },
+    { "type": "range", "id": "scrim", "label": "Darken", "min": 0, "max": 80, "step": 5, "unit": "%", "default": 40 },
+    { "type": "color", "id": "bg", "label": "Background color", "default": "#1A1613" },
+    { "type": "color", "id": "fg", "label": "Text color", "default": "#FAF7F2" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Join the circle" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "10% off your first jacket" },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Early access, the journal, and a 10% welcome code." },
+    { "type": "text", "id": "button_text", "label": "Button text", "default": "Subscribe" }
+  ],
+  "presets": [ { "name": "Newsletter" } ]
+}
+{% endschema %}

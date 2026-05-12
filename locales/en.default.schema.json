@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "announcement": { "name": "Announcement bar" },
+    "header": { "name": "Header" },
+    "footer": { "name": "Footer" },
+    "hero": { "name": "Hero" },
+    "trust_strip": { "name": "Trust strip" },
+    "shop_by_category": { "name": "Shop by category" },
+    "featured_collection": { "name": "Featured collection" },
+    "shop_by_style": { "name": "Shop by style" },
+    "custom_jacket_banner": { "name": "Custom jacket banner" },
+    "best_sellers": { "name": "Best sellers" },
+    "lookbook": { "name": "Lookbook / Editorial" },
+    "craftsmanship_video": { "name": "Craftsmanship video" },
+    "material_guide": { "name": "Material guide" },
+    "reviews_ugc": { "name": "Reviews + UGC" },
+    "press_logos": { "name": "Press logos" },
+    "blog_preview": { "name": "Journal preview" },
+    "instagram_feed": { "name": "Instagram feed" },
+    "newsletter": { "name": "Newsletter" }
+  }
+}

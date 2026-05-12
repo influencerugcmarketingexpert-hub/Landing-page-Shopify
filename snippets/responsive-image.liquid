@@ -1,0 +1,29 @@
+{%- comment -%}
+  Renders a responsive image.
+  Params:
+    image: Image object (required)
+    widths: comma-separated list of widths (default '320,480,640,800,1024,1280,1600')
+    sizes: sizes attribute (default '100vw')
+    loading: 'lazy' (default) or 'eager'
+    alt: alt text override
+    class: extra classes
+    aspect_ratio: e.g. '3/4'
+{%- endcomment -%}
+{%- liquid
+  assign w = widths | default: '320,480,640,800,1024,1280,1600'
+  assign s = sizes | default: '100vw'
+  assign l = loading | default: 'lazy'
+  assign a = alt | default: image.alt | default: ''
+  assign c = class | default: ''
+  assign ar = aspect_ratio | default: ''
+-%}
+{%- if image != blank -%}
+  {{ image | image_url: width: 1600 | image_tag:
+    loading: l,
+    widths: w,
+    sizes: s,
+    alt: a,
+    class: c,
+    style: 'aspect-ratio:' | append: ar | append: ';'
+  }}
+{%- endif -%}

@@ -1,0 +1,142 @@
+<footer class="footer" role="contentinfo">
+  <div class="page-wrap footer__inner">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a href="{{ routes.root_url }}" class="footer__logo">
+          {%- if section.settings.logo != blank -%}
+            {{ section.settings.logo | image_url: width: 200 | image_tag: loading: 'lazy', style: 'width:140px' }}
+          {%- else -%}
+            <span style="font-family:var(--font-heading);font-size:1.75rem;letter-spacing:.08em;">{{ shop.name }}</span>
+          {%- endif -%}
+        </a>
+        {%- if section.settings.tagline != blank -%}
+          <p class="footer__tagline">{{ section.settings.tagline }}</p>
+        {%- endif -%}
+        <div class="footer__social">
+          {%- if settings.social_instagram != blank -%}<a href="{{ settings.social_instagram }}" aria-label="Instagram" rel="noopener" target="_blank">{% render 'icon', name: 'instagram' %}</a>{%- endif -%}
+          {%- if settings.social_facebook != blank -%}<a href="{{ settings.social_facebook }}" aria-label="Facebook" rel="noopener" target="_blank">{% render 'icon', name: 'facebook' %}</a>{%- endif -%}
+          {%- if settings.social_tiktok != blank -%}<a href="{{ settings.social_tiktok }}" aria-label="TikTok" rel="noopener" target="_blank">{% render 'icon', name: 'tiktok' %}</a>{%- endif -%}
+          {%- if settings.social_youtube != blank -%}<a href="{{ settings.social_youtube }}" aria-label="YouTube" rel="noopener" target="_blank">{% render 'icon', name: 'youtube' %}</a>{%- endif -%}
+          {%- if settings.social_pinterest != blank -%}<a href="{{ settings.social_pinterest }}" aria-label="Pinterest" rel="noopener" target="_blank">{% render 'icon', name: 'pinterest' %}</a>{%- endif -%}
+        </div>
+      </div>
+
+      <div class="footer__cols">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'menu' -%}
+              <div class="footer__col" {{ block.shopify_attributes }}>
+                <h4 class="footer__heading">{{ block.settings.title }}</h4>
+                {%- if block.settings.menu != blank -%}
+                  <ul class="footer__links">
+                    {%- for link in block.settings.menu.links -%}
+                      <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+              </div>
+            {%- when 'text' -%}
+              <div class="footer__col" {{ block.shopify_attributes }}>
+                <h4 class="footer__heading">{{ block.settings.title }}</h4>
+                <div class="footer__rte rte">{{ block.settings.text }}</div>
+              </div>
+            {%- when 'newsletter' -%}
+              <div class="footer__col footer__col--wide" {{ block.shopify_attributes }}>
+                <h4 class="footer__heading">{{ block.settings.title | default: 'Join the circle' }}</h4>
+                <p class="footer__muted">{{ block.settings.subtext | default: 'Early access, the journal, and 10% off your first jacket.' }}</p>
+                {% form 'customer', class: 'footer__newsletter' %}
+                  <input type="hidden" name="contact[tags]" value="newsletter">
+                  <label class="visually-hidden" for="FooterEmail">Email</label>
+                  <input id="FooterEmail" type="email" name="contact[email]" placeholder="{{ 'general.newsletter_form.email_placeholder' | t }}" required>
+                  <button type="submit" class="btn btn--solid">{{ 'general.newsletter_form.button_label' | t }}</button>
+                  {%- if form.posted_successfully? -%}
+                    <p class="footer__success">{{ 'general.newsletter_form.confirmation' | t }}</p>
+                  {%- endif -%}
+                {% endform %}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <small class="footer__copy">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</small>
+      <div class="footer__pay">
+        {%- for type in shop.enabled_payment_types -%}
+          {{ type | payment_type_svg_tag: class: 'footer__pay-icon' }}
+        {%- endfor -%}
+      </div>
+      {%- if section.settings.localization -%}
+        {%- form 'localization', class: 'footer__localization' -%}
+          <div class="footer__loc">
+            <label>{{ 'general.currency' | default: 'Currency' }}</label>
+            <select name="currency_code" onchange="this.form.submit()">
+              {%- for currency in localization.available_currencies -%}
+                <option value="{{ currency.iso_code }}" {% if currency.iso_code == localization.country.currency.iso_code %}selected{% endif %}>{{ currency.iso_code }}{% if settings.show_currency_codes %} — {{ currency.symbol }}{% endif %}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+          <div class="footer__loc">
+            <label>Country</label>
+            <select name="country_code" onchange="this.form.submit()">
+              {%- for country in localization.available_countries -%}
+                <option value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}selected{% endif %}>{{ country.name }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+        {%- endform -%}
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "class": "section-footer",
+  "max_blocks": 5,
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Footer logo" },
+    { "type": "text", "id": "tagline", "label": "Tagline", "default": "Worn in. Built to last." },
+    { "type": "checkbox", "id": "localization", "label": "Show currency and country selector", "default": true }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu column",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Heading", "default": "Shop" },
+        { "type": "link_list", "id": "menu", "label": "Menu" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Text column",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Heading", "default": "About" },
+        { "type": "richtext", "id": "text", "label": "Text", "default": "<p>Handcrafted in small batches. Built from full-grain leather. Worn in by the people who wear them.</p>" }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Heading", "default": "Join the circle" },
+        { "type": "text", "id": "subtext", "label": "Subtext", "default": "Early access, the journal, and 10% off your first jacket." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Footer",
+      "blocks": [
+        { "type": "menu", "settings": { "title": "Shop" } },
+        { "type": "menu", "settings": { "title": "Help" } },
+        { "type": "menu", "settings": { "title": "About" } },
+        { "type": "newsletter" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,31 @@
+<aside class="cart-drawer" id="CartDrawer" aria-hidden="true" aria-label="Shopping bag">
+  <div class="cart-drawer__head">
+    <h2 class="cart-drawer__title">{{ 'general.cart.title' | t }}</h2>
+    <button type="button" class="cart-drawer__close" data-cart-close aria-label="Close">{% render 'icon', name: 'close' %}</button>
+  </div>
+  <form action="{{ routes.cart_url }}" method="post" class="cart-drawer__form" id="CartDrawerForm">
+    <div class="cart-drawer__body" data-cart-items>
+      {%- if cart.item_count > 0 -%}
+        {% render 'cart-lines', cart: cart %}
+      {%- else -%}
+        <p class="cart-drawer__empty">{{ 'general.cart.empty' | t }}</p>
+      {%- endif -%}
+    </div>
+    <div class="cart-drawer__foot" {% if cart.item_count == 0 %}hidden{% endif %} data-cart-foot>
+      {%- if settings.show_cart_note -%}
+        <details class="cart-drawer__note">
+          <summary>{{ 'general.cart.note' | t }}</summary>
+          <textarea name="note" rows="3" placeholder="{{ 'general.cart.note_placeholder' | t }}">{{ cart.note }}</textarea>
+        </details>
+      {%- endif -%}
+      <div class="cart-drawer__subtotal">
+        <span>{{ 'general.cart.subtotal' | t }}</span>
+        <strong data-cart-subtotal>{{ cart.total_price | money }}</strong>
+      </div>
+      <p class="cart-drawer__ship-note">{{ 'general.cart.shipping_at_checkout' | t }}</p>
+      <button type="submit" name="checkout" class="btn btn--solid btn--block">{{ 'general.cart.checkout' | t }}</button>
+      <a href="{{ routes.cart_url }}" class="btn btn--ghost btn--block">{{ 'general.cart.view_cart' | t }}</a>
+    </div>
+  </form>
+</aside>
+<div class="cart-drawer__scrim" data-cart-close hidden></div>

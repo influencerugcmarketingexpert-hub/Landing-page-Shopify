@@ -1,0 +1,92 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Orlaven",
+    "theme_version": "1.0.0",
+    "theme_author": "Orlaven",
+    "theme_documentation_url": "https://github.com/influencerugcmarketingexpert-hub/Landing-page-Shopify",
+    "theme_support_url": "https://github.com/influencerugcmarketingexpert-hub/Landing-page-Shopify/issues"
+  },
+  {
+    "name": "Logo",
+    "settings": [
+      { "type": "image_picker", "id": "logo", "label": "Logo image" },
+      { "type": "range", "id": "logo_width", "min": 60, "max": 260, "step": 10, "unit": "px", "label": "Logo width", "default": 140 },
+      { "type": "image_picker", "id": "favicon", "label": "Favicon" }
+    ]
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      { "type": "header", "content": "Brand palette" },
+      { "type": "color", "id": "color_bg", "label": "Background", "default": "#FAF7F2" },
+      { "type": "color", "id": "color_surface", "label": "Surface", "default": "#FFFFFF" },
+      { "type": "color", "id": "color_ink", "label": "Ink (text)", "default": "#1A1613" },
+      { "type": "color", "id": "color_muted", "label": "Muted text", "default": "#5C524A" },
+      { "type": "color", "id": "color_accent", "label": "Accent (tan)", "default": "#8B5E3C" },
+      { "type": "color", "id": "color_accent_ink", "label": "Accent text", "default": "#FFFFFF" },
+      { "type": "color", "id": "color_border", "label": "Border", "default": "#E7E1D8" },
+      { "type": "color", "id": "color_sale", "label": "Sale", "default": "#A43B2B" }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      { "type": "font_picker", "id": "type_heading", "label": "Heading font", "default": "playfair_display_n4" },
+      { "type": "font_picker", "id": "type_body", "label": "Body font", "default": "inter_n4" },
+      { "type": "range", "id": "heading_scale", "min": 90, "max": 140, "step": 5, "unit": "%", "label": "Heading scale", "default": 110 },
+      { "type": "range", "id": "body_scale", "min": 90, "max": 120, "step": 5, "unit": "%", "label": "Body scale", "default": 100 }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      { "type": "range", "id": "page_width", "min": 1200, "max": 1600, "step": 20, "unit": "px", "label": "Page width", "default": 1440 },
+      { "type": "range", "id": "section_spacing", "min": 16, "max": 120, "step": 4, "unit": "px", "label": "Section spacing", "default": 72 },
+      { "type": "select", "id": "corner_radius", "label": "Corner radius",
+        "options": [
+          { "value": "0", "label": "Square" },
+          { "value": "4", "label": "Subtle" },
+          { "value": "10", "label": "Soft" }
+        ], "default": "4" }
+    ]
+  },
+  {
+    "name": "Buttons",
+    "settings": [
+      { "type": "select", "id": "button_style", "label": "Button style",
+        "options": [
+          { "value": "solid", "label": "Solid" },
+          { "value": "outline", "label": "Outline" }
+        ], "default": "solid" },
+      { "type": "checkbox", "id": "button_uppercase", "label": "Uppercase button text", "default": true }
+    ]
+  },
+  {
+    "name": "Cart",
+    "settings": [
+      { "type": "select", "id": "cart_type", "label": "Cart type",
+        "options": [
+          { "value": "drawer", "label": "Drawer" },
+          { "value": "page", "label": "Page" }
+        ], "default": "drawer" },
+      { "type": "checkbox", "id": "show_cart_note", "label": "Enable cart note", "default": true }
+    ]
+  },
+  {
+    "name": "Social",
+    "settings": [
+      { "type": "text", "id": "social_instagram", "label": "Instagram URL" },
+      { "type": "text", "id": "social_facebook", "label": "Facebook URL" },
+      { "type": "text", "id": "social_tiktok", "label": "TikTok URL" },
+      { "type": "text", "id": "social_youtube", "label": "YouTube URL" },
+      { "type": "text", "id": "social_pinterest", "label": "Pinterest URL" }
+    ]
+  },
+  {
+    "name": "Currency",
+    "settings": [
+      { "type": "checkbox", "id": "show_currency_codes", "label": "Show currency codes", "default": true }
+    ]
+  }
+]

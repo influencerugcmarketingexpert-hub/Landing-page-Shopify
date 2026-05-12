@@ -1,0 +1,19 @@
+<section class="auth section">
+  <div class="page-wrap page-wrap--narrow auth__inner">
+    <header class="section-head">
+      <h1 class="section-head__title">{{ 'customer.login.title' | t }}</h1>
+    </header>
+    {%- form 'customer_login', class: 'form form--stack' -%}
+      {%- if form.errors -%}<div class="form__error">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <label>{{ 'customer.login.email' | t }}<input type="email" name="customer[email]" required></label>
+      <label>{{ 'customer.login.password' | t }}<input type="password" name="customer[password]" required></label>
+      <button type="submit" class="btn btn--solid btn--block">{{ 'customer.login.submit' | t }}</button>
+      <p><a href="{{ routes.account_recover_url }}">{{ 'customer.login.forgot_password' | t }}</a></p>
+      <p><a href="{{ routes.account_register_url }}">{{ 'customer.login.create_account' | t }}</a></p>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Login", "settings": [] }
+{% endschema %}

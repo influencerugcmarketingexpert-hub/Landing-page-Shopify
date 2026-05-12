@@ -1,0 +1,60 @@
+{%- liquid
+  assign b = blogs[section.settings.blog]
+  assign limit = section.settings.limit | default: 3
+-%}
+<section class="journal section" aria-label="Journal">
+  <div class="page-wrap">
+    <header class="section-head section-head--row">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+      </div>
+      {%- if b -%}
+        <a class="section-head__more" href="{{ b.url }}">All stories {% render 'icon', name: 'arrow-right' %}</a>
+      {%- endif -%}
+    </header>
+
+    <div class="journal__grid" style="--cols: {{ limit }};">
+      {%- if b.articles.size > 0 -%}
+        {%- for article in b.articles limit: limit -%}
+          <a class="journal__card" href="{{ article.url }}">
+            <div class="journal__media" style="aspect-ratio:16/10;">
+              {%- if article.image -%}
+                {{ article.image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '320,480,640,900', sizes: '(max-width:900px) 100vw, 33vw', alt: article.title }}
+              {%- endif -%}
+            </div>
+            <div class="journal__body">
+              {%- if article.tags.size > 0 -%}<span class="journal__tag">{{ article.tags[0] }}</span>{%- endif -%}
+              <h3 class="journal__title">{{ article.title }}</h3>
+              <p class="journal__meta">{{ article.published_at | date: '%b %d, %Y' }}{% if article.metafields.article.reading_time %} · {{ article.metafields.article.reading_time.value }} min read{% endif %}</p>
+            </div>
+          </a>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..limit) -%}
+          <div class="journal__card placeholder-card">
+            <div class="journal__media" style="aspect-ratio:16/10;background:var(--color-border);"></div>
+            <div class="journal__body">
+              <h3 class="journal__title">Article title</h3>
+              <p class="journal__meta">Coming soon</p>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Journal preview",
+  "class": "section-journal",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The Journal" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Notes from the atelier" },
+    { "type": "blog", "id": "blog", "label": "Blog" },
+    { "type": "range", "id": "limit", "label": "Posts", "min": 2, "max": 4, "step": 1, "default": 3 }
+  ],
+  "presets": [ { "name": "Journal preview" } ]
+}
+{% endschema %}

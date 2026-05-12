@@ -1,0 +1,134 @@
+<header class="header {% if section.settings.sticky %}header--sticky{% endif %} {% if section.settings.transparent %}header--transparent{% endif %}" data-sticky="{{ section.settings.sticky }}">
+  <div class="header__inner page-wrap">
+    {%- comment -%} Left: nav toggle (mobile) + primary nav (desktop) {%- endcomment -%}
+    <div class="header__left">
+      <button class="header__burger" type="button" aria-controls="MobileDrawer" aria-expanded="false" aria-label="Menu">
+        {% render 'icon', name: 'menu' %}
+      </button>
+      <nav class="header__nav" aria-label="Primary">
+        <ul class="header__nav-list">
+          {%- for link in section.settings.menu.links -%}
+            <li class="header__nav-item{% if link.links.size > 0 %} has-mega{% endif %}">
+              <a href="{{ link.url }}" class="header__nav-link">{{ link.title }}</a>
+              {%- if link.links.size > 0 -%}
+                <div class="mega">
+                  <div class="mega__inner page-wrap">
+                    <div class="mega__cols">
+                      {%- for child in link.links -%}
+                        <div class="mega__col">
+                          <a href="{{ child.url }}" class="mega__col-title">{{ child.title }}</a>
+                          {%- if child.links.size > 0 -%}
+                            <ul class="mega__sublist">
+                              {%- for sub in child.links -%}
+                                <li><a href="{{ sub.url }}">{{ sub.title }}</a></li>
+                              {%- endfor -%}
+                            </ul>
+                          {%- endif -%}
+                        </div>
+                      {%- endfor -%}
+                    </div>
+                    {%- if section.settings.mega_image != blank -%}
+                      <a class="mega__feature" href="{{ section.settings.mega_link }}">
+                        {{ section.settings.mega_image | image_url: width: 560 | image_tag: loading: 'lazy', widths: '280,560', sizes: '(max-width: 900px) 100vw, 33vw' }}
+                        <span class="mega__feature-label">{{ section.settings.mega_label | default: 'Shop the edit' }}</span>
+                      </a>
+                    {%- endif -%}
+                  </div>
+                </div>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    </div>
+
+    {%- comment -%} Center: logo {%- endcomment -%}
+    <div class="header__center">
+      <a href="{{ routes.root_url }}" class="header__logo" aria-label="{{ shop.name }} home">
+        {%- if settings.logo != blank -%}
+          {{ settings.logo | image_url: width: settings.logo_width | times: 2 | image_tag: class: 'header__logo-img', loading: 'eager', style: 'width:' | append: settings.logo_width | append: 'px' }}
+        {%- else -%}
+          <span class="header__logo-text" style="font-family:var(--font-heading);font-size:1.75rem;letter-spacing:.08em;">{{ shop.name }}</span>
+        {%- endif -%}
+      </a>
+    </div>
+
+    {%- comment -%} Right: utility icons {%- endcomment -%}
+    <div class="header__right">
+      <button class="header__icon-btn" type="button" data-search-toggle aria-label="Search">
+        {% render 'icon', name: 'search' %}
+      </button>
+      {%- if shop.customer_accounts_enabled -%}
+        <a class="header__icon-btn" href="{{ routes.account_url }}" aria-label="Account">
+          {% render 'icon', name: 'user' %}
+        </a>
+      {%- endif -%}
+      <a class="header__icon-btn header__icon-btn--wishlist" href="/pages/wishlist" aria-label="Wishlist">
+        {% render 'icon', name: 'heart' %}
+      </a>
+      <a class="header__icon-btn header__cart" href="{{ routes.cart_url }}" aria-label="Cart" data-cart-toggle>
+        {% render 'icon', name: 'bag' %}
+        <span class="header__cart-count" data-cart-count>{{ cart.item_count }}</span>
+      </a>
+    </div>
+  </div>
+
+  {%- comment -%} Search overlay {%- endcomment -%}
+  <div class="search-overlay" id="SearchOverlay" hidden>
+    <div class="search-overlay__inner page-wrap">
+      <form action="{{ routes.search_url }}" method="get" role="search" class="search-overlay__form">
+        <input type="search" name="q" placeholder="{{ 'general.search.placeholder' | t }}" autocomplete="off" aria-label="{{ 'general.search.search' | t }}" class="search-overlay__input">
+        <button type="submit" class="search-overlay__submit">{{ 'general.search.search' | t }}</button>
+        <button type="button" class="search-overlay__close" data-search-close aria-label="Close">{% render 'icon', name: 'close' %}</button>
+      </form>
+      <div class="predictive" data-predictive-results hidden></div>
+    </div>
+  </div>
+
+  {%- comment -%} Mobile drawer {%- endcomment -%}
+  <aside class="mobile-drawer" id="MobileDrawer" aria-hidden="true">
+    <div class="mobile-drawer__head">
+      <span class="mobile-drawer__title" style="font-family:var(--font-heading)">Menu</span>
+      <button type="button" class="mobile-drawer__close" aria-label="Close" data-drawer-close>{% render 'icon', name: 'close' %}</button>
+    </div>
+    <nav class="mobile-drawer__nav" aria-label="Mobile">
+      <ul>
+        {%- for link in section.settings.menu.links -%}
+          <li>
+            <details>
+              <summary>
+                <a href="{{ link.url }}">{{ link.title }}</a>
+                {%- if link.links.size > 0 -%}{% render 'icon', name: 'chevron' %}{%- endif -%}
+              </summary>
+              {%- if link.links.size > 0 -%}
+                <ul class="mobile-drawer__sub">
+                  {%- for child in link.links -%}
+                    <li><a href="{{ child.url }}">{{ child.title }}</a></li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </details>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+  </aside>
+</header>
+
+{% render 'cart-drawer' %}
+
+{% schema %}
+{
+  "name": "Header",
+  "class": "section-header",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Main menu", "default": "main-menu" },
+    { "type": "checkbox", "id": "sticky", "label": "Sticky on scroll", "default": true },
+    { "type": "checkbox", "id": "transparent", "label": "Transparent over hero", "default": false },
+    { "type": "header", "content": "Mega menu feature" },
+    { "type": "image_picker", "id": "mega_image", "label": "Feature image" },
+    { "type": "text", "id": "mega_label", "label": "Feature label", "default": "Shop the edit" },
+    { "type": "url", "id": "mega_link", "label": "Feature link" }
+  ]
+}
+{% endschema %}
