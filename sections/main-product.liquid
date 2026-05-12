@@ -340,19 +340,19 @@
                   <a
                     href="https://www.facebook.com/sharer/sharer.php?u={{ shop.url }}{{ product.url }}"
                     target="_blank"
-                    rel="noopener"
+                    rel="noopener noreferrer"
                     aria-label="{{ 'general.social.share_on_facebook' | t }}"
                   >Facebook</a>
                   <a
                     href="https://twitter.com/intent/tweet?url={{ shop.url }}{{ product.url }}&text={{ product.title | url_encode }}"
                     target="_blank"
-                    rel="noopener"
+                    rel="noopener noreferrer"
                     aria-label="{{ 'general.social.share_on_twitter' | t }}"
                   >X</a>
                   <a
                     href="https://pinterest.com/pin/create/button/?url={{ shop.url }}{{ product.url }}&media={% if product.featured_image %}https:{{ product.featured_image | image_url: width: 1200 }}{% endif %}&description={{ product.title | url_encode }}"
                     target="_blank"
-                    rel="noopener"
+                    rel="noopener noreferrer"
                     aria-label="{{ 'general.social.share_on_pinterest' | t }}"
                   >Pinterest</a>
                 </div>
@@ -452,20 +452,6 @@
       "type": "checkbox",
       "id": "enable_sticky_buy_bar",
       "label": "Show sticky buy bar on mobile",
-      "default": true
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_related_products",
-      "label": "Enable related products below",
-      "info": "Rendered by the separate 'Product recommendations' section in product.json.",
-      "default": true
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_recently_viewed",
-      "label": "Enable recently viewed below",
-      "info": "Rendered by the separate 'Recently viewed' section in product.json.",
       "default": true
     },
     {

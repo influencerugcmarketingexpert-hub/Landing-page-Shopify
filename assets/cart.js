@@ -438,6 +438,53 @@
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // Quick-add and drawer upsell forms
+  //
+  // Both are native <form method="post" action="{{ routes.cart_add_url }}">
+  // sprinkled with data-quick-add or data-cart-upsell-form. Without JS they
+  // fall through to a full-page POST. Intercept on capture so any later
+  // listeners (e.g. analytics) still run after our AJAX add.
+  // ---------------------------------------------------------------------------
+  function handleAjaxAddForm(form, trigger) {
+    var formData = new FormData(form);
+    var id = parseInt(formData.get('id'), 10);
+    if (!id) return;
+    var quantity = parseInt(formData.get('quantity') || '1', 10) || 1;
+    var properties = {};
+    formData.forEach(function (value, key) {
+      var match = key.match(/^properties\[(.+)\]$/);
+      if (match && value !== '') properties[match[1]] = value;
+    });
+    var payload = { id: id, quantity: quantity };
+    if (Object.keys(properties).length) payload.properties = properties;
+
+    if (trigger) {
+      trigger.setAttribute('aria-busy', 'true');
+      trigger.classList.add('is-loading');
+    }
+    addItem(payload).then(function () {
+      if (trigger) {
+        trigger.removeAttribute('aria-busy');
+        trigger.classList.remove('is-loading');
+      }
+    }).catch(function () {
+      if (trigger) {
+        trigger.removeAttribute('aria-busy');
+        trigger.classList.remove('is-loading');
+      }
+    });
+  }
+
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (!form || !form.matches) return;
+    if (!form.matches('[data-quick-add], [data-cart-upsell-form]')) return;
+    event.preventDefault();
+    var trigger = form.querySelector('[type="submit"], button');
+    handleAjaxAddForm(form, trigger);
+  });
+
   window.theme = Object.assign(window.theme || {}, {
     cart: Object.assign({}, (window.theme && window.theme.cart) || {}, {
       add: addItem,

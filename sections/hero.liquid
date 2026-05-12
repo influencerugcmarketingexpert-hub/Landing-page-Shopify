@@ -223,6 +223,12 @@
         {%- assign alignment = block.settings.text_alignment | default: 'left' -%}
         {%- assign button_style = block.settings.button_style | default: 'primary' -%}
         {%- assign is_first = forloop.first -%}
+        {%- assign hero_loading = 'lazy' -%}
+        {%- assign hero_fp = nil -%}
+        {%- if is_first -%}
+          {%- assign hero_loading = 'eager' -%}
+          {%- assign hero_fp = 'high' -%}
+        {%- endif -%}
         <article
           class="hero__slide"
           data-hero-slide
@@ -253,8 +259,8 @@
                   {%- render 'responsive-image',
                       image: block.settings.desktop_image,
                       sizes: '100vw',
-                      loading: is_first | default: false,
-                      fetchpriority: is_first,
+                      loading: hero_loading,
+                      fetchpriority: hero_fp,
                       widths: '600,900,1200,1600,2000,2400,3000',
                       alt: block.settings.heading | default: 'Hero'
                   -%}
@@ -265,8 +271,8 @@
                   {%- render 'responsive-image',
                       image: block.settings.mobile_image,
                       sizes: '100vw',
-                      loading: is_first | default: false,
-                      fetchpriority: is_first,
+                      loading: hero_loading,
+                      fetchpriority: hero_fp,
                       widths: '480,640,800,1000,1200',
                       alt: block.settings.heading | default: 'Hero'
                   -%}
@@ -276,7 +282,7 @@
                   {%- render 'responsive-image',
                       image: block.settings.desktop_image,
                       sizes: '100vw',
-                      loading: is_first | default: false,
+                      loading: hero_loading,
                       widths: '480,640,800,1000,1200',
                       alt: block.settings.heading | default: 'Hero'
                   -%}
@@ -291,7 +297,7 @@
           <div class="hero__content" data-pos="{{ position }}" data-align="{{ alignment }}">
             <div class="hero__inner">
               {%- if block.settings.heading != blank -%}
-                <h2 class="hero__heading">{{ block.settings.heading }}</h2>
+                <h2 class="hero__heading">{{ block.settings.heading | strip_html }}</h2>
               {%- endif -%}
               {%- if block.settings.subheading != blank -%}
                 <div class="hero__subheading rte">{{ block.settings.subheading }}</div>

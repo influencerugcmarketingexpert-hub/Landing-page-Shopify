@@ -156,7 +156,7 @@
       data-option-index="{{ option_index0 }}"
       data-option-name="{{ option.name }}"
     >
-      <legend class="variant-picker__legend">
+      <legend class="variant-picker__legend" id="VariantLegend-{{ _section_id }}-{{ option_index0 }}">
         <span class="variant-picker__name">{{ option.name }}</span>
         <span class="variant-picker__selected" data-selected-value="{{ option.name }}">
           {{ option.selected_value }}
@@ -164,7 +164,9 @@
       </legend>
 
       {%- if is_color -%}
-        <ul class="variant-picker__values" role="list">
+        <ul class="variant-picker__values"
+            role="radiogroup"
+            aria-labelledby="VariantLegend-{{ _section_id }}-{{ option_index0 }}">
           {%- for value in option.values -%}
             {%- liquid
               assign swatch_color = blank
@@ -215,7 +217,9 @@
         </ul>
 
       {%- elsif is_size -%}
-        <ul class="variant-picker__values" role="list">
+        <ul class="variant-picker__values"
+            role="radiogroup"
+            aria-labelledby="VariantLegend-{{ _section_id }}-{{ option_index0 }}">
           {%- for value in option.values -%}
             {%- liquid
               assign is_checked = false

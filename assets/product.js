@@ -376,16 +376,28 @@
       super();
       this._onChange = this._onChange.bind(this);
       this._onClick = this._onClick.bind(this);
+      this._onKeyDown = this._onKeyDown.bind(this);
     }
 
     connectedCallback() {
       this.addEventListener('change', this._onChange);
       this.addEventListener('click', this._onClick);
+      this.addEventListener('keydown', this._onKeyDown);
+      // Set initial roving tabindex without firing a variant-change event.
+      var self = this;
+      this.querySelectorAll('[data-variant-option-button]').forEach(function (btn) {
+        var name = btn.getAttribute('data-option-name');
+        var value = btn.getAttribute('data-option-value');
+        var match = self.querySelector('input[type="radio"][name="' + name + '"]:checked');
+        var isChecked = match && match.value === value;
+        btn.setAttribute('tabindex', isChecked ? '0' : '-1');
+      });
     }
 
     disconnectedCallback() {
       this.removeEventListener('change', this._onChange);
       this.removeEventListener('click', this._onClick);
+      this.removeEventListener('keydown', this._onKeyDown);
     }
 
     _onChange(event) {
@@ -406,6 +418,36 @@
       }
     }
 
+    _onKeyDown(event) {
+      var key = event.key;
+      if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'ArrowUp' && key !== 'ArrowDown' &&
+          key !== 'Home' && key !== 'End') return;
+      var btn = event.target.closest('[data-variant-option-button]');
+      if (!btn) return;
+      var group = btn.closest('[role="radiogroup"]') || btn.closest('fieldset');
+      if (!group) return;
+      var buttons = Array.from(group.querySelectorAll('[data-variant-option-button]'))
+        .filter(function (b) { return b.getAttribute('aria-disabled') !== 'true'; });
+      if (!buttons.length) return;
+      var idx = buttons.indexOf(btn);
+      if (idx === -1) return;
+      var next = idx;
+      if (key === 'ArrowRight' || key === 'ArrowDown') next = (idx + 1) % buttons.length;
+      else if (key === 'ArrowLeft' || key === 'ArrowUp') next = (idx - 1 + buttons.length) % buttons.length;
+      else if (key === 'Home') next = 0;
+      else if (key === 'End') next = buttons.length - 1;
+      event.preventDefault();
+      var target = buttons[next];
+      var groupName = target.getAttribute('data-option-name');
+      var value = target.getAttribute('data-option-value');
+      var radio = this.querySelector('input[type="radio"][name="' + groupName + '"][value="' + value + '"]');
+      if (radio) {
+        radio.checked = true;
+        this._propagate();
+      }
+      target.focus();
+    }
+
     _propagate() {
       var selected = Array.from(this.querySelectorAll('fieldset[data-option-index]')).map(function (fs) {
         var checked = fs.querySelector('input[type="radio"]:checked');
@@ -414,14 +456,17 @@
       var variant = resolveVariant(this, selected);
       publishVariantChange(this, variant);
 
-      // Reflect active state on pill/swatch buttons.
+      // Reflect active state on pill/swatch buttons and roving tabindex
+      // so ArrowLeft/Right keyboard navigation within each radiogroup
+      // only steps through one focusable at a time.
       var self = this;
       this.querySelectorAll('[data-variant-option-button]').forEach(function (btn) {
         var name = btn.getAttribute('data-option-name');
         var value = btn.getAttribute('data-option-value');
         var match = self.querySelector('input[type="radio"][name="' + name + '"]:checked');
-        if (match && match.value === value) btn.setAttribute('aria-checked', 'true');
-        else btn.setAttribute('aria-checked', 'false');
+        var isChecked = match && match.value === value;
+        btn.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+        btn.setAttribute('tabindex', isChecked ? '0' : '-1');
       });
     }
   }

@@ -296,6 +296,14 @@
                 aria-expanded="false"
                 aria-label="{{ 'general.cart.open_drawer' | t }}">
           {%- render 'icon-cart', size: 20 -%}
+          {%- comment -%}
+            Render the bubble via the snippet for the initial header paint.
+            A matching sections/cart-icon-bubble.liquid exists so Shopify's
+            Section Rendering API can return fresh HTML keyed on the
+            'cart-icon-bubble' section id after cart mutations. The
+            `{% section %}` tag is layout/template only and cannot be
+            nested inside another section, so we render the snippet here.
+          {%- endcomment -%}
           {%- render 'cart-icon-bubble' -%}
         </button>
       </div>

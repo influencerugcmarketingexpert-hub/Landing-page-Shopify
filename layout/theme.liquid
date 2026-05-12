@@ -6,33 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="{{ settings.color_background | default: '#FFFFFF' }}">
 
-    <link rel="canonical" href="{{ canonical_url }}">
-
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
     {%- endif -%}
 
-    <title>
-      {{ page_title }}
-      {%- if current_tags %} &ndash; {{ 'general.meta.tags' | t: tags: current_tags | join: ', ' }}{% endif -%}
-      {%- if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif -%}
-      {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
-    </title>
-
-    {%- if page_description -%}
-      <meta name="description" content="{{ page_description | escape }}">
-    {%- endif -%}
-
-    {%- if settings.social_sharing_image -%}
-      <meta property="og:image" content="{{ settings.social_sharing_image | image_url: width: 1200 }}">
-      <meta property="og:image:width" content="1200">
-      <meta property="og:image:height" content="{{ 1200 | divided_by: settings.social_sharing_image.aspect_ratio | round }}">
-    {%- endif -%}
-    <meta property="og:site_name" content="{{ settings.organization_name | default: shop.name }}">
-    <meta property="og:url" content="{{ canonical_url }}">
-    <meta property="og:title" content="{{ page_title | escape }}">
-    <meta property="og:type" content="website">
-    <meta property="og:description" content="{{ page_description | default: shop.description | default: shop.name | escape }}">
+    {%- render 'meta-tags' -%}
 
     <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +29,8 @@
     {{ 'component-predictive-search.css' | asset_url | stylesheet_tag }}
     {{ 'component-footer.css' | asset_url | stylesheet_tag }}
     {{ 'component-newsletter.css' | asset_url | stylesheet_tag }}
+
+    {%- render 'json-ld' -%}
 
     <style>
       :root {
@@ -130,6 +110,7 @@
     {%- endif -%}
 
     <script src="{{ 'global.js' | asset_url }}" defer="defer"></script>
+    <script src="{{ 'header.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'predictive-search.js' | asset_url }}" defer="defer"></script>
   </body>

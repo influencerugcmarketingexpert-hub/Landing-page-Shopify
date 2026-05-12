@@ -23,6 +23,7 @@
 {%- capture _socials_raw -%}
   {%- if settings.social_instagram_link != blank -%}{{ settings.social_instagram_link }}|{%- endif -%}
   {%- if settings.social_facebook_link != blank -%}{{ settings.social_facebook_link }}|{%- endif -%}
+  {%- if settings.social_twitter_link != blank -%}{{ settings.social_twitter_link }}|{%- endif -%}
   {%- if settings.social_pinterest_link != blank -%}{{ settings.social_pinterest_link }}|{%- endif -%}
   {%- if settings.social_youtube_link != blank -%}{{ settings.social_youtube_link }}|{%- endif -%}
   {%- if settings.social_tiktok_link != blank -%}{{ settings.social_tiktok_link }}|{%- endif -%}
@@ -69,6 +70,16 @@
 
 {%- if template.name == 'product' and product != blank -%}
   {%- assign current_variant = product.selected_or_first_available_variant -%}
+  {%- liquid
+    assign rating_count = 0
+    if product.metafields.reviews.rating_count != blank
+      assign rating_count = product.metafields.reviews.rating_count | plus: 0
+    endif
+    assign rating_value = blank
+    if product.metafields.reviews.rating_value != blank
+      assign rating_value = product.metafields.reviews.rating_value
+    endif
+  -%}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -93,14 +104,15 @@
       "availability": "https://schema.org/{% if current_variant.available %}InStock{% else %}OutOfStock{% endif %}",
       "url": "{{ shop.url }}{{ product.url }}",
       "itemCondition": "https://schema.org/NewCondition"
-    },
+    }{%- if rating_count > 0 and rating_value != blank -%},
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "0",
+      "ratingValue": {{ rating_value | json }},
+      "reviewCount": {{ rating_count | json }},
       "bestRating": "5",
       "worstRating": "1"
     }
+    {%- endif -%}
   }
   </script>
 

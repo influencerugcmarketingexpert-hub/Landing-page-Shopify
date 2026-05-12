@@ -1,0 +1,24 @@
+{%- comment -%}
+  Cart icon bubble (section wrapper)
+  ----------------------------------
+  Thin section wrapper around the existing snippets/cart-icon-bubble.liquid
+  snippet so the Shopify Section Rendering API can target it by section id.
+
+  /cart/add.js and /cart/change.js are called from assets/cart.js with
+  `sections=cart-icon-bubble,cart-drawer`. The response is keyed by section
+  id, which must resolve to a real file under /sections/. Rendering the
+  snippet here keeps markup in a single place while giving the API a
+  section to return.
+
+  tag: null so Shopify doesn't wrap the bubble in its own element - the
+  header button already provides the parent.
+{%- endcomment -%}
+{%- render 'cart-icon-bubble' -%}
+
+{% schema %}
+{
+  "name": "Cart icon bubble",
+  "tag": null,
+  "settings": []
+}
+{% endschema %}

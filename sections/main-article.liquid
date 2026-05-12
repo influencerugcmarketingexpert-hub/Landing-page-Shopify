@@ -333,13 +333,13 @@
           <span>{{ 'blogs.article.share' | t }}</span>
           <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_encoded_url }}"
              target="_blank"
-             rel="noopener"
+             rel="noopener noreferrer"
              aria-label="{{ 'general.social.share_on_facebook' | t }}">
             {%- render 'icon-facebook', size: 14 -%}
           </a>
           <a href="https://twitter.com/intent/tweet?url={{ url_encoded_url }}&text={{ url_encoded_title }}"
              target="_blank"
-             rel="noopener"
+             rel="noopener noreferrer"
              aria-label="{{ 'general.social.share_on_twitter' | t }}">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
               <path d="M17.7 3H20.9L14.1 10.8L22 21H15.7L10.8 14.6L5.1 21H1.9L9.2 12.6L1.6 3H8.1L12.5 8.9L17.7 3ZM16.6 19.1H18.4L7.5 4.8H5.5L16.6 19.1Z"/>
@@ -347,7 +347,7 @@
           </a>
           <a href="https://pinterest.com/pin/create/button/?url={{ url_encoded_url }}&description={{ url_encoded_title }}"
              target="_blank"
-             rel="noopener"
+             rel="noopener noreferrer"
              aria-label="{{ 'general.social.share_on_pinterest' | t }}">
             {%- render 'icon-pinterest', size: 14 -%}
           </a>

@@ -236,6 +236,12 @@
       },
       {
         "type": "text",
+        "id": "social_twitter_link",
+        "label": "X (Twitter) URL",
+        "info": "Used for the twitter:site Twitter Card meta tag."
+      },
+      {
+        "type": "text",
         "id": "social_pinterest_link",
         "label": "Pinterest URL",
         "default": "https://pinterest.com/orlaven"

@@ -4,8 +4,6 @@
       "type": "main-product",
       "settings": {
         "enable_sticky_buy_bar": true,
-        "enable_related_products": true,
-        "enable_recently_viewed": true,
         "gallery_layout": "thumbnails-left",
         "media_size": "medium"
       },
