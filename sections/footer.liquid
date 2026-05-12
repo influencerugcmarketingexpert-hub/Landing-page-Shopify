@@ -70,6 +70,7 @@
                alt="{{ shop.name | escape }}"
                width="160"
                loading="lazy"
+               decoding="async"
                class="site-footer__logo">
         {%- else -%}
           <p class="site-footer__brand-name">{{ shop.name | default: 'Orlaven' }}</p>

@@ -1,0 +1,12 @@
+Handle,Title,Body (HTML),Sort Order,Template Suffix
+new-arrivals,New Arrivals,<p>The newest additions to the Orlaven wardrobe. Freshly cut and just released from our atelier.</p>,created-desc,
+best-sellers,Best Sellers,<p>The pieces our community reaches for again and again. Tried, tested, and still arriving this week.</p>,best-selling,
+biker,Biker Jackets,<p>Asymmetric zips and full-grain shells. The original Orlaven silhouette in every wearable color.</p>,manual,
+bomber,Bomber Jackets,<p>Softly structured bombers in lambskin and wool-leather blends. Cut for movement.</p>,manual,
+cafe-racer,Cafe Racer,<p>Minimal, snap-collared cafe racers designed for the long ride and every stop in between.</p>,manual,
+aviator,Aviator Jackets,<p>Shearling-lined aviators built for cold mornings and thirty-mile commutes.</p>,manual,
+shearling,Shearling,<p>Statement outerwear in natural shearling. Every coat is cut from a single Italian hide.</p>,manual,
+jackets,Jackets,<p>The full Orlaven jacket archive: biker, bomber, cafe racer, blazer, shirt jacket, vest.</p>,price-asc,
+outerwear,Outerwear,<p>Trenches, overcoats, and shearling coats for the colder months.</p>,price-asc,
+accessories,Accessories,<p>Bags, small leather goods, and everyday carry from the Orlaven leather workshop.</p>,manual,
+moto,Moto,<p>Motor-ready cuts with reinforced shoulders, forearm zippers, and an anatomical sleeve bend.</p>,manual,

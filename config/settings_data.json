@@ -38,7 +38,8 @@
     "new_badge_color": "#2B1F17",
     "sold_out_badge_color": "#6E6E6E",
     "organization_name": "Orlaven",
-    "social_sharing_image": null
+    "social_sharing_image": null,
+    "password_background_image": null
   },
   "presets": {
     "Default": {
@@ -80,7 +81,8 @@
       "new_badge_color": "#2B1F17",
       "sold_out_badge_color": "#6E6E6E",
       "organization_name": "Orlaven",
-      "social_sharing_image": null
+      "social_sharing_image": null,
+      "password_background_image": null
     }
   }
 }

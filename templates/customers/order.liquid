@@ -244,7 +244,7 @@
                         {%- if line_item.image -%}
                           <img src="{{ line_item.image | image_url: width: 180 }}"
                                alt="{{ line_item.title | escape }}"
-                               width="72" height="90" loading="lazy">
+                               width="72" height="90" loading="lazy" decoding="async">
                         {%- endif -%}
                       </div>
                       <div>

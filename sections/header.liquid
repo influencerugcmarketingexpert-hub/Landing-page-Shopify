@@ -111,6 +111,7 @@
             style="max-width: {{ logo_width }}px;"
             loading="eager"
             fetchpriority="high"
+            decoding="async"
           >
         {%- else -%}
           <span class="site-header__logo-text" style="max-width: {{ logo_width }}px;">
@@ -183,6 +184,7 @@
                                     sizes="240px"
                                     alt="{{ block.settings.image.alt | escape }}"
                                     loading="lazy"
+                                    decoding="async"
                                     width="{{ block.settings.image.width }}"
                                     height="{{ block.settings.image.height }}"
                                   >
@@ -203,6 +205,7 @@
                                     sizes="(min-width: 1024px) 320px, 100vw"
                                     alt="{{ block.settings.image.alt | escape }}"
                                     loading="lazy"
+                                    decoding="async"
                                     width="{{ block.settings.image.width }}"
                                     height="{{ block.settings.image.height }}"
                                   >

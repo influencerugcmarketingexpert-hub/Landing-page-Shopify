@@ -17,9 +17,19 @@
  *      /templates has balanced `{% %}` and `{{ }}` delimiters.
  *   5. Every {% schema %} ... {% endschema %} block inside a section file
  *      contains valid JSON.
+ *   6. Every `section.type` referenced by a JSON template resolves to a
+ *      real file under `/sections/<type>.liquid`. Missing mapping is a
+ *      hard failure.
+ *   7. layout/theme.liquid contains a `skip-to-content-link`, loads
+ *      `base.css` via `asset_url`, and loads `global.js`. Any missing
+ *      piece is a hard failure.
+ *   8. Every translation key used via `{{ '<key>' | t }}` (or `| t:`) in a
+ *      .liquid file resolves to an entry in `locales/en.default.json`.
+ *      Missing keys are WARNINGS (not failures), since some keys are
+ *      looked up dynamically.
  *
  * Usage:  node scripts/validate-theme.js
- * Exit:   0 on success, 1 on any failure.
+ * Exit:   0 on success (warnings allowed), 1 on any hard failure.
  */
 
 'use strict';
@@ -55,6 +65,8 @@ const warnings = [];
 let jsonCount = 0;
 let liquidCount = 0;
 let schemaCount = 0;
+let templateSectionRefCount = 0;
+let translationCheckCount = 0;
 
 function fail(msg) {
   errors.push(msg);
@@ -110,15 +122,14 @@ function relPath(abs) {
 function parseJsonFile(abs) {
   const source = fs.readFileSync(abs, 'utf8');
   try {
-    JSON.parse(source);
-    return true;
+    return JSON.parse(source);
   } catch (err) {
     const match = /position\s+(\d+)/i.exec(err.message);
     const offset = match ? Number(match[1]) : null;
     const pos = lineColFromOffset(source, offset);
     const where = pos ? ` (line ${pos.line}, col ${pos.col})` : '';
     fail(`JSON parse error in ${relPath(abs)}${where}: ${err.message}`);
-    return false;
+    return null;
   }
 }
 
@@ -193,6 +204,108 @@ function validateLiquidFile(abs) {
   }
 }
 
+// ---- New checks for FEAT-010 ------------------------------------------
+
+function checkTemplateSectionReferences() {
+  const templatesDir = path.join(ROOT, 'templates');
+  if (!fs.existsSync(templatesDir)) return;
+  const templateJsonFiles = walk('templates', (n) => n.endsWith('.json'));
+  for (const file of templateJsonFiles) {
+    const parsed = (function () {
+      try {
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+      } catch {
+        return null;
+      }
+    }());
+    if (!parsed || typeof parsed !== 'object') continue;
+    const sections = parsed.sections;
+    if (!sections || typeof sections !== 'object') continue;
+    for (const [sid, config] of Object.entries(sections)) {
+      if (!config || typeof config !== 'object') continue;
+      const type = config.type;
+      if (typeof type !== 'string' || !type) continue;
+      templateSectionRefCount += 1;
+      const candidate = path.join('sections', `${type}.liquid`);
+      if (!existsFile(candidate)) {
+        fail(
+          `${relPath(file)}: sections["${sid}"].type = "${type}" has no matching sections/${type}.liquid`,
+        );
+      }
+    }
+  }
+}
+
+function checkThemeLayoutEssentials() {
+  const abs = path.join(ROOT, 'layout', 'theme.liquid');
+  if (!existsFile('layout/theme.liquid')) return;
+  const source = fs.readFileSync(abs, 'utf8');
+  if (!/skip-to-content-link/.test(source)) {
+    fail('layout/theme.liquid: missing `skip-to-content-link` anchor');
+  }
+  if (!/'base\.css'\s*\|\s*asset_url/.test(source)) {
+    fail('layout/theme.liquid: does not load `base.css` via `asset_url`');
+  }
+  if (!/'global\.js'\s*\|\s*asset_url/.test(source)) {
+    fail('layout/theme.liquid: does not load `global.js` via `asset_url`');
+  }
+}
+
+function flattenLocale(obj, prefix = '', acc = new Set()) {
+  if (!obj || typeof obj !== 'object') return acc;
+  for (const [key, value] of Object.entries(obj)) {
+    const next = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      flattenLocale(value, next, acc);
+    } else {
+      acc.add(next);
+    }
+  }
+  return acc;
+}
+
+function checkTranslationKeys() {
+  const localePath = path.join(ROOT, 'locales', 'en.default.json');
+  if (!existsFile('locales/en.default.json')) return;
+  const localeSource = fs.readFileSync(localePath, 'utf8');
+  let locale;
+  try {
+    locale = JSON.parse(localeSource);
+  } catch {
+    return; // parse failure already reported above
+  }
+  const known = flattenLocale(locale);
+  // Match keys in `{{ 'some.key' | t }}` or `{{ 'some.key' | t: foo: 'x' }}`
+  // or within `{%- assign x = 'key' | t -%}` forms.
+  const keyRe = /'([a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+)'\s*\|\s*t(?:\s*:|\s|,|}|-|%)/gi;
+  const missing = new Map();
+  for (const dir of LIQUID_SCAN_DIRS) {
+    const files = walk(dir, (n) => n.endsWith('.liquid'));
+    for (const file of files) {
+      const source = fs.readFileSync(file, 'utf8');
+      let m;
+      while ((m = keyRe.exec(source)) !== null) {
+        translationCheckCount += 1;
+        const key = m[1];
+        if (!known.has(key)) {
+          if (!missing.has(key)) missing.set(key, new Set());
+          const line = source.slice(0, m.index).split(/\r?\n/).length;
+          missing.get(key).add(`${relPath(file)}:${line}`);
+        }
+      }
+    }
+  }
+  if (missing.size) {
+    for (const [key, uses] of missing) {
+      const sample = Array.from(uses).slice(0, 3).join(', ');
+      const more = uses.size > 3 ? ` (+${uses.size - 3} more)` : '';
+      warn(`translation key "${key}" not in locales/en.default.json (${sample}${more})`);
+    }
+  }
+}
+
+// ---- Main runner ------------------------------------------------------
+
 function main() {
   // 1. Required directories
   for (const dir of REQUIRED_DIRS) {
@@ -226,24 +339,41 @@ function main() {
     }
   }
 
-  // Report
+  // 5. Template -> section references
+  checkTemplateSectionReferences();
+
+  // 6. Theme layout essentials
+  checkThemeLayoutEssentials();
+
+  // 7. Translation keys
+  checkTranslationKeys();
+
+  // Summary report
+  const summary = [
+    `JSON files:               ${jsonCount}`,
+    `Liquid files:             ${liquidCount}`,
+    `Section schema blocks:    ${schemaCount}`,
+    `Template->section refs:   ${templateSectionRefCount}`,
+    `Translation keys scanned: ${translationCheckCount}`,
+    `Warnings:                 ${warnings.length}`,
+    `Errors:                   ${errors.length}`,
+  ];
+
   if (warnings.length) {
     console.warn('\nWarnings:');
     for (const w of warnings) console.warn(`  - ${w}`);
   }
 
+  console.log('\nSummary:');
+  for (const line of summary) console.log(`  ${line}`);
+
   if (errors.length) {
     console.error('\nFAIL');
     for (const e of errors) console.error(`  - ${e}`);
-    console.error(
-      `\nChecked ${jsonCount} JSON file(s), ${liquidCount} liquid file(s), ${schemaCount} schema block(s).`,
-    );
     process.exit(1);
   }
 
-  console.log(
-    `PASS: ${jsonCount} JSON files, ${liquidCount} liquid files, ${schemaCount} schema blocks`,
-  );
+  console.log('\nPASS');
   process.exit(0);
 }
 

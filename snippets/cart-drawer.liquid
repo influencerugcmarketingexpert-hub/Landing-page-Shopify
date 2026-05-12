@@ -87,6 +87,7 @@
                          srcset="{{ item.image | image_url: width: 160 }} 1x, {{ item.image | image_url: width: 320 }} 2x"
                          alt="{{ item.image.alt | default: item.product.title | escape }}"
                          loading="lazy"
+                         decoding="async"
                          width="80"
                          height="{{ 80 | divided_by: item.image.aspect_ratio | round }}">
                   {%- endif -%}
@@ -187,7 +188,8 @@
                          alt="{{ upsell_product.featured_image.alt | default: upsell_product.title | escape }}"
                          width="60"
                          height="{{ 60 | divided_by: upsell_product.featured_image.aspect_ratio | round }}"
-                         loading="lazy">
+                         loading="lazy"
+                         decoding="async">
                   {%- endif -%}
                 </a>
                 <div class="cart-drawer__upsell-body">
