@@ -1,0 +1,17 @@
+<section class="auth section">
+  <div class="page-wrap page-wrap--narrow auth__inner">
+    <header class="section-head">
+      <h1 class="section-head__title">Activate account</h1>
+    </header>
+    {%- form 'activate_customer_password', class: 'form form--stack' -%}
+      {%- if form.errors -%}<div class="form__error">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <label>Password<input type="password" name="customer[password]" required></label>
+      <label>Confirm password<input type="password" name="customer[password_confirmation]" required></label>
+      <button type="submit" class="btn btn--solid btn--block">Activate</button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Activate account", "settings": [] }
+{% endschema %}

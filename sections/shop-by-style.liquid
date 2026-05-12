@@ -1,0 +1,67 @@
+<section class="sxs section" aria-label="Shop by style">
+  <div class="page-wrap">
+    <header class="section-head">
+      {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+      {%- if section.settings.subheading != blank -%}<p class="section-head__sub">{{ section.settings.subheading }}</p>{%- endif -%}
+    </header>
+
+    <div class="sxs__scroll">
+      <ul class="sxs__track">
+        {%- for block in section.blocks -%}
+          <li class="sxs__chip-wrap" {{ block.shopify_attributes }}>
+            <a class="sxs__chip" href="{{ block.settings.link }}">
+              <div class="sxs__image" style="aspect-ratio:3/4;">
+                {%- if block.settings.image != blank -%}
+                  {{ block.settings.image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '240,360,480,600', sizes: '(max-width:640px) 60vw, 20vw', alt: block.settings.label }}
+                {%- endif -%}
+              </div>
+              <span class="sxs__name">{{ block.settings.label }}</span>
+              {%- if block.settings.caption != blank -%}
+                <span class="sxs__caption">{{ block.settings.caption }}</span>
+              {%- endif -%}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Shop by style",
+  "class": "section-sxs",
+  "max_blocks": 10,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The range" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shop by style" },
+    { "type": "text", "id": "subheading", "label": "Subheading" }
+  ],
+  "blocks": [
+    {
+      "type": "style",
+      "name": "Style",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Biker" },
+        { "type": "text", "id": "caption", "label": "Caption" },
+        { "type": "url",  "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop by style",
+      "blocks": [
+        { "type": "style", "settings": { "label": "Biker" } },
+        { "type": "style", "settings": { "label": "Bomber" } },
+        { "type": "style", "settings": { "label": "Cafe Racer" } },
+        { "type": "style", "settings": { "label": "Aviator" } },
+        { "type": "style", "settings": { "label": "Shearling" } },
+        { "type": "style", "settings": { "label": "Suede" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

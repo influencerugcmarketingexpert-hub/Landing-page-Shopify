@@ -1,0 +1,56 @@
+<section class="trust" style="background:{{ section.settings.bg }};color:{{ section.settings.fg }};" aria-label="Why shop with us">
+  <div class="page-wrap trust__grid">
+    {%- for block in section.blocks -%}
+      <div class="trust__item" {{ block.shopify_attributes }}>
+        {%- if block.settings.icon != blank -%}
+          <span class="trust__icon">{% render 'icon', name: block.settings.icon %}</span>
+        {%- endif -%}
+        <div>
+          <strong class="trust__title">{{ block.settings.title }}</strong>
+          {%- if block.settings.text != blank -%}
+            <p class="trust__text">{{ block.settings.text }}</p>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Trust strip",
+  "class": "section-trust",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "color", "id": "bg", "label": "Background", "default": "#FFFFFF" },
+    { "type": "color", "id": "fg", "label": "Text", "default": "#1A1613" }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icon", "options": [
+          { "value": "truck", "label": "Truck" },
+          { "value": "return", "label": "Return" },
+          { "value": "shield", "label": "Shield" },
+          { "value": "star", "label": "Star" }
+        ], "default": "truck" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Free worldwide shipping" },
+        { "type": "text", "id": "text", "label": "Text", "default": "On orders over $250" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust strip",
+      "blocks": [
+        { "type": "item", "settings": { "icon": "truck",  "title": "Free worldwide shipping", "text": "Orders over $250" } },
+        { "type": "item", "settings": { "icon": "return", "title": "30-day easy returns", "text": "Try it at home" } },
+        { "type": "item", "settings": { "icon": "shield", "title": "Lifetime craftsmanship", "text": "Built to last" } },
+        { "type": "item", "settings": { "icon": "star",   "title": "Loved by 50,000+", "text": "4.9 average rating" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

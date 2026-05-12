@@ -1,0 +1,35 @@
+{%- liquid
+  assign the_cart = cart
+  if cart_override
+    assign the_cart = cart_override
+  endif
+-%}
+<ul class="cart-lines">
+  {%- for item in the_cart.items -%}
+    <li class="cart-line" data-key="{{ item.key }}">
+      <a href="{{ item.url }}" class="cart-line__media">
+        {%- if item.image -%}
+          {{ item.image | image_url: width: 160 | image_tag: loading: 'lazy', widths: '80,160', sizes: '80px', alt: item.product.title }}
+        {%- endif -%}
+      </a>
+      <div class="cart-line__body">
+        <a href="{{ item.url }}" class="cart-line__title">{{ item.product.title }}</a>
+        {%- unless item.product.has_only_default_variant -%}
+          <p class="cart-line__variant">{{ item.variant.title }}</p>
+        {%- endunless -%}
+        {%- if item.selling_plan_allocation -%}
+          <p class="cart-line__plan">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+        {%- endif -%}
+        <div class="cart-line__qty">
+          <button type="button" data-qty-minus aria-label="Decrease">&minus;</button>
+          <input type="number" name="updates[]" value="{{ item.quantity }}" min="0" aria-label="{{ 'general.cart.update' | t }}">
+          <button type="button" data-qty-plus aria-label="Increase">+</button>
+        </div>
+      </div>
+      <div class="cart-line__price">
+        {% render 'price', target: item %}
+        <button type="button" class="cart-line__remove" data-remove aria-label="{{ 'general.cart.remove' | t }}">&times;</button>
+      </div>
+    </li>
+  {%- endfor -%}
+</ul>

@@ -1,0 +1,33 @@
+<section class="blog section">
+  <div class="page-wrap">
+    <header class="section-head">
+      <p class="eyebrow">The Journal</p>
+      <h1 class="section-head__title">{{ blog.title }}</h1>
+    </header>
+    <div class="journal__grid" style="--cols: 3;">
+      {%- for article in blog.articles -%}
+        <a class="journal__card" href="{{ article.url }}">
+          <div class="journal__media" style="aspect-ratio:16/10;">
+            {%- if article.image -%}
+              {{ article.image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '320,480,640,900', sizes: '(max-width:900px) 100vw, 33vw', alt: article.title }}
+            {%- endif -%}
+          </div>
+          <div class="journal__body">
+            {%- if article.tags.size > 0 -%}<span class="journal__tag">{{ article.tags[0] }}</span>{%- endif -%}
+            <h3 class="journal__title">{{ article.title }}</h3>
+            <p class="journal__meta">{{ article.published_at | date: '%b %d, %Y' }}</p>
+          </div>
+        </a>
+      {%- else -%}
+        <p>No stories yet.</p>
+      {%- endfor -%}
+    </div>
+    {%- if paginate -%}
+      <div class="pagination">{{ paginate | default_pagination }}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Blog", "class": "section-main-blog", "settings": [] }
+{% endschema %}

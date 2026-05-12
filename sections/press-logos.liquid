@@ -1,0 +1,56 @@
+<section class="press section" style="background:{{ section.settings.bg }};color:{{ section.settings.fg }};" aria-label="Press">
+  <div class="page-wrap press__inner">
+    {%- if section.settings.heading != blank -%}
+      <p class="press__label">{{ section.settings.heading }}</p>
+    {%- endif -%}
+    <ul class="press__list">
+      {%- for block in section.blocks -%}
+        <li class="press__logo" {{ block.shopify_attributes }}>
+          {%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}" target="_blank" rel="noopener">{%- endif -%}
+          {%- if block.settings.image != blank -%}
+            {{ block.settings.image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120,240', sizes: '120px', alt: block.settings.name }}
+          {%- else -%}
+            <span>{{ block.settings.name }}</span>
+          {%- endif -%}
+          {%- if block.settings.link != blank -%}</a>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Press logos",
+  "class": "section-press",
+  "max_blocks": 10,
+  "settings": [
+    { "type": "color", "id": "bg", "label": "Background", "default": "#FFFFFF" },
+    { "type": "color", "id": "fg", "label": "Text",       "default": "#5C524A" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "As seen in" }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Logo image" },
+        { "type": "text", "id": "name", "label": "Name" },
+        { "type": "url",  "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Press logos",
+      "blocks": [
+        { "type": "logo", "settings": { "name": "GQ" } },
+        { "type": "logo", "settings": { "name": "Esquire" } },
+        { "type": "logo", "settings": { "name": "Forbes" } },
+        { "type": "logo", "settings": { "name": "Robb Report" } },
+        { "type": "logo", "settings": { "name": "Hypebeast" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

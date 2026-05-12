@@ -1,0 +1,45 @@
+<section class="order section">
+  <div class="page-wrap">
+    <header class="section-head">
+      <p class="eyebrow">{{ order.created_at | date: '%b %d, %Y' }}</p>
+      <h1 class="section-head__title">{{ 'customer.orders.order_number' | t: number: order.name }}</h1>
+      <p class="muted">{{ order.financial_status_label }} · {{ order.fulfillment_status_label }}</p>
+    </header>
+
+    <div class="order__grid">
+      <ul class="cart-lines cart-lines--lg order__lines">
+        {%- for line in order.line_items -%}
+          <li class="cart-line">
+            <a href="{{ line.url }}" class="cart-line__media">
+              {%- if line.image -%}{{ line.image | image_url: width: 220 | image_tag: loading: 'lazy', widths: '120,220', sizes: '120px', alt: line.product.title }}{%- endif -%}
+            </a>
+            <div class="cart-line__body">
+              <a href="{{ line.url }}" class="cart-line__title">{{ line.title }}</a>
+              <p class="cart-line__variant">Qty: {{ line.quantity }}</p>
+            </div>
+            <div class="cart-line__price">{{ line.final_line_price | money }}</div>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <aside class="order__summary">
+        <div class="order__row"><span>Subtotal</span><span>{{ order.subtotal_price | money }}</span></div>
+        {%- for tax in order.tax_lines -%}
+          <div class="order__row"><span>{{ tax.title }}</span><span>{{ tax.price | money }}</span></div>
+        {%- endfor -%}
+        {%- for ship in order.shipping_methods -%}
+          <div class="order__row"><span>{{ ship.title }}</span><span>{{ ship.price | money }}</span></div>
+        {%- endfor -%}
+        <div class="order__row order__row--total"><span>Total</span><strong>{{ order.total_price | money }}</strong></div>
+
+        <h3>Shipping address</h3>
+        {{ order.shipping_address | format_address }}
+        <h3>Billing address</h3>
+        {{ order.billing_address | format_address }}
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Order", "settings": [] }
+{% endschema %}

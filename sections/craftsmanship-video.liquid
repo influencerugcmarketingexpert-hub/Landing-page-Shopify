@@ -1,0 +1,46 @@
+<section class="craft section" aria-label="Craftsmanship">
+  <div class="craft__inner">
+    <div class="craft__media">
+      {%- if section.settings.video != blank -%}
+        {{ section.settings.video | video_tag: class: 'craft__video', image_size: '2000x', loop: true, autoplay: true, muted: true, controls: false }}
+      {%- elsif section.settings.video_url != blank -%}
+        <video class="craft__video" autoplay muted loop playsinline poster="{% if section.settings.poster %}{{ section.settings.poster | image_url: width: 1600 }}{% endif %}">
+          <source src="{{ section.settings.video_url }}" type="video/mp4">
+        </video>
+      {%- elsif section.settings.poster != blank -%}
+        {{ section.settings.poster | image_url: width: 2000 | image_tag: loading: 'lazy', widths: '640,960,1280,1600,2000', sizes: '100vw', alt: section.settings.heading }}
+      {%- endif -%}
+      <div class="craft__scrim" style="opacity: {{ section.settings.scrim | divided_by: 100.0 }};"></div>
+    </div>
+    <div class="craft__copy" style="color:{{ section.settings.fg }};">
+      <div class="page-wrap">
+        {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        <h2 class="craft__heading">{{ section.settings.heading }}</h2>
+        {%- if section.settings.body != blank -%}<div class="craft__body rte">{{ section.settings.body }}</div>{%- endif -%}
+        {%- if section.settings.cta_text != blank -%}
+          <a class="btn btn--outline btn--light" href="{{ section.settings.cta_url }}">{{ section.settings.cta_text }}</a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Craftsmanship video",
+  "class": "section-craft",
+  "settings": [
+    { "type": "video", "id": "video", "label": "Video" },
+    { "type": "url",   "id": "video_url", "label": "External MP4 URL" },
+    { "type": "image_picker", "id": "poster", "label": "Poster image" },
+    { "type": "range", "id": "scrim", "label": "Darken", "min": 0, "max": 80, "step": 5, "unit": "%", "default": 35 },
+    { "type": "color", "id": "fg", "label": "Text color", "default": "#FAF7F2" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "The craft" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "A jacket, 37 pairs of hands, 3 weeks" },
+    { "type": "richtext", "id": "body", "label": "Body", "default": "<p>From selecting the hide to the final stitch, every Orlaven jacket passes through a small team of master leatherworkers. Nothing leaves the atelier until it can be worn for twenty years.</p>" },
+    { "type": "text", "id": "cta_text", "label": "CTA text", "default": "Inside the atelier" },
+    { "type": "url",  "id": "cta_url",  "label": "CTA link" }
+  ],
+  "presets": [ { "name": "Craftsmanship video" } ]
+}
+{% endschema %}

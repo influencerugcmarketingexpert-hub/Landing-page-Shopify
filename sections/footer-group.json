@@ -1,0 +1,18 @@
+{
+  "type": "footer",
+  "name": "Footer group",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "shop":   { "type": "menu", "settings": { "title": "Shop",  "menu": "footer" } },
+        "help":   { "type": "menu", "settings": { "title": "Help",  "menu": "footer" } },
+        "about":  { "type": "menu", "settings": { "title": "About", "menu": "footer" } },
+        "news":   { "type": "newsletter", "settings": { "title": "Join the circle", "subtext": "Early access, the journal, and 10% off your first jacket." } }
+      },
+      "block_order": ["shop", "help", "about", "news"],
+      "settings": { "tagline": "Worn in. Built to last.", "localization": true }
+    }
+  },
+  "order": ["footer"]
+}

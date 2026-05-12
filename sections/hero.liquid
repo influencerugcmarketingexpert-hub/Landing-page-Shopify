@@ -1,0 +1,139 @@
+{%- liquid
+  assign h_mode = section.settings.mode
+  assign h_height = section.settings.height
+-%}
+<section class="hero hero--{{ h_mode }} hero--{{ h_height }}" aria-label="Hero">
+  {%- if h_mode == 'video' -%}
+    <div class="hero__media">
+      {%- if section.settings.video != blank -%}
+        {{ section.settings.video | video_tag: class: 'hero__video', image_size: '1600x', loop: true, autoplay: true, muted: true, controls: false }}
+      {%- elsif section.settings.video_url != blank -%}
+        <video class="hero__video" autoplay muted loop playsinline poster="{% if section.settings.image %}{{ section.settings.image | image_url: width: 1600 }}{% endif %}">
+          <source src="{{ section.settings.video_url }}" type="video/mp4">
+        </video>
+      {%- elsif section.settings.image != blank -%}
+        {{ section.settings.image | image_url: width: 2400 | image_tag: class: 'hero__img', loading: 'eager', widths: '640,960,1280,1600,2000,2400', sizes: '100vw', alt: section.settings.heading }}
+      {%- endif -%}
+      <div class="hero__scrim" style="opacity: {{ section.settings.scrim | divided_by: 100.0 }};"></div>
+    </div>
+    <div class="hero__content hero__content--{{ section.settings.align_h }}-{{ section.settings.align_v }}" style="color:{{ section.settings.fg }};">
+      {%- if section.settings.eyebrow != blank -%}<p class="hero__eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h1 class="hero__heading">{{ section.settings.heading }}</h1>{%- endif -%}
+      {%- if section.settings.subheading != blank -%}<p class="hero__sub">{{ section.settings.subheading }}</p>{%- endif -%}
+      {%- if section.settings.cta1_text != blank -%}
+        <div class="hero__ctas">
+          <a class="btn btn--solid" href="{{ section.settings.cta1_url }}">{{ section.settings.cta1_text }}</a>
+          {%- if section.settings.cta2_text != blank -%}
+            <a class="btn btn--outline" href="{{ section.settings.cta2_url }}">{{ section.settings.cta2_text }}</a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  {%- else -%}
+    {%- comment -%} Slideshow mode {%- endcomment -%}
+    <div class="hero-slider" data-autoplay="{{ section.settings.autoplay }}" data-interval="{{ section.settings.interval | times: 1000 }}">
+      <div class="hero-slider__track">
+        {%- for block in section.blocks -%}
+          <div class="hero-slider__slide" {{ block.shopify_attributes }}>
+            <div class="hero__media">
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 2400 | image_tag: class: 'hero__img', loading: forloop.first | default: 'lazy', widths: '640,960,1280,1600,2000,2400', sizes: '100vw', alt: block.settings.heading }}
+              {%- endif -%}
+              <div class="hero__scrim" style="opacity: {{ block.settings.scrim | divided_by: 100.0 }};"></div>
+            </div>
+            <div class="hero__content hero__content--{{ block.settings.align_h }}-{{ block.settings.align_v }}" style="color:{{ block.settings.fg }};">
+              {%- if block.settings.eyebrow != blank -%}<p class="hero__eyebrow">{{ block.settings.eyebrow }}</p>{%- endif -%}
+              {%- if block.settings.heading != blank -%}<h2 class="hero__heading">{{ block.settings.heading }}</h2>{%- endif -%}
+              {%- if block.settings.subheading != blank -%}<p class="hero__sub">{{ block.settings.subheading }}</p>{%- endif -%}
+              {%- if block.settings.cta1_text != blank -%}
+                <div class="hero__ctas">
+                  <a class="btn btn--solid" href="{{ block.settings.cta1_url }}">{{ block.settings.cta1_text }}</a>
+                  {%- if block.settings.cta2_text != blank -%}
+                    <a class="btn btn--outline" href="{{ block.settings.cta2_url }}">{{ block.settings.cta2_text }}</a>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+      {%- if section.blocks.size > 1 -%}
+        <div class="hero-slider__dots" role="tablist">
+          {%- for block in section.blocks -%}
+            <button type="button" class="hero-slider__dot" data-index="{{ forloop.index0 }}" aria-label="Slide {{ forloop.index }}"></button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Hero",
+  "class": "section-hero",
+  "settings": [
+    { "type": "select", "id": "mode", "label": "Mode", "options": [
+      { "value": "video", "label": "Video / single image" },
+      { "value": "slider", "label": "Slideshow" }
+    ], "default": "video" },
+    { "type": "select", "id": "height", "label": "Height", "options": [
+      { "value": "small",  "label": "Small (60vh)" },
+      { "value": "medium", "label": "Medium (80vh)" },
+      { "value": "large",  "label": "Large (100vh)" }
+    ], "default": "large" },
+    { "type": "header", "content": "Video / image (video mode)" },
+    { "type": "video",  "id": "video", "label": "Video" },
+    { "type": "url",    "id": "video_url", "label": "External MP4 URL (fallback)" },
+    { "type": "image_picker", "id": "image", "label": "Image (poster / fallback)" },
+    { "type": "range", "id": "scrim", "label": "Image darken %", "min": 0, "max": 80, "step": 5, "unit": "%", "default": 25 },
+    { "type": "header", "content": "Content" },
+    { "type": "color", "id": "fg", "label": "Text color", "default": "#FFFFFF" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Autumn / Winter" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Worn in. Built to last." },
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Full-grain leather jackets, handcrafted in small batches." },
+    { "type": "select", "id": "align_h", "label": "Horizontal align", "options": [
+      { "value": "left", "label": "Left" },
+      { "value": "center", "label": "Center" },
+      { "value": "right", "label": "Right" }
+    ], "default": "left" },
+    { "type": "select", "id": "align_v", "label": "Vertical align", "options": [
+      { "value": "top", "label": "Top" },
+      { "value": "middle", "label": "Middle" },
+      { "value": "bottom", "label": "Bottom" }
+    ], "default": "bottom" },
+    { "type": "text", "id": "cta1_text", "label": "CTA 1 text", "default": "Shop jackets" },
+    { "type": "url",  "id": "cta1_url",  "label": "CTA 1 link" },
+    { "type": "text", "id": "cta2_text", "label": "CTA 2 text", "default": "Design your own" },
+    { "type": "url",  "id": "cta2_url",  "label": "CTA 2 link" },
+    { "type": "header", "content": "Slider" },
+    { "type": "checkbox", "id": "autoplay", "label": "Auto-advance slides", "default": true },
+    { "type": "range", "id": "interval", "label": "Interval", "min": 4, "max": 12, "step": 1, "unit": "s", "default": 6 }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "range", "id": "scrim", "min": 0, "max": 80, "step": 5, "unit": "%", "label": "Darken", "default": 25 },
+        { "type": "color", "id": "fg", "label": "Text color", "default": "#FFFFFF" },
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+        { "type": "text", "id": "heading", "label": "Heading", "default": "New Arrivals" },
+        { "type": "text", "id": "subheading", "label": "Subheading" },
+        { "type": "select", "id": "align_h", "label": "Horizontal", "options": [
+          {"value":"left","label":"Left"},{"value":"center","label":"Center"},{"value":"right","label":"Right"}
+        ], "default": "left" },
+        { "type": "select", "id": "align_v", "label": "Vertical", "options": [
+          {"value":"top","label":"Top"},{"value":"middle","label":"Middle"},{"value":"bottom","label":"Bottom"}
+        ], "default": "bottom" },
+        { "type": "text", "id": "cta1_text", "label": "CTA 1 text" },
+        { "type": "url",  "id": "cta1_url",  "label": "CTA 1 link" },
+        { "type": "text", "id": "cta2_text", "label": "CTA 2 text" },
+        { "type": "url",  "id": "cta2_url",  "label": "CTA 2 link" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Hero", "settings": {} } ]
+}
+{% endschema %}

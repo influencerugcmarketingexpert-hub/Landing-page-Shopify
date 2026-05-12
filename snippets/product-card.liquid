@@ -1,0 +1,100 @@
+{%- comment -%}
+  Usage: {% render 'product-card', product: product, aspect: '3/4', show_vendor: false, show_swatches: true %}
+{%- endcomment -%}
+{%- liquid
+  assign ar = aspect | default: '3/4'
+  assign img = product.featured_media
+  assign img_hover = product.media[1]
+  assign on_sale = false
+  if product.compare_at_price > product.price
+    assign on_sale = true
+  endif
+  assign is_new = false
+  if product.tags contains 'new'
+    assign is_new = true
+  endif
+  assign rating = product.metafields.reviews.rating.value
+  assign rating_count = product.metafields.reviews.rating_count.value
+-%}
+<article class="product-card" data-product-id="{{ product.id }}">
+  <a class="product-card__media" href="{{ product.url }}" aria-label="{{ product.title }}">
+    <div class="product-card__aspect" style="aspect-ratio:{{ ar }};">
+      {%- if img != blank -%}
+        {{ img | image_url: width: 800 | image_tag:
+          class: 'product-card__img',
+          loading: 'lazy',
+          widths: '300,480,640,800,1000',
+          sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw',
+          alt: product.title
+        }}
+      {%- endif -%}
+      {%- if img_hover != blank -%}
+        {{ img_hover | image_url: width: 800 | image_tag:
+          class: 'product-card__img product-card__img--hover',
+          loading: 'lazy',
+          widths: '300,480,640,800,1000',
+          sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw',
+          alt: ''
+        }}
+      {%- endif -%}
+      <div class="product-card__badges">
+        {%- if is_new -%}<span class="badge badge--new">{{ 'products.product.new' | t }}</span>{%- endif -%}
+        {%- if on_sale -%}<span class="badge badge--sale">{{ 'products.product.on_sale' | t }}</span>{%- endif -%}
+        {%- if product.available == false -%}<span class="badge badge--oos">{{ 'products.product.sold_out' | t }}</span>{%- endif -%}
+      </div>
+    </div>
+  </a>
+
+  <div class="product-card__body">
+    {%- if show_vendor -%}
+      <p class="product-card__vendor">{{ product.vendor }}</p>
+    {%- endif -%}
+    <h3 class="product-card__title"><a href="{{ product.url }}">{{ product.title }}</a></h3>
+
+    {%- if rating -%}
+      <p class="product-card__rating" aria-label="Rated {{ rating }} out of 5">
+        <span class="stars">
+          {%- assign full = rating | floor -%}
+          {%- for i in (1..5) -%}
+            {%- if i <= full -%}{% render 'icon', name: 'star' %}{%- else -%}<span class="stars__empty">{% render 'icon', name: 'star' %}</span>{%- endif -%}
+          {%- endfor -%}
+        </span>
+        {%- if rating_count -%}<span class="product-card__rating-count">({{ rating_count }})</span>{%- endif -%}
+      </p>
+    {%- endif -%}
+
+    <div class="product-card__price">{% render 'price', target: product %}</div>
+
+    {%- if show_swatches -%}
+      {%- assign color_option = null -%}
+      {%- for opt in product.options_with_values -%}
+        {%- assign nm = opt.name | downcase -%}
+        {%- if nm contains 'color' or nm contains 'colour' -%}
+          {%- assign color_option = opt -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if color_option -%}
+        <ul class="swatches" aria-label="Colors">
+          {%- for val in color_option.values limit: 5 -%}
+            <li class="swatch" style="background:{{ val | handle }};" title="{{ val }}"></li>
+          {%- endfor -%}
+          {%- if color_option.values.size > 5 -%}<li class="swatch swatch--more">+{{ color_option.values.size | minus: 5 }}</li>{%- endif -%}
+        </ul>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- if show_quick_add -%}
+      <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick" data-quick-add>
+        <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+        <button type="submit" class="btn btn--ghost btn--sm"
+          {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}>
+          {%- if product.selected_or_first_available_variant.available -%}
+            {{ 'products.product.add_to_cart' | t }}
+          {%- else -%}
+            {{ 'products.product.sold_out' | t }}
+          {%- endif -%}
+        </button>
+      </form>
+    {%- endif -%}
+  </div>
+</article>

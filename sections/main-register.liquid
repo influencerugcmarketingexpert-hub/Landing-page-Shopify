@@ -1,0 +1,19 @@
+<section class="auth section">
+  <div class="page-wrap page-wrap--narrow auth__inner">
+    <header class="section-head">
+      <h1 class="section-head__title">{{ 'customer.register.title' | t }}</h1>
+    </header>
+    {%- form 'create_customer', class: 'form form--stack' -%}
+      {%- if form.errors -%}<div class="form__error">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <label>{{ 'customer.register.first_name' | t }}<input type="text" name="customer[first_name]"></label>
+      <label>{{ 'customer.register.last_name' | t }}<input type="text" name="customer[last_name]"></label>
+      <label>{{ 'customer.login.email' | t }}<input type="email" name="customer[email]" required></label>
+      <label>{{ 'customer.login.password' | t }}<input type="password" name="customer[password]" required></label>
+      <button type="submit" class="btn btn--solid btn--block">{{ 'customer.register.submit' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Register", "settings": [] }
+{% endschema %}

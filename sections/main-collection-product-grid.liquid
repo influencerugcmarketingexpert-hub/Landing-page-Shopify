@@ -1,0 +1,97 @@
+{%- liquid
+  assign per = section.settings.per_page | default: 24
+-%}
+<section class="coll section">
+  <div class="page-wrap">
+    {%- paginate collection.products by per -%}
+      <div class="coll__toolbar">
+        <button type="button" class="btn btn--ghost btn--sm" data-filter-toggle>{{ 'products.facets.filter' | t }}</button>
+        <p class="coll__count">{{ 'products.facets.results' | t: count: collection.products_count }}</p>
+        <form class="coll__sort" method="get">
+          <label for="SortBy" class="visually-hidden">{{ 'products.facets.sort_by' | t }}</label>
+          <select id="SortBy" name="sort_by" onchange="this.form.submit()">
+            {%- assign sort = collection.sort_by | default: collection.default_sort_by -%}
+            <option value="manual" {% if sort == 'manual' %}selected{% endif %}>Featured</option>
+            <option value="best-selling" {% if sort == 'best-selling' %}selected{% endif %}>Best selling</option>
+            <option value="title-ascending" {% if sort == 'title-ascending' %}selected{% endif %}>A–Z</option>
+            <option value="title-descending" {% if sort == 'title-descending' %}selected{% endif %}>Z–A</option>
+            <option value="price-ascending" {% if sort == 'price-ascending' %}selected{% endif %}>Price: low → high</option>
+            <option value="price-descending" {% if sort == 'price-descending' %}selected{% endif %}>Price: high → low</option>
+            <option value="created-descending" {% if sort == 'created-descending' %}selected{% endif %}>Newest</option>
+          </select>
+          {%- for filter in collection.filters -%}
+            {%- for value in filter.active_values -%}
+              <input type="hidden" name="{{ value.param_name }}" value="{{ value.value }}">
+            {%- endfor -%}
+          {%- endfor -%}
+        </form>
+      </div>
+
+      <div class="coll__layout">
+        <aside class="coll__filters" data-filters>
+          <form id="CollectionFilterForm">
+            {%- if collection.filters.size > 0 -%}
+              {%- for filter in collection.filters -%}
+                <details class="filter" open>
+                  <summary>{{ filter.label }} <span class="filter__chev">{% render 'icon', name: 'chevron' %}</span></summary>
+                  {%- case filter.type -%}
+                    {%- when 'list' -%}
+                      <ul class="filter__list">
+                        {%- for value in filter.values -%}
+                          <li>
+                            <label class="filter__opt {% if value.count == 0 and value.active == false %}is-disabled{% endif %}">
+                              <input type="checkbox" name="{{ value.param_name }}" value="{{ value.value }}"
+                                {% if value.active %}checked{% endif %}
+                                {% if value.count == 0 and value.active == false %}disabled{% endif %}>
+                              <span>{{ value.label }} <em>({{ value.count }})</em></span>
+                            </label>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    {%- when 'price_range' -%}
+                      <div class="filter__price">
+                        <label>Min<input type="number" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value }}" placeholder="{{ filter.range_min | money_without_currency }}" min="0"></label>
+                        <label>Max<input type="number" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value }}" placeholder="{{ filter.range_max | money_without_currency }}" min="0"></label>
+                      </div>
+                  {%- endcase -%}
+                </details>
+              {%- endfor -%}
+              <div class="filter__actions">
+                <button type="submit" class="btn btn--solid btn--block">{{ 'products.facets.apply' | t }}</button>
+                <a href="{{ collection.url }}" class="btn btn--ghost btn--block">{{ 'products.facets.clear' | t }}</a>
+              </div>
+            {%- else -%}
+              <p class="filter__empty">Filters will appear once Shopify filters are configured in Admin → Search &amp; Discovery.</p>
+            {%- endif -%}
+          </form>
+        </aside>
+
+        <div class="coll__grid">
+          {%- if collection.products.size > 0 -%}
+            <ul class="products-grid" style="--cols: {{ section.settings.columns | default: 4 }};">
+              {%- for product in collection.products -%}
+                <li>{% render 'product-card', product: product, show_quick_add: true, show_swatches: true %}</li>
+              {%- endfor -%}
+            </ul>
+            {%- if paginate.pages > 1 -%}
+              <div class="pagination">{{ paginate | default_pagination }}</div>
+            {%- endif -%}
+          {%- else -%}
+            <p class="coll__empty">{{ 'collections.general.no_matches' | t }}</p>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection product grid",
+  "class": "section-coll-grid",
+  "settings": [
+    { "type": "range", "id": "per_page", "label": "Products per page", "min": 12, "max": 48, "step": 4, "default": 24 },
+    { "type": "range", "id": "columns",  "label": "Columns (desktop)", "min": 2, "max": 5, "step": 1, "default": 4 }
+  ]
+}
+{% endschema %}

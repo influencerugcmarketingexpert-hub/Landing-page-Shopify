@@ -1,0 +1,208 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "mode": "video",
+        "height": "large",
+        "eyebrow": "Autumn / Winter",
+        "heading": "Worn in. Built to last.",
+        "subheading": "Full-grain leather jackets, handcrafted in small batches.",
+        "align_h": "left",
+        "align_v": "bottom",
+        "scrim": 25,
+        "fg": "#FFFFFF",
+        "cta1_text": "Shop jackets",
+        "cta1_url": "/collections/all",
+        "cta2_text": "Design your own",
+        "cta2_url": "/pages/custom"
+      }
+    },
+    "trust": {
+      "type": "trust-strip",
+      "blocks": {
+        "i1": { "type": "item", "settings": { "icon": "truck",  "title": "Free worldwide shipping", "text": "Orders over $250" } },
+        "i2": { "type": "item", "settings": { "icon": "return", "title": "30-day easy returns", "text": "Try it at home" } },
+        "i3": { "type": "item", "settings": { "icon": "shield", "title": "Lifetime craftsmanship", "text": "Built to last" } },
+        "i4": { "type": "item", "settings": { "icon": "star",   "title": "Loved by 50,000+", "text": "4.9 average rating" } }
+      },
+      "block_order": ["i1", "i2", "i3", "i4"]
+    },
+    "sxc": {
+      "type": "shop-by-category",
+      "settings": { "eyebrow": "Browse", "heading": "Shop by category", "columns": 6 },
+      "blocks": {
+        "t1": { "type": "tile", "settings": { "label": "Men",       "link": "/collections/men",       "aspect": "4/5" } },
+        "t2": { "type": "tile", "settings": { "label": "Women",     "link": "/collections/women",     "aspect": "4/5" } },
+        "t3": { "type": "tile", "settings": { "label": "Biker",     "link": "/collections/biker",     "aspect": "4/5" } },
+        "t4": { "type": "tile", "settings": { "label": "Bomber",    "link": "/collections/bomber",    "aspect": "4/5" } },
+        "t5": { "type": "tile", "settings": { "label": "Aviator",   "link": "/collections/aviator",   "aspect": "4/5" } },
+        "t6": { "type": "tile", "settings": { "label": "Shearling", "link": "/collections/shearling", "aspect": "4/5" } }
+      },
+      "block_order": ["t1","t2","t3","t4","t5","t6"]
+    },
+    "new-arrivals": {
+      "type": "featured-collection",
+      "settings": {
+        "eyebrow": "Just landed",
+        "heading": "New arrivals",
+        "collection": "new-arrivals",
+        "limit": 8,
+        "columns": 4,
+        "show_swatches": true,
+        "show_quick_add": true
+      }
+    },
+    "sxs": {
+      "type": "shop-by-style",
+      "settings": { "eyebrow": "The range", "heading": "Shop by style" },
+      "blocks": {
+        "s1": { "type": "style", "settings": { "label": "Biker",      "caption": "Classic moto",  "link": "/collections/biker" } },
+        "s2": { "type": "style", "settings": { "label": "Bomber",     "caption": "Heritage cut",  "link": "/collections/bomber" } },
+        "s3": { "type": "style", "settings": { "label": "Cafe Racer", "caption": "Minimal lines", "link": "/collections/cafe-racer" } },
+        "s4": { "type": "style", "settings": { "label": "Aviator",    "caption": "Shearling collar", "link": "/collections/aviator" } },
+        "s5": { "type": "style", "settings": { "label": "Shearling",  "caption": "Winter-ready",  "link": "/collections/shearling" } },
+        "s6": { "type": "style", "settings": { "label": "Suede",      "caption": "Softer hand",   "link": "/collections/suede" } }
+      },
+      "block_order": ["s1","s2","s3","s4","s5","s6"]
+    },
+    "custom-banner": {
+      "type": "custom-jacket-banner",
+      "settings": {
+        "bg": "#1A1613",
+        "fg": "#FAF7F2",
+        "layout": "image-right",
+        "eyebrow": "Made-to-measure",
+        "heading": "Design your own jacket",
+        "subheading": "Choose your leather, lining, fit, and finish — handcrafted to your measurements.",
+        "cta1_text": "Start designing",
+        "cta1_url": "/pages/custom",
+        "cta2_text": "How it works",
+        "cta2_url": "/pages/how-custom-works"
+      },
+      "blocks": {
+        "st1": { "type": "step", "settings": { "title": "Pick a style",        "text": "Biker, Bomber, Aviator, Cafe Racer." } },
+        "st2": { "type": "step", "settings": { "title": "Choose your leather", "text": "Lamb, cow, goat, shearling." } },
+        "st3": { "type": "step", "settings": { "title": "Send your measurements","text": "Our tailors do the rest." } },
+        "st4": { "type": "step", "settings": { "title": "Handcrafted in 3 weeks","text": "Shipped straight to your door." } }
+      },
+      "block_order": ["st1","st2","st3","st4"]
+    },
+    "best-sellers": {
+      "type": "featured-collection",
+      "settings": {
+        "eyebrow": "Signature",
+        "heading": "Best sellers",
+        "collection": "best-sellers",
+        "limit": 8,
+        "columns": 4,
+        "show_swatches": true,
+        "show_quick_add": true
+      }
+    },
+    "lookbook": {
+      "type": "lookbook",
+      "settings": { "layout": "asym" },
+      "blocks": {
+        "l1": { "type": "tile", "settings": { "caption": "The Biker",      "size": "wide",   "link": "/collections/biker" } },
+        "l2": { "type": "tile", "settings": { "caption": "The Cafe Racer", "size": "narrow", "link": "/collections/cafe-racer" } }
+      },
+      "block_order": ["l1","l2"]
+    },
+    "craft": {
+      "type": "craftsmanship-video",
+      "settings": {
+        "scrim": 35,
+        "fg": "#FAF7F2",
+        "eyebrow": "The craft",
+        "heading": "A jacket, 37 pairs of hands, 3 weeks",
+        "body": "<p>From selecting the hide to the final stitch, every Orlaven jacket passes through a small team of master leatherworkers. Nothing leaves the atelier until it can be worn for twenty years.</p>",
+        "cta_text": "Inside the atelier",
+        "cta_url": "/pages/craftsmanship"
+      }
+    },
+    "materials": {
+      "type": "material-guide",
+      "settings": { "eyebrow": "The hide", "heading": "Know your leather", "columns": 3 },
+      "blocks": {
+        "m1": { "type": "material", "settings": { "title": "Full-grain cow", "text": "Thick, durable, develops a deep patina with wear.", "link_text": "Explore cow", "link_url": "/collections/cow" } },
+        "m2": { "type": "material", "settings": { "title": "Lambskin",       "text": "Softer, lighter — drapes closer to the body.",       "link_text": "Explore lamb", "link_url": "/collections/lamb" } },
+        "m3": { "type": "material", "settings": { "title": "Shearling",      "text": "Sheepskin with the wool intact — warm and weather-ready.", "link_text": "Explore shearling", "link_url": "/collections/shearling" } }
+      },
+      "block_order": ["m1","m2","m3"]
+    },
+    "reviews": {
+      "type": "reviews-ugc",
+      "settings": {
+        "eyebrow": "Loved by the circle",
+        "heading": "What wearers say",
+        "rating": "4.9",
+        "count": "2,418",
+        "ugc_heading": "#WornInOrlaven"
+      },
+      "blocks": {
+        "r1": { "type": "review", "settings": { "text": "The fit, the leather, the stitching — every detail has been considered. Worth every penny.", "name": "Daniel R.", "product": "Heritage Biker", "verified": true } },
+        "r2": { "type": "review", "settings": { "text": "I've owned three leather jackets. This one makes the others feel like Halloween costumes.", "name": "Priya S.", "product": "Cafe Racer", "verified": true } },
+        "r3": { "type": "review", "settings": { "text": "Bought for winter, wore it every single day for a year. Still looks like I just took it out of the box.", "name": "Marco B.", "product": "Shearling Aviator", "verified": true } },
+        "u1": { "type": "ugc" }, "u2": { "type": "ugc" }, "u3": { "type": "ugc" },
+        "u4": { "type": "ugc" }, "u5": { "type": "ugc" }, "u6": { "type": "ugc" }
+      },
+      "block_order": ["r1","r2","r3","u1","u2","u3","u4","u5","u6"]
+    },
+    "press": {
+      "type": "press-logos",
+      "settings": { "heading": "As seen in" },
+      "blocks": {
+        "p1": { "type": "logo", "settings": { "name": "GQ" } },
+        "p2": { "type": "logo", "settings": { "name": "Esquire" } },
+        "p3": { "type": "logo", "settings": { "name": "Forbes" } },
+        "p4": { "type": "logo", "settings": { "name": "Robb Report" } },
+        "p5": { "type": "logo", "settings": { "name": "Hypebeast" } }
+      },
+      "block_order": ["p1","p2","p3","p4","p5"]
+    },
+    "journal": {
+      "type": "blog-preview",
+      "settings": { "eyebrow": "The Journal", "heading": "Notes from the atelier", "blog": "news", "limit": 3 }
+    },
+    "ig": {
+      "type": "instagram-feed",
+      "settings": { "eyebrow": "On Instagram", "heading": "Follow the journey", "handle": "orlaven", "columns": 6 },
+      "blocks": {
+        "i1": { "type": "post" }, "i2": { "type": "post" }, "i3": { "type": "post" },
+        "i4": { "type": "post" }, "i5": { "type": "post" }, "i6": { "type": "post" }
+      },
+      "block_order": ["i1","i2","i3","i4","i5","i6"]
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "layout": "banner",
+        "bg": "#1A1613",
+        "fg": "#FAF7F2",
+        "scrim": 40,
+        "eyebrow": "Join the circle",
+        "heading": "10% off your first jacket",
+        "subheading": "Early access, the journal, and a welcome code.",
+        "button_text": "Subscribe"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "trust",
+    "sxc",
+    "new-arrivals",
+    "sxs",
+    "custom-banner",
+    "best-sellers",
+    "lookbook",
+    "craft",
+    "materials",
+    "reviews",
+    "press",
+    "journal",
+    "ig",
+    "newsletter"
+  ]
+}

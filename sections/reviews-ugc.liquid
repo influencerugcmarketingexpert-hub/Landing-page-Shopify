@@ -1,0 +1,103 @@
+<section class="reviews section" aria-label="Reviews and community">
+  <div class="page-wrap">
+    <div class="reviews__top">
+      <div class="reviews__aggregate">
+        {%- if section.settings.rating != blank -%}
+          <div class="reviews__score">{{ section.settings.rating }}</div>
+          <div>
+            <div class="reviews__stars" aria-label="Rated {{ section.settings.rating }} out of 5">
+              {%- assign full = section.settings.rating | floor -%}
+              {%- for i in (1..5) -%}
+                {%- if i <= full -%}{% render 'icon', name: 'star' %}{%- else -%}<span class="stars__empty">{% render 'icon', name: 'star' %}</span>{%- endif -%}
+              {%- endfor -%}
+            </div>
+            <p class="reviews__muted">{{ section.settings.count }} verified reviews</p>
+          </div>
+        {%- endif -%}
+      </div>
+      <div>
+        {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+      </div>
+    </div>
+
+    <div class="reviews__grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'review' -%}
+          <blockquote class="review" {{ block.shopify_attributes }}>
+            <div class="review__stars">
+              {%- for i in (1..5) -%}{% render 'icon', name: 'star' %}{%- endfor -%}
+            </div>
+            <p class="review__body">“{{ block.settings.text }}”</p>
+            <footer class="review__meta">
+              <strong>{{ block.settings.name }}</strong>
+              {%- if block.settings.product != blank -%}<span> · {{ block.settings.product }}</span>{%- endif -%}
+              {%- if block.settings.verified -%}<span class="review__verified">Verified</span>{%- endif -%}
+            </footer>
+          </blockquote>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- assign ugc_blocks = section.blocks | where: 'type', 'ugc' -%}
+    {%- if ugc_blocks.size > 0 -%}
+      <div class="ugc">
+        <h3 class="ugc__heading">{{ section.settings.ugc_heading | default: '#WornInOrlaven' }}</h3>
+        <div class="ugc__grid">
+          {%- for block in ugc_blocks -%}
+            <a class="ugc__item" href="{{ block.settings.link | default: '#' }}" target="_blank" rel="noopener" {{ block.shopify_attributes }}>
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '240,360,480,600', sizes: '(max-width:640px) 50vw, 16vw', alt: 'Customer photo' }}
+              {%- endif -%}
+              <span class="ugc__tag">{% render 'icon', name: 'instagram' %}</span>
+            </a>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Reviews + UGC",
+  "class": "section-reviews",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Loved by the circle" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What wearers say" },
+    { "type": "text", "id": "rating", "label": "Aggregate rating", "default": "4.9" },
+    { "type": "text", "id": "count",  "label": "Review count",     "default": "2,418" },
+    { "type": "text", "id": "ugc_heading", "label": "UGC heading", "default": "#WornInOrlaven" }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "textarea", "id": "text", "label": "Quote",   "default": "The fit, the leather, the stitching — every detail has been considered. Worth every penny." },
+        { "type": "text",     "id": "name", "label": "Name",    "default": "Daniel R." },
+        { "type": "text",     "id": "product", "label": "Product", "default": "Heritage Biker" },
+        { "type": "checkbox", "id": "verified", "label": "Verified buyer", "default": true }
+      ]
+    },
+    {
+      "type": "ugc",
+      "name": "UGC photo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "url", "id": "link", "label": "Instagram link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews + UGC",
+      "blocks": [
+        { "type": "review" }, { "type": "review" }, { "type": "review" },
+        { "type": "ugc" }, { "type": "ugc" }, { "type": "ugc" }, { "type": "ugc" }, { "type": "ugc" }, { "type": "ugc" }
+      ]
+    }
+  ]
+}
+{% endschema %}
