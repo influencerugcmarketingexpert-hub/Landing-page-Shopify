@@ -1,0 +1,30 @@
+<section class="featured section" aria-label="You may also like">
+  <div class="page-wrap">
+    <header class="section-head section-head--row">
+      <h2 class="section-head__title">{{ section.settings.heading | default: 'You may also like' }}</h2>
+    </header>
+    <div class="featured__carousel" data-carousel>
+      <ul class="featured__track" style="--cols: 4;">
+        {%- if recommendations.performed and recommendations.products_count > 0 -%}
+          {%- for product in recommendations.products -%}
+            <li class="featured__item">{% render 'product-card', product: product, show_quick_add: true, show_swatches: true %}</li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for product in collections.all.products limit: 8 -%}
+            <li class="featured__item">{% render 'product-card', product: product, show_quick_add: true, show_swatches: true %}</li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Related products",
+  "class": "section-related",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "You may also like" }
+  ]
+}
+{% endschema %}

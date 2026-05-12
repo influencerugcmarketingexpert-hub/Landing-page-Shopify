@@ -1,0 +1,21 @@
+<section class="contact section">
+  <div class="page-wrap page-wrap--narrow">
+    {%- form 'contact', class: 'form form--stack' -%}
+      {%- if form.posted_successfully? -%}
+        <p class="form__success">Thanks — we'll be in touch within 24 hours.</p>
+      {%- endif -%}
+      {%- if form.errors -%}
+        <p class="form__error">{{ form.errors | default_errors }}</p>
+      {%- endif -%}
+      <label>Name<input type="text" name="contact[name]" required></label>
+      <label>Email<input type="email" name="contact[email]" required></label>
+      <label>Subject<input type="text" name="contact[subject]"></label>
+      <label>Message<textarea name="contact[body]" rows="5" required></textarea></label>
+      <button class="btn btn--solid" type="submit">Send message</button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Contact form", "settings": [] }
+{% endschema %}

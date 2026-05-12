@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="{{ settings.color_bg }}">
+    <link rel="canonical" href="{{ canonical_url }}">
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    {%- capture seo_title -%}
+      {{ page_title }}{% if current_tags %} &ndash; {{ 'general.meta.tags' | t: tags: current_tags | join: ', ' }}{% endif %}{% if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif %}{% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless %}
+    {%- endcapture -%}
+    <title>{{ seo_title | strip }}</title>
+    {% if page_description %}<meta name="description" content="{{ page_description | escape }}">{% endif %}
+
+    {% render 'meta-tags' %}
+
+    <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
+
+    {{ content_for_header }}
+
+    {%- assign body_font = settings.type_body -%}
+    {%- assign body_font_bold = body_font | font_modify: 'weight', 'bolder' -%}
+    {%- assign heading_font = settings.type_heading -%}
+    <style>
+      {{ body_font | font_face: font_display: 'swap' }}
+      {{ body_font_bold | font_face: font_display: 'swap' }}
+      {{ heading_font | font_face: font_display: 'swap' }}
+
+      :root {
+        --color-bg: {{ settings.color_bg }};
+        --color-surface: {{ settings.color_surface }};
+        --color-ink: {{ settings.color_ink }};
+        --color-muted: {{ settings.color_muted }};
+        --color-accent: {{ settings.color_accent }};
+        --color-accent-ink: {{ settings.color_accent_ink }};
+        --color-border: {{ settings.color_border }};
+        --color-sale: {{ settings.color_sale }};
+        --font-body: {{ body_font.family }}, {{ body_font.fallback_families }};
+        --font-heading: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+        --page-width: {{ settings.page_width }}px;
+        --section-spacing: {{ settings.section_spacing }}px;
+        --radius: {{ settings.corner_radius }}px;
+        --heading-scale: {{ settings.heading_scale | divided_by: 100.0 }};
+        --body-scale: {{ settings.body_scale | divided_by: 100.0 }};
+        --btn-uppercase: {% if settings.button_uppercase %}uppercase{% else %}none{% endif %};
+      }
+    </style>
+
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+
+    <script src="{{ 'theme.js' | asset_url }}" defer></script>
+  </head>
+  <body class="template-{{ template | replace: '.', '-' | handle }}">
+    <a class="skip-to-content" href="#MainContent">{{ 'accessibility.skip_to_content' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" class="main" role="main">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    <div id="CartDrawerRoot" aria-hidden="true"></div>
+
+    <ul hidden>
+      <li id="a11y-new-window-message">{{ 'accessibility.link_messages.new_window' | t }}</li>
+    </ul>
+  </body>
+</html>

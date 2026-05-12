@@ -1,0 +1,7 @@
+# Shopify CLI
+.shopifyignore
+.env
+.DS_Store
+node_modules/
+*.log
+shopify.theme.toml

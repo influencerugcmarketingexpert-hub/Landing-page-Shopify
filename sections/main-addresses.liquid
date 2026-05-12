@@ -1,0 +1,47 @@
+<section class="addresses section">
+  <div class="page-wrap">
+    <header class="section-head section-head--row">
+      <h1 class="section-head__title">{{ 'customer.addresses.title' | t }}</h1>
+      <a class="btn btn--ghost" href="{{ routes.account_url }}">Back</a>
+    </header>
+
+    <div class="addr-grid">
+      {%- for address in customer.addresses -%}
+        <div class="addr-card">
+          {%- if address == customer.default_address -%}
+            <span class="badge badge--new">{{ 'customer.addresses.default' | t }}</span>
+          {%- endif -%}
+          {{ address | format_address }}
+          <div class="addr-card__actions">
+            <a href="#EditAddress-{{ address.id }}" class="btn btn--ghost btn--sm">{{ 'customer.addresses.edit' | t }}</a>
+            {%- form 'customer_address', address -%}
+              <button type="button" class="btn btn--ghost btn--sm" data-delete-address="{{ address.url }}">{{ 'customer.addresses.delete' | t }}</button>
+            {%- endform -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    <details class="addr-new">
+      <summary class="btn btn--solid">{{ 'customer.addresses.add' | t }}</summary>
+      {%- form 'customer_address', customer.new_address, class: 'form form--stack' -%}
+        <label>First name<input type="text" name="address[first_name]"></label>
+        <label>Last name<input type="text" name="address[last_name]"></label>
+        <label>Company<input type="text" name="address[company]"></label>
+        <label>Address 1<input type="text" name="address[address1]"></label>
+        <label>Address 2<input type="text" name="address[address2]"></label>
+        <label>City<input type="text" name="address[city]"></label>
+        <label>Country<select name="address[country]">{{ all_country_option_tags }}</select></label>
+        <label>Province / State<input type="text" name="address[province]"></label>
+        <label>Zip / Postcode<input type="text" name="address[zip]"></label>
+        <label>Phone<input type="tel" name="address[phone]"></label>
+        <label class="form__check"><input type="checkbox" name="address[default]" value="1"> Set as default</label>
+        <button type="submit" class="btn btn--solid">Save address</button>
+      {%- endform -%}
+    </details>
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Addresses", "settings": [] }
+{% endschema %}

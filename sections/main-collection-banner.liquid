@@ -1,0 +1,24 @@
+{%- liquid
+  assign img = collection.image
+  assign hero = true
+  if img == blank
+    assign hero = false
+  endif
+-%}
+<section class="coll-banner {% if hero %}coll-banner--hero{% endif %}">
+  {%- if hero -%}
+    {{ img | image_url: width: 2000 | image_tag: loading: 'eager', widths: '640,960,1280,1600,2000', sizes: '100vw', alt: collection.title, class: 'coll-banner__bg' }}
+    <div class="coll-banner__scrim"></div>
+  {%- endif -%}
+  <div class="page-wrap coll-banner__inner">
+    <p class="eyebrow" style="color:{% if hero %}#FAF7F2{% else %}var(--color-muted){% endif %}">Collection</p>
+    <h1 class="coll-banner__title" style="color:{% if hero %}#FAF7F2{% else %}var(--color-ink){% endif %}">{{ collection.title }}</h1>
+    {%- if collection.description != blank -%}
+      <div class="coll-banner__desc rte" style="color:{% if hero %}#FAF7F2{% else %}var(--color-muted){% endif %}">{{ collection.description }}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Collection banner", "class": "section-coll-banner", "settings": [] }
+{% endschema %}

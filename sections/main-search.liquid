@@ -1,0 +1,47 @@
+<section class="search section">
+  <div class="page-wrap">
+    <header class="section-head">
+      <h1 class="section-head__title">{{ 'general.search.title' | t }}</h1>
+      <form action="{{ routes.search_url }}" method="get" role="search" class="search__form">
+        <input type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'general.search.placeholder' | t }}" aria-label="{{ 'general.search.search' | t }}">
+        <button type="submit" class="btn btn--solid">{{ 'general.search.search' | t }}</button>
+      </form>
+    </header>
+
+    {%- if search.performed -%}
+      {%- if search.results_count > 0 -%}
+        <p class="search__count">{{ 'general.search.results_for_html' | t: terms: search.terms }} · {{ search.results_count }} results</p>
+        <div class="search__grid">
+          {%- paginate search.results by 24 -%}
+            {%- for item in search.results -%}
+              {%- case item.object_type -%}
+                {%- when 'product' -%}
+                  {% render 'product-card', product: item, show_quick_add: true, show_swatches: true %}
+                {%- when 'article' -%}
+                  <a class="journal__card" href="{{ item.url }}">
+                    <div class="journal__media" style="aspect-ratio:16/10;">
+                      {%- if item.image -%}{{ item.image | image_url: width: 800 | image_tag: loading: 'lazy', widths: '320,480,800', sizes: '33vw', alt: item.title }}{%- endif -%}
+                    </div>
+                    <div class="journal__body"><h3 class="journal__title">{{ item.title }}</h3><p class="journal__meta">Article</p></div>
+                  </a>
+                {%- when 'page' -%}
+                  <a class="journal__card" href="{{ item.url }}">
+                    <div class="journal__body"><h3 class="journal__title">{{ item.title }}</h3><p class="journal__meta">Page</p></div>
+                  </a>
+              {%- endcase -%}
+            {%- endfor -%}
+            {%- if paginate.pages > 1 -%}
+              <div class="pagination">{{ paginate | default_pagination }}</div>
+            {%- endif -%}
+          {%- endpaginate -%}
+        </div>
+      {%- else -%}
+        <p class="search__empty">{{ 'general.search.no_results_html' | t: terms: search.terms }}</p>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Search", "class": "section-main-search", "settings": [] }
+{% endschema %}

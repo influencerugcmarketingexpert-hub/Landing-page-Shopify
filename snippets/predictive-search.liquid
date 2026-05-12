@@ -1,0 +1,47 @@
+{%- if predictive_search.performed -%}
+  <div class="predictive__inner">
+    {%- if predictive_search.resources.products.size > 0 -%}
+      <div class="predictive__col">
+        <h3 class="predictive__h">Products</h3>
+        <ul class="predictive__list">
+          {%- for product in predictive_search.resources.products -%}
+            <li>
+              <a href="{{ product.url }}" class="predictive__item">
+                {%- if product.featured_image -%}
+                  {{ product.featured_image | image_url: width: 120 | image_tag: loading: 'lazy', widths: '60,120', sizes: '60px', alt: product.title }}
+                {%- endif -%}
+                <div>
+                  <strong>{{ product.title }}</strong>
+                  <span>{% render 'price', target: product %}</span>
+                </div>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+    {%- if predictive_search.resources.collections.size > 0 -%}
+      <div class="predictive__col">
+        <h3 class="predictive__h">Collections</h3>
+        <ul class="predictive__list">
+          {%- for coll in predictive_search.resources.collections -%}
+            <li><a href="{{ coll.url }}">{{ coll.title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+    {%- if predictive_search.resources.articles.size > 0 -%}
+      <div class="predictive__col">
+        <h3 class="predictive__h">Journal</h3>
+        <ul class="predictive__list">
+          {%- for article in predictive_search.resources.articles -%}
+            <li><a href="{{ article.url }}">{{ article.title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+    {%- if predictive_search.resources.products.size == 0 and predictive_search.resources.collections.size == 0 and predictive_search.resources.articles.size == 0 -%}
+      <p class="predictive__empty">No matches. Try a broader search.</p>
+    {%- endif -%}
+  </div>
+{%- endif -%}

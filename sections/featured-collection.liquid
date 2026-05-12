@@ -1,0 +1,63 @@
+{%- liquid
+  assign coll = collections[section.settings.collection]
+  assign limit = section.settings.limit | default: 8
+-%}
+<section class="featured section" aria-label="{{ section.settings.heading }}">
+  <div class="page-wrap">
+    <header class="section-head section-head--row">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}<p class="eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+      </div>
+      {%- if coll -%}
+        <a class="section-head__more" href="{{ coll.url }}">{{ 'collections.general.view_all' | t }} {% render 'icon', name: 'arrow-right' %}</a>
+      {%- endif -%}
+    </header>
+
+    <div class="featured__carousel" data-carousel>
+      <ul class="featured__track" style="--cols: {{ section.settings.columns }};">
+        {%- if coll.products.size > 0 -%}
+          {%- for product in coll.products limit: limit -%}
+            <li class="featured__item">
+              {% render 'product-card', product: product, show_swatches: section.settings.show_swatches, show_quick_add: section.settings.show_quick_add %}
+            </li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for i in (1..limit) -%}
+            <li class="featured__item">
+              <div class="product-card placeholder-card">
+                <div class="product-card__aspect" style="aspect-ratio:3/4;background:var(--color-border);"></div>
+                <div class="product-card__body">
+                  <h3 class="product-card__title">Product title</h3>
+                  <span class="price">$0.00</span>
+                </div>
+              </div>
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+      <button type="button" class="carousel__arrow carousel__arrow--prev" aria-label="Previous" data-carousel-prev>‹</button>
+      <button type="button" class="carousel__arrow carousel__arrow--next" aria-label="Next" data-carousel-next>›</button>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Featured collection",
+  "class": "section-featured",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "New arrivals" },
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "range", "id": "limit",   "label": "Product limit", "min": 2, "max": 16, "step": 1, "default": 8 },
+    { "type": "range", "id": "columns", "label": "Columns",        "min": 2, "max": 5,  "step": 1, "default": 4 },
+    { "type": "checkbox", "id": "show_swatches", "label": "Show swatches", "default": true },
+    { "type": "checkbox", "id": "show_quick_add", "label": "Show quick-add", "default": true }
+  ],
+  "presets": [
+    { "name": "Featured collection", "settings": { "heading": "New arrivals" } },
+    { "name": "Best sellers", "settings": { "heading": "Best sellers", "eyebrow": "Signature" } }
+  ]
+}
+{% endschema %}

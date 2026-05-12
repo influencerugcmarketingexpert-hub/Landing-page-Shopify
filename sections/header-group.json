@@ -1,0 +1,21 @@
+{
+  "type": "header",
+  "name": "Header group",
+  "sections": {
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "blocks": {
+        "msg-1": { "type": "message", "settings": { "text": "Free worldwide shipping over $250", "icon": "truck" } },
+        "msg-2": { "type": "message", "settings": { "text": "30-day easy returns", "icon": "return" } },
+        "msg-3": { "type": "message", "settings": { "text": "Handcrafted in full-grain leather", "icon": "shield" } }
+      },
+      "block_order": ["msg-1", "msg-2", "msg-3"],
+      "settings": { "bg": "#1A1613", "fg": "#FAF7F2", "autoplay": true, "interval": 4 }
+    },
+    "header": {
+      "type": "header",
+      "settings": { "menu": "main-menu", "sticky": true, "transparent": false }
+    }
+  },
+  "order": ["announcement-bar", "header"]
+}

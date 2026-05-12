@@ -1,0 +1,201 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign rating = product.metafields.reviews.rating.value
+  assign rating_count = product.metafields.reviews.rating_count.value
+-%}
+<section class="pdp section">
+  <div class="page-wrap pdp__grid">
+    {%- comment -%} Gallery {%- endcomment -%}
+    <div class="pdp__gallery">
+      <div class="pdp__thumbs" aria-label="Image thumbnails">
+        {%- for media in product.media -%}
+          <button type="button" class="pdp__thumb{% if forloop.first %} is-active{% endif %}" data-thumb="{{ forloop.index0 }}" aria-label="Image {{ forloop.index }}">
+            {{ media.preview_image | image_url: width: 160 | image_tag: loading: 'lazy', widths: '80,160', sizes: '80px', alt: media.alt }}
+          </button>
+        {%- endfor -%}
+      </div>
+      <div class="pdp__main" data-gallery>
+        {%- for media in product.media -%}
+          <figure class="pdp__slide{% if forloop.first %} is-active{% endif %}" data-slide="{{ forloop.index0 }}">
+            {%- if media.media_type == 'video' -%}
+              {{ media | video_tag: image_size: '1400x', controls: true, class: 'pdp__media' }}
+            {%- elsif media.media_type == 'external_video' -%}
+              {{ media | external_video_tag: class: 'pdp__media' }}
+            {%- else -%}
+              {{ media | image_url: width: 1600 | image_tag: loading: forloop.first | default: 'lazy', widths: '480,720,960,1200,1600', sizes: '(max-width:900px) 100vw, 50vw', alt: media.alt | default: product.title, class: 'pdp__media' }}
+            {%- endif -%}
+          </figure>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- comment -%} Buy box {%- endcomment -%}
+    <aside class="pdp__buybox">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'vendor' -%}
+            {%- if product.vendor != blank -%}
+              <p class="pdp__vendor" {{ block.shopify_attributes }}>{{ product.vendor }}</p>
+            {%- endif -%}
+          {%- when 'title' -%}
+            <h1 class="pdp__title" {{ block.shopify_attributes }}>{{ product.title }}</h1>
+          {%- when 'rating' -%}
+            {%- if rating -%}
+              <p class="pdp__rating" {{ block.shopify_attributes }}>
+                {%- assign full = rating | floor -%}
+                {%- for i in (1..5) -%}
+                  {%- if i <= full -%}{% render 'icon', name: 'star' %}{%- else -%}<span class="stars__empty">{% render 'icon', name: 'star' %}</span>{%- endif -%}
+                {%- endfor -%}
+                <span class="pdp__rating-text">{{ rating }} ({{ rating_count | default: 0 }} reviews)</span>
+              </p>
+            {%- endif -%}
+          {%- when 'price' -%}
+            <div class="pdp__price" {{ block.shopify_attributes }}>
+              {% render 'price', target: current_variant %}
+              {%- if current_variant.unit_price_measurement -%}
+                <small class="pdp__unit">{{ 'products.product.price_per_unit' | t: price: current_variant.unit_price | money, unit: current_variant.unit_price_measurement.reference_unit }}</small>
+              {%- endif -%}
+            </div>
+          {%- when 'variant-picker' -%}
+            <form method="post" action="{{ routes.cart_add_url }}" class="pdp__form" data-product-form data-product-id="{{ product.id }}" {{ block.shopify_attributes }}>
+              <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
+              {%- unless product.has_only_default_variant -%}
+                <div class="pdp__options">
+                  {%- for option in product.options_with_values -%}
+                    <fieldset class="option" data-option-index="{{ forloop.index0 }}">
+                      <legend class="option__label">{{ option.name }}: <span data-selected-value>{{ option.selected_value }}</span></legend>
+                      <div class="option__values">
+                        {%- for value in option.values -%}
+                          <label class="option__swatch {% if option.name | downcase contains 'color' %}option__swatch--color{% endif %}">
+                            <input type="radio" name="options[{{ option.name }}]" value="{{ value | escape }}" {% if option.selected_value == value %}checked{% endif %}>
+                            {%- if option.name | downcase contains 'color' -%}
+                              <span class="swatch" style="background:{{ value | handle }};" title="{{ value }}"></span>
+                            {%- else -%}
+                              <span class="chip">{{ value }}</span>
+                            {%- endif -%}
+                          </label>
+                        {%- endfor -%}
+                      </div>
+                    </fieldset>
+                  {%- endfor -%}
+                </div>
+              {%- endunless -%}
+
+              <div class="pdp__qty">
+                <label for="Quantity">{{ 'products.product.quantity' | t }}</label>
+                <div class="qty">
+                  <button type="button" data-qty-minus aria-label="Decrease">&minus;</button>
+                  <input id="Quantity" type="number" name="quantity" value="1" min="1">
+                  <button type="button" data-qty-plus aria-label="Increase">+</button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn--solid btn--block pdp__add" data-add-btn
+                {% unless current_variant.available %}disabled{% endunless %}>
+                {%- if current_variant.available -%}{{ 'products.product.add_to_cart' | t }}{%- else -%}{{ 'products.product.sold_out' | t }}{%- endif -%}
+              </button>
+              {%- if settings.show_dynamic_checkout -%}
+                {{ form | payment_button }}
+              {%- endif -%}
+            </form>
+          {%- when 'description' -%}
+            <details class="pdp__acc" open {{ block.shopify_attributes }}>
+              <summary>{{ 'products.product.description' | t }}</summary>
+              <div class="rte">{{ product.description }}</div>
+            </details>
+          {%- when 'details' -%}
+            <details class="pdp__acc" {{ block.shopify_attributes }}>
+              <summary>{{ 'products.product.details' | t }}</summary>
+              <dl class="pdp__specs">
+                {%- if product.metafields.specs.leather_type -%}<dt>Leather</dt><dd>{{ product.metafields.specs.leather_type.value }}</dd>{%- endif -%}
+                {%- if product.metafields.specs.lining     -%}<dt>Lining</dt><dd>{{ product.metafields.specs.lining.value }}</dd>{%- endif -%}
+                {%- if product.metafields.specs.closure    -%}<dt>Closure</dt><dd>{{ product.metafields.specs.closure.value }}</dd>{%- endif -%}
+                {%- if product.metafields.specs.fit        -%}<dt>Fit</dt><dd>{{ product.metafields.specs.fit.value }}</dd>{%- endif -%}
+                {%- if product.metafields.specs.origin     -%}<dt>Origin</dt><dd>{{ product.metafields.specs.origin.value }}</dd>{%- endif -%}
+                {%- if product.metafields.specs.ce_rating  -%}<dt>CE rating</dt><dd>{{ product.metafields.specs.ce_rating.value }}</dd>{%- endif -%}
+                {%- if block.settings.text != blank       -%}<dt>Notes</dt><dd>{{ block.settings.text }}</dd>{%- endif -%}
+              </dl>
+            </details>
+          {%- when 'care' -%}
+            <details class="pdp__acc" {{ block.shopify_attributes }}>
+              <summary>Care</summary>
+              <div class="rte">{{ product.metafields.specs.care.value | default: block.settings.fallback }}</div>
+            </details>
+          {%- when 'shipping' -%}
+            <details class="pdp__acc" {{ block.shopify_attributes }}>
+              <summary>{{ 'products.product.shipping' | t }}</summary>
+              <div class="rte">{{ block.settings.text }}</div>
+            </details>
+          {%- when 'size-guide' -%}
+            <button type="button" class="pdp__sizeguide" data-modal-open="SizeGuide" {{ block.shopify_attributes }}>{{ 'products.product.size_guide' | t }}</button>
+          {%- when 'share' -%}
+            <div class="pdp__share" {{ block.shopify_attributes }}>
+              <p>{{ 'products.product.share' | t }}</p>
+              <a href="https://twitter.com/intent/tweet?url={{ shop.url }}{{ product.url }}&text={{ product.title | url_encode }}" rel="noopener" target="_blank" aria-label="Share on Twitter">X</a>
+              <a href="https://www.facebook.com/sharer.php?u={{ shop.url }}{{ product.url }}" rel="noopener" target="_blank" aria-label="Share on Facebook">FB</a>
+              <a href="https://pinterest.com/pin/create/button/?url={{ shop.url }}{{ product.url }}&media={{ product.featured_image | image_url: width: 1200 }}" rel="noopener" target="_blank" aria-label="Share on Pinterest">Pin</a>
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </aside>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "image": [{{ product.featured_media | image_url: width: 1200 | json }}],
+  "description": {{ product.description | strip_html | json }},
+  "sku": {{ current_variant.sku | json }},
+  "brand": { "@type": "Brand", "name": {{ product.vendor | json }} },
+  "offers": {
+    "@type": "Offer",
+    "url": {{ shop.url | append: product.url | json }},
+    "priceCurrency": {{ shop.currency | json }},
+    "price": {{ current_variant.price | money_without_currency | replace: ',', '' | json }},
+    "availability": {% if current_variant.available %}"https://schema.org/InStock"{% else %}"https://schema.org/OutOfStock"{% endif %}
+  }
+  {%- if rating -%}
+  ,"aggregateRating": { "@type": "AggregateRating", "ratingValue": {{ rating | json }}, "reviewCount": {{ rating_count | default: 0 | json }} }
+  {%- endif -%}
+}
+</script>
+
+{% schema %}
+{
+  "name": "Product",
+  "class": "section-main-product",
+  "settings": [
+    { "type": "checkbox", "id": "show_dynamic_checkout", "label": "Show dynamic checkout button", "default": true }
+  ],
+  "blocks": [
+    { "type": "vendor", "name": "Vendor", "limit": 1 },
+    { "type": "title",  "name": "Title",  "limit": 1 },
+    { "type": "rating", "name": "Rating", "limit": 1 },
+    { "type": "price",  "name": "Price",  "limit": 1 },
+    { "type": "variant-picker", "name": "Variant picker + Add to cart", "limit": 1 },
+    { "type": "description", "name": "Description", "limit": 1 },
+    { "type": "details", "name": "Specs / details", "limit": 1, "settings": [
+      { "type": "textarea", "id": "text", "label": "Extra notes" }
+    ]},
+    { "type": "care", "name": "Care", "limit": 1, "settings": [
+      { "type": "richtext", "id": "fallback", "label": "Fallback copy", "default": "<p>Wipe clean with a soft, dry cloth. Condition twice a year with neutral leather balm. Avoid direct heat and prolonged sunlight.</p>" }
+    ]},
+    { "type": "shipping", "name": "Shipping & returns", "limit": 1, "settings": [
+      { "type": "richtext", "id": "text", "label": "Shipping copy", "default": "<p>Free worldwide shipping on orders over $250. 30-day easy returns.</p>" }
+    ]},
+    { "type": "size-guide", "name": "Size guide trigger", "limit": 1 },
+    { "type": "share", "name": "Share", "limit": 1 }
+  ],
+  "presets": [{
+    "name": "Product",
+    "blocks": [
+      { "type": "vendor" }, { "type": "title" }, { "type": "rating" }, { "type": "price" },
+      { "type": "variant-picker" }, { "type": "description" }, { "type": "details" },
+      { "type": "care" }, { "type": "shipping" }, { "type": "size-guide" }, { "type": "share" }
+    ]
+  }]
+}
+{% endschema %}

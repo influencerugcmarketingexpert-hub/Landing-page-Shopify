@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "main": { "type": "main-article" },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "layout": "simple",
+        "bg": "#FAF7F2",
+        "fg": "#1A1613",
+        "eyebrow": "Keep reading",
+        "heading": "More stories from the atelier",
+        "subheading": "Subscribe for quarterly dispatches.",
+        "button_text": "Subscribe"
+      }
+    }
+  },
+  "order": ["main", "newsletter"]
+}
